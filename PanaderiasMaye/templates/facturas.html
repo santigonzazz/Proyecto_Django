@@ -1,0 +1,86 @@
+
+
+    <main>
+            <h1 style="display: flex; justify-content: center; margin: 50px 0 50px 0;">Administracion de Facturas</h1>
+            <div class="search-bar" style="display: flex; justify-content: center; width: 100%; margin-bottom: 50px;">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Buscar factura" aria-label="Search" aria-describedby="search-addon">
+                    <button class="btn btn-outline-secondary" type="button" id="search-addon">
+                            <i class="fas fa-search"></i>
+                        </button>
+                </div>
+            </div>
+
+
+
+        <div class="container" style="display: flex; flex-direction: column;">
+
+                <div class="factura">
+                <p>Código: <br> 1</p>                    
+                  <p>fecha/hora: <br>11/12/2024 12:34</p>
+                  <p>usuario: <br> Juan Perez</p>
+                  <p>producto: <br>donas</p>
+                  <p>cantidad: <br>12</p>
+                  <p class="text-right">Precio: <br>2000</p>
+                  <p class="text-right">total: <br>24000</p>
+                <button type="button" id="btnAgregar" class="btn btn-danger" style="height: 40px;">Eliminar</button>
+                <button type="button" id="btnAgregar" class="btn btn-success" style="height: 40px;">Descargar</button>
+                </div>
+                <hr>
+                <div class="factura">
+                    <p>Código: <br> 1</p>                    
+                      <p>fecha/hora: <br>15/05/2024 1:30</p>
+                      <p>usuario: <br> Alizon Suarez</p>
+                      <p>producto: <br>PanChocha <br> pan de Aliño</p>
+                      <p>cantidad: <br>2 <br> 1</p>
+                      <p class="text-right">Precio: <br>2000 <br> 2000</p>
+                      <p class="text-right">total: <br>6000</p>
+                    <button type="button" id="btnAgregar" class="btn btn-danger" style="height: 40px;">Eliminar</button>
+                    <button type="button" id="btnAgregar" class="btn btn-success" style="height: 40px;">Descargar</button>
+                </div>
+        </div>
+
+        <button class="btn-volverCambio btn btn-primary"><a href="../views/admin-DashBoard.html" class="btn-volverCambioLink">Volver a DashBoard</a></button>
+    </main><br>
+    <footer class="mt-auto">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <h5>Sobre Nosotros</h5>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ante mollis quam tristique convallis.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Links</h5>
+              <ul class="list-unstyled">
+                <li><a href="#" class="text-decoration-none text-white">Home</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Services</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Siguenos!!</h5>
+              <ul class="list-inline social-icons">
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-facebook"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-twitter"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-instagram"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <hr class="mb-4">
+          <div class="row">
+            <div class="col-md-12 text-center">
+              <p>&copy; 2023 Derechos reservados por Panaderia´s Maye</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+   
+    <script>
+        function eliminar_usuario() {
+            alert("Usuario eliminado correctamente")    
+        }
+        function añadir_usuario(){
+            alert("Usuario agregado correctamente")
+        }
+    </script>

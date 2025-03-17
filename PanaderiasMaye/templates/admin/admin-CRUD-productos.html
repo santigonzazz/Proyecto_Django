@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %} Crud-Productos {% endblock %}
+{% block body %}
+
+    <main>
+        <div class="container mt-5">
+            <h1 class="title text-center">ADMIN CRUD PRODUCTOS</h1>
+
+            <!-- Create Form -->
+            <div class="row mb-4">
+                <div class="col-md-6 offset-md-3">
+                    <h1 class="title">Añadir nuevo producto</h1>
+                    <form class="form-user">
+                        <div class="mb-3">
+                            <label for="ItemName" class="form-label">imagen:</label>
+                            <input type="file" class="form-control" id="imagen" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Nombre:</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemPrice" class="form-label">Precio:</label>
+                            <input type="number" class="form-control" id="precio" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Categorias:</label>
+                            <input type="text" class="form-control" id="categorias" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Descripcion:</label>
+                            <input type="text" class="form-control" id="descripcion" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Cantidad:</label>
+                            <input type="number" class="form-control" id="cantidad" required>
+                        </div>
+                        <button type="submit" class="btn-create btn btn-primary" onclick="añadir_producto()">Añadir Producto</button>
+                    </form>
+                </div>
+            </div>
+
+            <h1 class="title">Encontrar Producto</h1>
+            <div class="search-bar">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Buscar Producto" aria-label="Search" aria-describedby="search-addon">
+                    <button class="btn btn-outline-secondary" type="button" id="search-addon">
+                            <i class="fas fa-search"></i>
+                        </button>
+                </div>
+            </div>
+
+            <!-- Read Items -->
+            <h2>Productos:</h2>
+            <div class="row" id="itemList">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/panm1.jpg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: Pan de Aliño</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, Bolleria</p>
+                            <p class="card-text">Descripcion: Un pan suave y esponjoso, típicamente elaborado con ajo, hierbas aromáticas y aceite de oliva. Su sabor es intenso y delicioso, perfecto para acompañar sopas, ensaladas o simplemente untado con mantequilla.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/panm2.jpg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: Pan Harina Dulce</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, postres</p>
+                            <p class="card-text">Descripcion: Un pan más denso y con un sabor ligeramente dulce, elaborado con harina de trigo, azúcar, huevos y mantequilla. Su textura es más compacta que otros panes y se suele disfrutar solo o acompañado de mermeladas o queso.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/panm3.jpeg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: Donas</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, postres</p>
+                            <p class="card-text">Descripcion: Pequeñas rosquillas fritas o horneadas, cubiertas de azúcar glas, chocolate o otros glaseados. Son suaves por dentro y crujientes por fuera, y suelen ser un postre muy popular.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/panm4.jpeg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: Pan Rustico</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, Bolleria</p>
+                            <p class="card-text">Descripcion: Un pan de corteza dura y crujiente, con una miga densa y llena de sabor. Se elabora con harina integral y levadura natural, y suele tener una forma irregular. Es ideal para acompañar quesos fuertes o embutidos.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/pan3.jpeg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: Pan 3 leches</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, Bolleria</p>
+                            <p class="card-text">Descripcion: Un pan suave y esponjoso, empapado en una mezcla de leche evaporada, leche condensada y crema. Su textura es muy húmeda y su sabor es dulce y cremoso. Es un postre muy popular en muchos países latinoamericanos.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/pan4.jpeg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: Croassant</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, Bolleria</p>
+                            <p class="card-text">Descripcion: Un pan de origen francés, en forma de media luna, elaborado con mantequilla y hojaldre. Su textura es crujiente y ligera, y su sabor es ligeramente dulce y mantecoso.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/pan8.jpeg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: PanChocha</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, Bolleria</p>
+                            <p class="card-text">Descripcion: Un pan dulce colombiano, elaborado con harina de maíz, azúcar, huevos y mantequilla. Tiene una textura suave y esponjosa, y su sabor es dulce y ligeramente salado.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <img src="../static/img/pan9.jpeg" alt="" style="width: 100%; height: 200px;">
+                            <p class="card-text">Nombre: Pan de Bono</p>
+                            <p class="card-text">Precio: 2000</p>
+                            <p class="card-text">Categorias: Todos los productos, Bolleria</p>
+                            <p class="card-text">Descripcion: Un pan colombiano, suave y esponjoso, elaborado con queso y yuca. Su textura es muy suave y su sabor es ligeramente salado y quesoso. Es perfecto para acompañar bebidas calientes o como un snack.</p>
+                            <p class="card-text">Cantidad: 888</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal"
+                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
+                            <button class="btn btn-danger" onclick="eliminar_producto()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+
+        <!-- Update Modal -->
+        <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="updateModalLabel">Actualizar Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="mb-3">
+                                <label for="updateItemImage" class="form-label">Imagen</label>
+                                <input type="file" class="form-control" id="updateItemImage" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemName" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="updateItemName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemPrecio" class="form-label">Precio</label>
+                                <input type="text" class="form-control" id="updateItemPrecio" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemCategorias" class="form-label">Categorias</label>
+                                <input type="text" class="form-control" id="updateItemCategorias" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemDescripcion" class="form-label">Descripcion</label>
+                                <input type="text" class="form-control" id="updateItemDescripcion" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemCantidad" class="form-label">Cantidad</label>
+                                <input type="number" class="form-control" id="updateItemCantidad" required>
+                            </div>
+                            <button type="submit" class="btn-actualizar btn btn-primary">Update Item</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </main>
+    <button class="btn-volverCambio btn btn-primary"><a href="./admin-DashBoard.html" class="btn-volverCambioLink">Volver a DashBoard</a></button>
+    <br>
+
+{% endblock %}
+    

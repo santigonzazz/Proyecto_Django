@@ -1,0 +1,43 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% block titulo %}Login{% endblock %}
+
+
+
+{% block body %}
+<form action="" method="post">
+    {% csrf_token %}
+    <main>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 image-container">
+                    <img src="{% static 'img/logopan.png' %}" alt="Bakery Bread" />
+                </div>
+                <div class="col-md-6">
+                    <h1 class="title">Inicia Sesión!!</h1>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3" >
+                            <label for="email" class="form-label">Correo:</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña:</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn-login btn btn-primary">Inicia Sesión</button>
+                    </form>
+                    <div class="mensajes mt-3">
+                        <p>¿No tienes cuenta? <a href="{% url 'register' %}" class="btn-register btn btn-link">Registrate aquí</a></p>
+                        <p><a href="{% url 'recuperar_clave' %}" class="btn-clave btn btn-link">Olvidaste la Contraseña?</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn-volverCambio btn btn-primary"><a href="../views/admin-DashBoard.html" class="btn-volverCambioLink">Admin</a></button>
+    </main><br>
+</form>
+{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static  %}
+<!DOCTYPE html>
+<html lang="en">
+{% block titulo %} Inicio {% endblock %}
+{% block titulo-body %} Buenvenido a Panaderia's Maye!!! {% endblock %}
+{% block body %} 
+
+    <main>
+
+        <div class="search-bar">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Buscar Producto" aria-label="Search" aria-describedby="search-addon">
+                <button class="btn btn-outline-secondary" type="button" id="search-addon">
+                        <i class="fas fa-search"></i>
+                    </button>
+            </div>
+        </div>
+        <br>
+        <h2 class="title">Mas vendidos de la semana</h2><!--lista de productos-->
+
+        
+        <div class="row no-gutters row-cols-1 row-cols-md-2 g-5">
+          {% for i in productoInfo %}
+            <div class="col">
+              <div class="card">
+                <img src="{% static 'img/pan3.jpeg' %}" class="card-img-top" alt="...">
+                <div class="card-body">
+                  <h5 class="card-title">{{ i.nombre }}</h5>
+                  <p class="precio">{{ i.precio }}</p>
+                  <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                  
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          
+    </main><br><br>
+{% endblock %}
+
+</html>

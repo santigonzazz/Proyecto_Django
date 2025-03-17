@@ -1,0 +1,103 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body{
+    background-color: rgb(238, 212, 174);
+}
+
+nav{
+    background-color: rgb(250, 193, 87);
+    padding: 10px;
+}
+
+
+.nav-link{
+    color: black;
+}
+
+.nav-link:hover{
+    color: white;
+}
+
+.nav-item{
+    display: flex;
+}
+.nav-item>a{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenedor-principal-img{
+    width: 95%;
+    display: flex;
+    justify-content: start;
+    float: left;
+    margin-left: 5%;
+}
+.img-title{
+    float: left;
+}
+.logo{
+    width: 90%;
+    margin-top: 2%;
+}
+.cont_img{
+    width: 13%;
+    height: 100%;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+.title{
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
+    font-family: 'Times New Roman', Times, serif;
+    padding: 10px;
+}
+.dashboard-card {
+    margin: 20px 0;
+}
+.chart-container {
+    margin: 20px 0;
+}
+.chart {
+    width: 100%;
+    height: 300px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #6c757d;
+}
+
+.chart>img{
+    width: 80%;
+}
+
+.btn-cambios{
+    background-color: rgb(250, 193, 87);
+    color: black;
+    border: none;
+}
+.btn-cambios:hover{
+    background-color: rgb(238, 212, 174);
+    color: black;
+}
+footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 3rem 0;
+  }
+
+.social-icons a {
+    font-size: 1.25rem;
+}

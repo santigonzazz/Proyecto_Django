@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bakery Registration Form</title>
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="../static/img/logopan.png" type="image/x-icon">
+    <link rel="stylesheet" href="../static/css/bootstrap.min.css.map ">
+    <link rel="stylesheet" href="../static/css/register.css">
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul class="nav justify-content-center">
+                <li class="nav-item">
+                    <a href="{% url 'index' %}" class="nav-link"><img src="../static/img/logopan.png" alt="" width="100px"></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="{% url 'index' %}">Inicio</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'categorias' %}">Categorias</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'contactanos' %}">Contactanos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'about' %}">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'carrito' %}">Carrito <i class="fa-solid fa-cart-shopping"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login <i class="fa-solid fa-circle-user"></i></a>
+                </li>
+
+            </ul>
+        </nav>
+
+    </header><br>
+
+    <main>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 image-container">
+                    <img src="../static/img/logopan.png" alt="Bakery Bread" />
+                </div>
+                <div class="col-md-6">
+                    <h1 class="title">Registrate</h1>
+                    <form action="../static/js/validar.js" method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label" >Nombre</label>
+                            <input type="text" class="form-control" name="name" required id="nombre">
+                        </div>
+                        <div class="mb-3">
+                            <label for="last-name" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" name="last-name" required id="apellido">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Celular</label>
+                            <input type="tel" class="form-control" id="celular" name="phone" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Correo</label>
+                            <input type="email" class="form-control" id="correo" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="clave" name="password" required>
+                        </div>
+                        <button type="submit" class="btn-register btn btn-primary">Registrate</button>
+                    </form>
+                    <div class="op-login mt-3">
+                        <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="btn-login btn btn-link">Inicia sesión</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main><br>
+    <footer class="mt-auto">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <h5>Sobre Nosotros</h5>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ante mollis quam tristique convallis.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Links</h5>
+              <ul class="list-unstyled">
+                <li><a href="#" class="text-decoration-none text-white">Home</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Services</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Siguenos!!</h5>
+              <ul class="list-inline social-icons">
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-facebook"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-twitter"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-instagram"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <hr class="mb-4">
+          <div class="row">
+            <div class="col-md-12 text-center">
+              <p>&copy; 2023 Derechos reservados por Panaderia´s Maye</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/bootstrap.js"></script>
+</body>
+
+</html>

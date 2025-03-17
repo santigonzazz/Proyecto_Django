@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %}Crud-User{% endblock %}
+
+
+{% block body %}
+    <main>
+        <div class="container mt-5">
+            <h1 class="title text-center">PERSONALIZACION DE CUENTA DE USUARIO</h1>
+
+            <div class="editUser"><strong><h5>Imagen</h5></strong><p>La foto de perfil aparecerá en los lugares en los que se muestre tu cuenta de usuario en la pagina</p><div class="img-section"><div class="user-img"></div><button class="btn-ed">quitar</button><button class="btn-ed">cambiar</button></div></div>
+            <div class="editUser"><strong><h5>Nombre</h5></strong><input type="text" class="form-control" placeholder="@nombreDeUsuario"></div>
+            <div class="editUser"><strong><h5>Apellido</h5></strong><input type="text" class="form-control" placeholder="@apellidoDeUsuario"></div>
+            <div class="editUser"><strong><h5>celular</h5></strong><input type="text" class="form-control" placeholder="@celularDeUsuario"></div>
+            <div class="editUser"><strong><h5>contraseña</h5></strong><input type="text" class="form-control" placeholder="@contraseñaDeUsuario"></div>
+            <div class="editUser"><button class="btn-ed">Actualizar</button></div>
+
+    </main><br>
+  
+ 
+    
+{% endblock %}

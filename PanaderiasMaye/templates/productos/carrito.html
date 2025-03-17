@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block titulo %} Carrito {% endblock %}
+{% block titulo-body %} Carrito {% endblock %}
+<body>
+{% block body %}    
+    <main>
+        
+        <section class="container mt-5">
+            <h2 class="title">Carrito de Compras</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-items">
+                        
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-right">
+                <h4>Total: <span id="cart-total">0 COP</span></h4>
+                <button class="btn btn-primary">Proceder al Pago</button>
+            </div>
+        </section>
+
+    
+        <section class="container mt-5">
+            <h2 class="title">Reserva de Productos</h2>
+            <p>Reserva tus productos favoritos para asegurarte de que no te quedes sin ellos.</p>
+            <form id="reservation-form">
+                <div class="mb-3">
+                    <label for="product-name" class="form-label">Nombre del Producto</label>
+                    <input type="text" class="form-control" id="product-name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="product-quantity" class="form-label">Cantidad</label>
+                    <input type="number" class="form-control" id="product-quantity" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-reserva">Reservar</button>
+            </form>
+        </section>
+    </main>
+{% endblock %} 
+    
+</body>
+
+</html>

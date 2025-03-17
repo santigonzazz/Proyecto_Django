@@ -1,0 +1,68 @@
+{% extends 'base3.html' %}
+{% load static %}
+{% block titulo %} Crud-DashBoard {% endblock %}
+    
+{% block body %}
+    <main>
+        <div class="container">
+            <h1 class="title text-center my-4">Admin Dashboard</h1>
+
+            <div class="row">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Edit Users">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Usuarios</h5>
+                            <a href="../views/admin-CRUD-users.html" class="btn-cambios btn btn-primary">Editar
+                                Usuarios</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Edit Categories">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Categorias</h5>
+                            <a href="{% url 'crud_categoria' %}" class="btn-cambios btn btn-primary">Editar
+                                Categorías</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Edit Products">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Productos</h5>
+                            <a href="{% url '' %}" class="btn-cambios btn btn-primary">Editar Productos</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="card dashboard-card">
+                        <img src="https://via.placeholder.com/150" class="card-img-top" alt="Create Bills">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Facturas</h5>
+                            <a href="./facturas.html" class="btn-cambios btn btn-primary">Editar Facturas</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="title text-center my-4">Estadisticas de Ventas</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5 class="text-center">Ventas este mes</h5>
+                        <div class="chart"><img src="../static/img/grafico1.png" alt=""></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5 class="text-center">Ventas mes Pasado</h5>
+                        <div class="chart"><img src="../static/img/grafico2.png" alt=""></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main><br>
+{% endblock %}
