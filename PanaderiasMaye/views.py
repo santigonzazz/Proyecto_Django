@@ -6,8 +6,10 @@ from .models import *
 
 def index(request):
     prducto = Producto.objects.all()
+    cat = Categoria.objects.all()
     contexto = {
-        "productoInfo": prducto
+        "productoInfo": prducto,
+        "categoria": cat,
     }
     return render(request, 'index.html', contexto)
 
