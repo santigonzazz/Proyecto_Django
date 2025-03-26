@@ -8,7 +8,7 @@ class User(models.Model):
     celular= models.CharField(max_length=10)
     email= models.EmailField(max_length= 254)
     password=  models.CharField(max_length= 100)
-    direccion=  models.CharField(max_length= 120)
+    direccion=  models.CharField(max_length= 120, blank=True, null=True)
     ROLES=(
         (1, 'Empleados'),
         (2, 'Clientes'),
@@ -19,7 +19,7 @@ class User(models.Model):
 
 
 class Proveedor(models.Model):
-    nombre = models.CharField(max_length=100)
+    nombre = models.CharField(max_length=100) 
     telefono = models.CharField(max_length=10)
     correo = models.EmailField(max_length=254)
     password = models.CharField(max_length=254)
