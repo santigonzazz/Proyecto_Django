@@ -1,0 +1,164 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="{% static 'img/logopan.png' %}" type="image/x-icon">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css.map' %}">
+        <link rel="stylesheet" href="{% static 'css/index.css' %}">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Montserrat&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet">
+        <title> {% block titulo %}  {% endblock %} </title>
+    </head>
+<body>
+    
+    <header>
+        <nav class="navbar navbar-expand-md">
+          <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+              <div class="collapse navbar-collapse justify-content-center" id="navbarSupportedContent">
+                <ul class="nav justify-content-center">
+                    <li class="nav-item">
+                        <a href="{% url 'index' %}" class="nav-link"><img src="../static/img/logopan.png" alt="" width="100px"></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'index' %}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                      <div class="menu-container">
+                        <button class="button-nav menu-button" onclick="toggleMenu()">Categorías</button>
+                        <div class="menu" id="categoryMenu">
+                          <a href="{% url 'index' %}?cat=1">Electrónica</a>
+                          <a href="#">Hogar</a>
+                          <a href="#">Ropa</a>
+                          <a href="#">Juguetes</a>
+                      </div>  
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'contactanos' %}">Contactanos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="button-nav" href="{% url 'carrito' %}" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" aria-controls="offcanvasExample">Carrito <i class="fa-solid fa-cart-shopping"></i></button>
+                    </li>
+                    <li class="nav-item">
+                      {% if request.session.auth %}
+                        <div class="menu-container">
+                          <button class="button-nav login-button menu-button" onclick="toggleLogin()">{{ request.session.auth.nombre }}<i class="fa-solid fa-circle-user"></i></button>
+                          <div class="menu" id="optionLogin">
+                            <a href="#">Logout ></a>
+                            <a href="#">settings</a>
+                          </div> 
+                      {% else %}
+                        <a class="nav-link" href="{% url 'login' %}">Login <i class="fa-solid fa-circle-user"></i></a>
+                      {% endif %}
+                    </li>
+                </ul>
+              </div>
+            </div>
+        </nav>
+
+    </header>
+
+    <main>
+        <div class="contenedor-principal-title">
+          <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
+            <div class="offcanvas-header">
+              <h3>Carrito de Compras</h3>
+              <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>  
+            
+              {% for carrito in car %}
+                  <h6>hana banana</h6>
+                  <div><p>efbu</p><p>sedvs</p><p>vsze</p></div>
+              {% endfor %}
+          </div>
+            <h1 class="title">{% block titulo-body %}  {% endblock %} </h1><br>
+        </div>
+
+    </main>
+
+    {% block body %} 
+    
+    {% endblock %}
+
+
+    <footer class="mt-auto">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <h5>Sobre Nosotros</h5>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ante mollis quam tristique convallis.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Links</h5>
+              <ul class="list-unstyled">
+                <li><a href="#" class="text-decoration-none text-white">Home</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Services</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Siguenos!!</h5>
+              <ul class="list-inline social-icons">
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-facebook"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-twitter"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-instagram"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <hr class="mb-4">
+          <div class="row">
+            <div class="col-md-12 text-center">
+              <p>&copy; 2023 Derechos reservados por Panaderia´s Maye</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script>
+      function toggleMenu() {
+          var menu = document.getElementById("categoryMenu");
+          menu.style.display = menu.style.display === "block" ? "none" : "block";
+      }
+
+      // Cierra el menú si se hace clic fuera
+      document.addEventListener("click", function(event) {
+          var menu = document.getElementById("categoryMenu");
+          var button = document.querySelector(".menu-button");
+          if (!button.contains(event.target) && !menu.contains(event.target)) {
+              menu.style.display = "none";
+          }
+      });
+  </script>
+  <script>
+    function toggleLogin() {
+        var menu = document.getElementById("optionLogin");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    // Cierra el menú si se hace clic fuera
+    document.addEventListener("click", function(event) {
+        var menu = document.getElementById("optionLogin");
+        var button = document.querySelector(".login-button");
+        if (!button.contains(event.target) && !menu.contains(event.target)) {
+            menu.style.display = "none";
+        }
+    });
+</script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+
+</body>
+</html>

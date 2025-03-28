@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="../static/img/logopan.png" type="image/x-icon">
+        <link rel="stylesheet" href="../static/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../static/css/categorias.css">
+        <link rel="stylesheet" href="../static/css/bootstrap.min.css.map">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&family=Montserrat&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet">
+        <title></title>
+    </head>
+</head>
+<body>
+    
+  <header>
+    <nav>
+      <ul class="nav justify-content-center">
+          <li class="nav-item">
+              <a href="{% url 'index' %}" class="nav-link"><img src="../static/img/logopan.png" alt="" width="100px"></a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="{% url 'index' %}">Inicio</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'categorias' %}">Categorias</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'contactanos' %}">Contactanos</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'about' %}">About</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'carrito' %}">Carrito <i class="fa-solid fa-cart-shopping"></i></a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'login' %}">Login <i class="fa-solid fa-circle-user"></i></a>
+          </li>
+
+      </ul>
+  </nav>
+
+</header>
+
+    <main> 
+    <h1 class="title">Categorías</h1><br>
+    <div class="search-bar">
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Buscar Producto" aria-label="Search" aria-describedby="search-addon">
+            <button class="btn btn-outline-secondary" type="button" id="search-addon">
+                    <i class="fas fa-search"></i>
+                </button>
+        </div>
+    </div><br><br>
+    <div class="contenedor-nav">
+        <nav>
+        <ul class="nav justify-content-center">
+            {% for i in categoria %}
+            <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="categorias.html">{{ i.nombre }}</a>
+            </li>
+            {% endfor %}
+            <!-- <li class="nav-item">
+                <a class="nav-link" href="postres.html">Postres</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="helados.html">Helados</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="sgluten.html">Sin Gluten</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="bolleria.html">Bolleria</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="bebidas.html">Bebidas</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="populares.html">Más Populares</a>
+            </li> -->
+
+            </ul>
+        </nav>
+        <div class="row no-gutters row-cols-1 row-cols-md-2 g-5">
+          {% for p in productoCategoria %}
+          <div class="col">
+            <div class="card">
+              <img src="../static/img/pan3.jpeg" class="card-img-top" alt="...">
+              <div class="card-body">
+                <h5 class="card-title">{{ p.nombre }}</h5>
+                <p class="precio">{{ p.precio }}</p>
+                <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+            <!-- <div class="col">
+              <div class="card">
+                <img src="../static/img/pan3.jpeg" class="card-img-top" alt="...">
+                <div class="card-body">
+                  <h5 class="card-title">Pan 3 leches</h5>
+                  <p class="precio">2000 COP</p>
+                  <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                  
+                </div>
+              </div>
+            </div>
+            <div class="col">
+                <div class="card">
+                  <img src="../static/img/pan4.jpeg" class="card-img-top" alt="...">
+                  <div class="card-body">
+                      <h5 class="card-title">Croassant</h5>
+                      <p class="precio">2000 COP</p>
+                      <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="card">
+                  <img src="../static/img/pan8.jpeg" class="card-img-top" alt="...">
+                  <div class="card-body">
+                      <h5 class="card-title">PanChocha</h5>
+                      <p class="precio">2000 COP</p>
+                      <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="card">
+                  <img src="../static/img/pan9.jpeg" class="card-img-top" alt="...">
+                  <div class="card-body">
+                      <h5 class="card-title">Pan de Bono</h5>
+                      <p class="precio">2000 COP</p>
+                      <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                  </div>
+                </div>
+              </div>
+              <div class="col">
+                  <div class="card">
+                    <img src="../static/img/panm3.jpeg" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Donas</h5>
+                        <p class="precio">2000 COP</p>
+                        <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card">
+                    <img src="../static/img/panm1.jpg" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Pan de Aliño</h5>
+                        <p class="precio">2000 COP</p>
+                        <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card">
+                    <img src="../static/img/panm2.jpg" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Pan Harina Dulce</h5>
+                        <p class="precio">2000 COP</p>
+                        <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="card">
+                    <img src="../static/img/panm4.jpeg" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Pan Rustico</h5>
+                        <p class="precio">2000 COP</p>
+                        <a href="#" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                    </div>
+                  </div>
+                </div> -->
+            </div>
+    </div>
+    </main><br>
+    <footer class="mt-auto">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <h5>Sobre Nosotros</h5>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ante mollis quam tristique convallis.</p>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Links</h5>
+              <ul class="list-unstyled">
+                <li><a href="#" class="text-decoration-none text-white">Home</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Services</a></li>
+                <li><a href="#" class="text-decoration-none text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div class="col-md-4 mb-3">
+              <h5>Siguenos!!</h5>
+              <ul class="list-inline social-icons">
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-facebook"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-twitter"></i></a></li>
+                <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-instagram"></i></a></li>
+              </ul>
+            </div>
+          </div>
+          <hr class="mb-4">
+          <div class="row">
+            <div class="col-md-12 text-center">
+              <p>&copy; 2023 Derechos reservados por Panaderia´s Maye</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+</body>
+</html>

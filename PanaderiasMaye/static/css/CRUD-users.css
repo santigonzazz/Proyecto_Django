@@ -1,0 +1,156 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+body{
+    background-color: rgb(238, 212, 174);
+}
+
+nav{
+    background-color: rgb(250, 193, 87);
+    padding: 10px;
+}
+
+
+.nav-link{
+    color: black;
+}
+
+.nav-link:hover{
+    color: white;
+}
+
+.nav-item{
+    display: flex;
+}
+.nav-item>a{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenedor-principal-img{
+    width: 95%;
+    display: flex;
+    justify-content: start;
+    float: left;
+    margin-left: 5%;
+}
+.img-title{
+    float: left;
+}
+.logo{
+    width: 90%;
+    margin-top: 2%;
+}
+.cont_img{
+    width: 13%;
+    height: 100%;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+.title{
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
+    font-family: 'Times New Roman', Times, serif;
+    padding: 10px;
+}
+.search-bar {
+    max-width: 500px;
+    margin: auto auto;
+}
+
+.search-bar .input-group {
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar .form-control {
+    border: none;
+    padding-left: 20px;
+}
+
+.search-bar .btn {
+    border: none;
+    padding: 10px 20px;
+    background-color: black;
+    color: white;
+    
+}
+.card {
+    margin-bottom: 20px;
+}
+.form-user{
+    background-color: white;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.btn-create{
+    display: flex;
+    background-color: rgb(250, 193, 87);
+    border: none;
+    color: black;
+}
+
+.btn-create:hover{
+    background-color: rgb(238, 212, 174);
+    color: black;
+}
+
+.btn-edit{
+    text-decoration: none;
+    color: black;
+}
+
+.btn-edit:hover{
+    color: black;
+}
+.btn-actualizar{
+    background-color: rgb(250, 193, 87);
+    color: black;
+    border: none;
+}
+.btn-actualizar:hover{
+    background-color: rgb(238, 212, 174);
+    color: black;
+}
+.btn-volverCambio{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(250, 193, 87);
+    border: none;
+}
+.btn-volverCambio:hover{
+    background-color: rgb(250, 193, 87);
+    color: black;
+}
+.btn-volverCambioLink{
+    color: black;
+    text-align: center;
+    text-decoration: none;
+}
+.btn-volverCambioLink:hover{
+    color: black;
+}
+footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 3rem 0;
+  }
+
+.social-icons a {
+    font-size: 1.25rem;
+}
+.factura{
+    display: flex;
+    justify-content: space-around;
+}

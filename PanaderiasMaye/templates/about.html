@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+<!-- about.html -->
+
+    {% block titulo %} About {% endblock %}
+
+    {% block body %} 
+    <link rel="stylesheet" href="{% static 'css/about.css' %}">
+
+
+   
+        <div class="container mt-5">
+            <h1 class="title text-center mb-5">Sobre Nosotros</h1>
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 class="title">Nuestra visión</h1>
+                    <p>Queremos ser líderes en la creación de soluciones tecnológicas innovadoras que transformen la forma en que las personas y las empresas interactúan con la tecnología. Buscamos mejorar la vida de las personas a través de nuestras aplicaciones y servicios, resolviendo problemas sociales y facilitando el acceso a la información.</p>
+                </div>
+                <div class="col-md-6">
+                    <h1 class="title">Nuestra misión</h1>
+                    <p>Nuestra misión es popularizar la tecnología, haciéndola accesible para pequeñas empresas y comunidades. Creemos en proporcionar soluciones de software personalizadas y asequibles para competir en un mercado global. Además, nos comprometemos a utilizar la tecnología para mejorar la vida de las personas y resolver problemas sociales.</p>
+                </div>
+            </div>
+            <h2 class="title mt-5">Conoce Nuestro Equipo</h2>
+            <div class="row">
+                <div class="col-md-4 team-member">
+                    <img src="https://placehold.co/200x300" alt="John Doe">
+                    <div class="card-body about">
+                        <h5 class="card-title">Manuel Clavijo</h5>
+                        <p class="card-text">Programador Full-Stack</p>
+                        <p class="card-text">Programador por más de 5 años de experiencia en la creación de software</p>
+                    </div>
+                </div>
+                <div class="col-md-4 team-member">
+                    <img src="https://placehold.co/200x300" alt="Jane Smith">
+                    <div class="card-body about">
+                        <h5 class="card-title">Santiago Gonzalez</h5>
+                        <p class="card-text">Líder Técnico</p>
+                        <p class="card-text">Lider en tecnologia en nuestra empresa de software, con más de 2 años de experiencia en el sector</p>
+                    </div>
+                </div>
+                <div class="col-md-4 team-member">
+                    <img src="https://placehold.co/200x300" alt="Jane Smith" class="img-member"><br>
+                    <div class="card-body about">
+                        <h5 class="card-title">Nicolas Perez</h5>
+                        <p class="card-text">Programador Full-Stack</p>
+                        <p class="card-text">Programador por más de 2 años de experiencia en la creación de paginas web</p>
+                    </div>
+                </div>
+                <div class="col-md-4 team-member">
+                    <img src="https://placehold.co/200x300" alt="Bob Johnson">
+                    <div class="card-body about">
+                        <h5 class="card-title">Jhonny Alcalde</h5>
+                        <p class="card-text">Product Manager</p>
+                        <p class="card-text">Encargado de encontrar e interactuar con diversos prospectos para satisfacer sus necesidades y convertilas en software, con más de 5 años de experiencia en este sector</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    {% endblock %}
+
+   

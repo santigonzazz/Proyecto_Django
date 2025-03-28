@@ -1,0 +1,70 @@
+{% extends 'base3.html' %}
+{% load static %}
+{% block titulo %} Edit-User {% endblock %}
+    
+{% block body %}
+
+    <main>
+        <div class="container-user container mt-5">
+        <h1 class="title">Usuario a editar</h1>
+        <div class="col-md-15">
+            <div class="card">
+                <div class="card-body">
+                    <p class="card-text">Nombre: Santiago</p>
+                    <p class="card-text">Apllido: Gonzalez</p>
+                    <p class="card-text">Rol: Panadeor Auxiliar</p>
+                    <p class="card-text">Celular: 3214312</p>
+                    <p class="card-text">Correo: SantiPanadero@gmaiil.com</p>
+                    <p class="card-text">Tipo de Usuario: Trabajador</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6 offset-md-3">
+                <h1 class="title">Añadir Nuevas Creedenciales del Usuario</h1>
+                <form class="form-user">
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="itemPrice" class="form-label">Apellido:</label>
+                        <input type="number" class="form-control" id="Apellido" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Rol:</label>
+                        <input type="text" class="form-control" id="rol" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Celular:</label>
+                        <input type="text" class="form-control" id="celular" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Correo:</label>
+                        <input type="text" class="form-control" id="correo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Clave:</label>
+                        <input type="text" class="form-control" id="clave" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">TipoUsuario:</label>
+                        <input type="text" class="form-control" id="tipoUsuario" required>
+                    </div>
+                    <button type="submit" class="btn-create btn btn-primary" onclick="editar_user()">Confirmar Cambios</button><br>
+                    <button type="submit" class="btn-create btn btn-primary"><a href="../views/admin-CRUD-users.html" class="btn-volver">Volver</a></button><br>
+                </form>
+            </div>
+        </div>
+    </div>  
+    </main><br>
+
+    <script src="../static/js/bootstrap.min.js"></script>
+    <script src="../static/js/bootstrap.js"></script>
+    <script>
+        function editar_user() {
+            alert("Usuario cambiado")
+        }
+    </script>
+{% endblock %}
