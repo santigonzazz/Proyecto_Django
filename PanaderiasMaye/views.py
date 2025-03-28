@@ -9,10 +9,19 @@ from django.contrib import messages
 
 def index(request):
     prducto = Producto.objects.all()
+    cat = Categoria.objects.all()
     contexto = {
-        "productoInfo": prducto
+        "productoInfo": prducto,
+        "categoria": cat,
     }
     return render(request, 'index.html', contexto)
+
+def carrito(request):
+    car = Carrito.objects.all()
+    contexto = {
+        "carrito": car
+    }
+    return render(request, 'base.html', contexto)
 
 def login(request):
 

@@ -1,5 +1,9 @@
 
-
+{% extends 'base3.html' %}
+{% load static %}
+{% block titulo %} Crud-Categorias {% endblock %}
+    
+{% block body %}
     <main>
             <h1 style="display: flex; justify-content: center; margin: 50px 0 50px 0;">Administracion de Facturas</h1>
             <div class="search-bar" style="display: flex; justify-content: center; width: 100%; margin-bottom: 50px;">
@@ -84,3 +88,4 @@
             alert("Usuario agregado correctamente")
         }
     </script>
+    {% endblock %}

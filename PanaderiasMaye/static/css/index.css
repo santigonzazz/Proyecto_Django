@@ -195,7 +195,7 @@ nav{
     color: black;
 }
 
-.form-categoria{
+.form-center{
     display: contents;
 }
 
@@ -211,4 +211,22 @@ footer {
 
 .btn-outline-secondary{
     background-color: black;
+}
+.carrito{
+    background-color:  rgb(250, 193, 87);
+    border: none;
+}
+.offcanvas-header{
+    background-color: rgb(250, 193, 87);
+}
+.spaces{
+    display: flex;
+    justify-content: space-between;
+}
+.mb-3{
+    width: 98%;
+    margin-left: 10px;
+}
+.fa-search{
+    color: white;
 }

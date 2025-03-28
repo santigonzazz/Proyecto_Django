@@ -8,7 +8,7 @@
             <h1 class="title text-center">ADMIN CRUD PRODUCTOS</h1>
 
             <!-- Create Form -->
-            <div class="row mb-4">
+            <div class="row mb-4 form-center">
                 <div class="col-md-6 offset-md-3">
                     <h1 class="title">Añadir nuevo producto</h1>
                     <form class="form-user">
@@ -20,10 +20,17 @@
                             <label for="itemName" class="form-label">Nombre:</label>
                             <input type="text" class="form-control" id="nombre" required>
                         </div>
-                        <div class="mb-3">
-                            <label for="itemPrice" class="form-label">Precio:</label>
-                            <input type="number" class="form-control" id="precio" required>
-                        </div>
+                        <div class="spaces">
+                            <div class="mb-3">
+                                <label for="itemPrice" class="form-label">Precio:</label>
+                                <input type="number" class="form-control" id="precio" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="itemName" class="form-label">Cantidad:</label>
+                                <input type="number" class="form-control" id="cantidad" required>
+                            </div>
+                            
+                        </div>    
                         <div class="mb-3">
                             <label for="itemName" class="form-label">Categorias:</label>
                             <input type="text" class="form-control" id="categorias" required>
@@ -31,10 +38,6 @@
                         <div class="mb-3">
                             <label for="itemName" class="form-label">Descripcion:</label>
                             <input type="text" class="form-control" id="descripcion" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="itemName" class="form-label">Cantidad:</label>
-                            <input type="number" class="form-control" id="cantidad" required>
                         </div>
                         <button type="submit" class="btn-create btn btn-primary" onclick="añadir_producto()">Añadir Producto</button>
                     </form>

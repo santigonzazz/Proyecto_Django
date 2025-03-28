@@ -13,7 +13,7 @@
                         <img src="https://via.placeholder.com/150" class="card-img-top" alt="Edit Users">
                         <div class="card-body text-center">
                             <h5 class="card-title">Usuarios</h5>
-                            <a href="../views/admin-CRUD-users.html" class="btn-cambios btn btn-primary">Editar
+                            <a href="{% url 'adminCRUDU' %}" class="btn-cambios btn btn-primary">Editar
                                 Usuarios</a>
                         </div>
                     </div>
@@ -33,7 +33,7 @@
                         <img src="https://via.placeholder.com/150" class="card-img-top" alt="Edit Products">
                         <div class="card-body text-center">
                             <h5 class="card-title">Productos</h5>
-                            <a href="{% url '' %}" class="btn-cambios btn btn-primary">Editar Productos</a>
+                            <a href="{% url 'crud_productos' %}" class="btn-cambios btn btn-primary">Editar Productos</a>
                         </div>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                         <img src="https://via.placeholder.com/150" class="card-img-top" alt="Create Bills">
                         <div class="card-body text-center">
                             <h5 class="card-title">Facturas</h5>
-                            <a href="./facturas.html" class="btn-cambios btn btn-primary">Editar Facturas</a>
+                            <a href="{% url 'facturas' %}" class="btn-cambios btn btn-primary">Editar Facturas</a>
                         </div>
                     </div>
                 </div>
