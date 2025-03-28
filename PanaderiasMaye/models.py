@@ -48,11 +48,8 @@ class Categoria(models.Model):
        nombre= models.CharField(max_length=100)
        descripcion= models.TextField(null=True,blank=True)
        ESTADOS=(
-             ("Postres"),
-             ("Helados"),
-             ("Sin Gluten"),
-             ("Bolleria"),
-             ("Bebidas")
+             (1, "Activo"),
+             (2, "Inactivo"),
        )
 
        def __str__(self):
@@ -64,7 +61,6 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=120)
     descripcion = models.CharField(max_length=120)
     precio  = models.FloatField(validators=[MinValueValidator(0.01)])
-    categoria= models.ForeignKey('Categoria', on_delete=models.DO_NOTHING, related_name='fk1_producto_categoria')
     DISPONIBILIDAD = (
         ("SI", "Disponible"),
         ("NO", "No Disponible")
@@ -72,14 +68,21 @@ class Producto(models.Model):
     disponibilidad = models.CharField(max_length=2, choices=DISPONIBILIDAD, default="SI")
 
     def __str__(self):
-        return f"{self.nombre}, {self.precio} {self.categoria} {self.disponibilidad}"
+        return f"{self.nombre}, {self.precio} {self.disponibilidad}"
+    
+class ProductoCategoria(models.Model):
+    producto = models.ForeignKey(Producto, on_delete=models.DO_NOTHING, related_name='fk2_producto_categoria')  
+    categoria = models.ForeignKey(Categoria, on_delete=models.DO_NOTHING, related_name='fk3_producto_categoria')  
+
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.categoria.nombre}"
    
 
 class Detalle_carrito(models.Model):
     cantidad= models.IntegerField()
     total= models.FloatField(validators=[MinValueValidator(0)])
     servicio=models.CharField(max_length=150)
-    producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk2_detalle_carrito_producto')
+    producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk4_detalle_carrito_producto')
 
     class Meta:
         verbose_name = "Detalle Carrito"
@@ -92,8 +95,8 @@ class Carrito(models.Model):
     cantidad= models.IntegerField()
     total= models.FloatField(validators=[MinValueValidator(0)])
     servicio=models.CharField(max_length=150)
-    usuario= models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name='fk3_carrito_usuario')
-    Detalle_carrito=models.ForeignKey('Detalle_carrito', on_delete=models.DO_NOTHING, related_name='fk4_carrito_detalleCarrito')
+    usuario= models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name='fk5_carrito_usuario')
+    Detalle_carrito=models.ForeignKey('Detalle_carrito', on_delete=models.DO_NOTHING, related_name='fk6_carrito_detalleCarrito')
 
     def __str__(self):
         return f"{self.usuario} {self.Detalle_carrito} {self.cantidad} {self.total}"
@@ -102,8 +105,8 @@ class Carrito(models.Model):
 class Inventario(models.Model):
     fecha = models.DateTimeField()
     stock = models.IntegerField(validators=[MinValueValidator(0)], default=0)
-    producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk5_detalle_carrito_producto')
-    proveedor = models.ForeignKey("Proveedor", on_delete=models.DO_NOTHING, related_name='fk6_entrada_proveedor')
+    producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk7_detalle_carrito_producto')
+    proveedor = models.ForeignKey("Proveedor", on_delete=models.DO_NOTHING, related_name='fk8_entrada_proveedor')
 
     def __str__(self):
         return f"{self.producto} {self.proveedor} {self.stock} {self.fecha}"

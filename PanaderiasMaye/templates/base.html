@@ -30,6 +30,11 @@
                     <li class="nav-item">
                         <a href="{% url 'index' %}" class="nav-link"><img src="../static/img/logopan.png" alt="" width="100px"></a>
                     </li>
+                    {% if request.session.auth.rol == 1 %}
+                      <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'admin_dashboard' %}">Dashboard</a>
+                      </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{% url 'index' %}">Inicio</a>
                     </li>
@@ -37,10 +42,9 @@
                       <div class="menu-container">
                         <button class="button-nav menu-button" onclick="toggleMenu()">Categorías</button>
                         <div class="menu" id="categoryMenu">
-                          <a href="{% url 'index' %}?cat=1">Electrónica</a>
-                          <a href="#">Hogar</a>
-                          <a href="#">Ropa</a>
-                          <a href="#">Juguetes</a>
+                          {% for i in categorias %}
+                            <a href="{% url 'index' %}?cat={{ i.id }}">{{ i.nombre }}</a>
+                          {% endfor %}
                       </div>  
                     </li>
                     <li class="nav-item">
@@ -50,15 +54,22 @@
                         <a class="nav-link" href="{% url 'about' %}">About</a>
                     </li>
                     <li class="nav-item">
-                        <button class="button-nav" href="{% url 'carrito' %}" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" aria-controls="offcanvasExample">Carrito <i class="fa-solid fa-cart-shopping"></i></button>
+                        <button class="button-nav" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" aria-controls="offcanvasExample">Carrito <i class="fa-solid fa-cart-shopping"></i></button>
                     </li>
                     <li class="nav-item">
                       {% if request.session.auth %}
                         <div class="menu-container">
                           <button class="button-nav login-button menu-button" onclick="toggleLogin()">{{ request.session.auth.nombre }}<i class="fa-solid fa-circle-user"></i></button>
                           <div class="menu" id="optionLogin">
-                            <a href="#">Logout ></a>
+                            {% if request.session.auth %}
+                              <a href="{% url 'logout' %}" style="color: red">Cerrar Sesión</a>
+                            {% else %}
+                                No hay sesión
+                            {% endif %}
                             <a href="#">settings</a>
+                            {% if request.session.auth.rol == 1 %}
+                              <a href="{% url 'admin_dashboard' %}">Dashboard</a>
+                            {% endif %}
                           </div> 
                       {% else %}
                         <a class="nav-link" href="{% url 'login' %}">Login <i class="fa-solid fa-circle-user"></i></a>

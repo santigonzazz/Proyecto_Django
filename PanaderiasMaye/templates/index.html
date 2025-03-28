@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 {% load static  %}
-<!DOCTYPE html>
-<html lang="en">
 {% block titulo %} Inicio {% endblock %}
 {% block titulo-body %} Buenvenido a Panaderia's Maye!!! {% endblock %}
 {% block body %} 
@@ -19,9 +17,6 @@
         <br>
         <h2 class="title">Mas vendidos de la semana</h2><!--lista de productos-->
 
-        
-        {% for item in categoria %}
-        <h3>{{ item.nombre }}</h3><br>
         <div class="row no-gutters row-cols-1 row-cols-md-2 g-5">
             {% for i in productoInfo %}
             <div class="col">
@@ -40,9 +35,6 @@
             {% endfor %}  
             
           </div>
-        {% endfor %}
           
     </main><br><br>
 {% endblock %}
-
-</html>

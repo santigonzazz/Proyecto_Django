@@ -63,4 +63,8 @@ class Catalogo_inventarioAdmin(admin.ModelAdmin):
     list_filter = ["nombre", "marca"]
     list_editable = ["nombre", "precio"]
 
+@admin.register(ProductoCategoria)
+class AdminProductoCategoria(admin.ModelAdmin):
+    list_display = ["id", "producto", "categoria"]
+
 # Register your models here.

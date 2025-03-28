@@ -8,16 +8,29 @@ from django.contrib import messages
 # Create your views here.
 
 def index(request):
-    #categoria = Categoria.objects.get(pk = request.GET.get("cat"))
-    #prducto = Producto.objects.filter(categoria=categoria)
-    cat = Categoria.objects.all()
-    car = Carrito.objects.all()
+    cat_id = request.GET.get("cat")  
+
+    if cat_id:
+        try:
+            categoria = Categoria.objects.get(id=cat_id)  
+            productos = Producto.objects.filter(fk2_producto_categoria__categoria=categoria)  
+        except Categoria.DoesNotExist:
+            categoria = None
+            productos = []
+    else:
+        categoria = None
+        productos = Producto.objects.all() 
+
+    categorias = Categoria.objects.all() 
+    car = Carrito.objects.all()  
+
     contexto = {
-        #"productoInfo": prducto,
-        "categoria": cat,
+        "productoInfo": productos,
+        "categorias": categorias,  
         "carrito": car
     }
     return render(request, 'index.html', contexto)
+
 
 def login(request):
     # autenticación
@@ -32,7 +45,13 @@ def login(request):
                 "nombre": q.nombre,
                 "rol": q.rol,
             }
-            return redirect("index")
+            verificar = request.session.get("auth", False)
+            if verificar :
+                if verificar["rol"] == 1:
+                    return redirect("admin_dashboard")
+                else:
+                    return redirect("index")
+
         except User.DoesNotExist:
             messages.warning(request, "Usuario o contraseña no válidos..")
             request.session["auth"] = None
@@ -48,15 +67,14 @@ def login(request):
         else:
             return render(request, "login.html")
 
-def categorias(request):
-    categoria = Categoria.objects.all()
-    producto = Producto.objects.all()
-    contexto = {
-        "categoria": categoria,
-        "productoCategoria": producto
-    }
+def logout(request):
+    try:
+        del request.session["auth"]
+        return redirect("index")
+    except Exception as e:
+        messages.info(request, "No se pudo cerrar sesión, intente de nuevo")
+        return redirect("index")
 
-    return render(request, 'categorias.html', contexto)
 
 
 def contactanos(request):
@@ -68,9 +86,6 @@ def facturas(request):
 def about(request):
     return render(request, 'about.html')
 
-def carrito(request):
-    return render(request, 'carrito.html')
-
 
 # def register(request):
 #     return render(request, 'register.html')
@@ -79,7 +94,40 @@ def clave (request):
     return render(request, 'recuperarclave.html')
 
 def dashboardAdmin(request):
-    return render(request, "admin/admin-DashBoard.html")
+     
+    verificar = request.session.get("auth", False)
+
+    if verificar:
+        if verificar["rol"] == 1:
+            cat_id = request.GET.get("cat")     
+            if cat_id:
+                try:
+                    categoria = Categoria.objects.get(id=cat_id)  
+                    productos = Producto.objects.filter(fk2_producto_categoria__categoria=categoria)  
+                except Categoria.DoesNotExist:
+                    categoria = None
+                    productos = []
+            else:
+                categoria = None
+                productos = Producto.objects.all() 
+
+            categorias = Categoria.objects.all() 
+            car = Carrito.objects.all()  
+            contexto = {
+                "productoInfo": productos,
+                "categorias": categorias,  
+                "carrito": car
+            } 
+            return render(request, "admin/admin-DashBoard.html", contexto)
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return render(request, "index.html")
+    
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+
+    
 
 def CudUsuarios(request):
     return render(request, "admin/adminCRUDU.html")

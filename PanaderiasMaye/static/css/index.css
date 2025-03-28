@@ -277,4 +277,8 @@ footer {
 .button-nav{
     background-color: rgb(250, 193, 87);
     border: none;
+    padding: 10px;
+}
+.fa-circle-user{
+    margin-left: 4px;
 }
