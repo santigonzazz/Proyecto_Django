@@ -1,12 +1,18 @@
 from django.contrib import admin
-from.models import*
+from.models import *
+from django.utils.html import mark_safe 
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'apellido', 'email', 'rol')
+    list_display = ("id", 'foto', 'ver_foto','nombre', 'apellido', 'email', 'rol')
     search_fields = ('nombre', 'apellido', 'email')
     list_filter = ('rol',)
     list_editable=('rol',)
+
+    def ver_foto(self, obj):
+        return mark_safe(f'<img src="{obj.foto.url}" width="40">')
+        
+        
 
 @admin.register(Proveedor)
 class ProveedorAdmin(admin.ModelAdmin):
@@ -17,10 +23,13 @@ class ProveedorAdmin(admin.ModelAdmin):
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ["id", "nombre", "descripcion", "precio", "disponibilidad"]
+    list_display = ["id",'foto','ver_foto', "nombre", "descripcion", "precio", "disponibilidad"]
     search_fields = ["nombre", "disponibilidad"]
     list_filter = ["disponibilidad"]
     list_editable = ["disponibilidad"]
+
+    def ver_foto(self, obj):
+        return mark_safe(f'<img src="{obj.foto.url}" width="40">')
 
 
 @admin.register(Metodo_pago)

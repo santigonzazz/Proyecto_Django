@@ -59,7 +59,7 @@
                     <li class="nav-item">
                       {% if request.session.auth %}
                         <div class="menu-container">
-                          <button class="button-nav login-button menu-button" onclick="toggleLogin()">{{ request.session.auth.nombre }}<i class="fa-solid fa-circle-user"></i></button>
+                          <button class="button-nav login-button menu-button" onclick="toggleLogin()">{{ request.session.auth.nombre }}<img src="{{ request.session.auth.foto }}" alt=""></button>
                           <div class="menu" id="optionLogin">
                             {% if request.session.auth %}
                               <a href="{% url 'logout' %}" style="color: red">Cerrar Sesión</a>

@@ -16,5 +16,8 @@ urlpatterns = [
     path("register/", views.crear_usuario, name="register" ),
     path("logout/", views.logout, name="logout"),
     path("editar-perfil/", views.editar_perfil, name="editar-perfil"),
-    path("eliminar-categoria/<int:id_categoria>/", views.eliminar_categoria, name="eliminar-categoria")
+    path("eliminar-categoria/<int:id_categoria>/", views.eliminar_categoria, name="eliminar-categoria"),
+    path("correo1/", views.correos1, name="correo"),
+    path("correo2/", views.correos2, name="correo2"),
+    path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
 ]

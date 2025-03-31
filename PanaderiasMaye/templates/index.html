@@ -23,7 +23,7 @@
               
           
               <div class="card">
-                <img src="{% static 'img/pan3.jpeg' %}" class="card-img-top" alt="...">
+                <img src="{{ i.foto.url }}" class="card-img-top" alt="...">
                 <div class="card-body">
                   <h5 class="card-title">{{ i.nombre }}</h5>
                   <p class="precio">COP {{ i.precio }}</p>

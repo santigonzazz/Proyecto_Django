@@ -3,10 +3,11 @@ from django.core.validators import MinLengthValidator, RegexValidator, MinValueV
 
 # Create your models here.
 class User(models.Model):
+    foto = models.ImageField(upload_to="usuarios", default="usuarios/default.png", max_length=254 )
     nombre= models.CharField(max_length= 100,  validators=[MinLengthValidator(2)])
     apellido= models.CharField(max_length= 100, validators=[MinLengthValidator(2)])
     celular= models.CharField(max_length=10)
-    email= models.EmailField(max_length= 254)
+    email= models.EmailField(max_length= 254, unique=True)
     password=  models.CharField(max_length= 100)
     direccion=  models.CharField(max_length= 120, blank=True, null=True)
     ROLES=(
@@ -57,7 +58,7 @@ class Categoria(models.Model):
     
 
 class Producto(models.Model):
-    foto = models.FileField()
+    foto = models.ImageField(upload_to="productos", default="productos/default.png", max_length=254 )
     nombre = models.CharField(max_length=120)
     descripcion = models.CharField(max_length=120)
     precio  = models.FloatField(validators=[MinValueValidator(0.01)])

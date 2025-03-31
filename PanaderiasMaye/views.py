@@ -1,10 +1,12 @@
-#from django.http import HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from .models import *
 
 from django.db.utils import IntegrityError
 from django.contrib import messages
-
+from django.core.mail import send_mail
+from django.conf import settings
+from .utils import *
 # Create your views here.
 
 def index(request):
@@ -38,15 +40,17 @@ def login(request):
         usuario = request.POST.get("email")
         passwd = request.POST.get("password")
         try:
-            q = User.objects.get(email=usuario, password=passwd)
+            q = User.objects.get(email=usuario)
+            if verify_password(passwd, q.password):
             # Crear variable de sesión ========
-            request.session["auth"] = {
+                request.session["auth"] = {
                 "id": q.id,
+                "foto": q.foto.url,
                 "nombre": q.nombre,
                 "rol": q.rol,
             }
             verificar = request.session.get("auth", False)
-            if verificar :
+            if verificar:
                 if verificar["rol"] == 1:
                     return redirect("admin_dashboard")
                 else:
@@ -74,6 +78,31 @@ def logout(request):
     except Exception as e:
         messages.info(request, "No se pudo cerrar sesión, intente de nuevo")
         return redirect("index")
+    
+
+def cambiar_clave(request):
+    if request.method == "POST":
+        clave_actual = request.POST.get("clave_actual")
+        nueva = request.POST.get("nueva")
+        repite_nueva = request.POST.get("repite_nueva")
+        logueado = request.session.get("auth", False)
+
+        q = User.objects.get(pk=logueado["id"])
+        if verify_password(clave_actual, q.password):
+            if nueva == repite_nueva:
+                q.password = hash_password(nueva)       # utils.py
+                q.save()
+                messages.success(request, "Contraseña cambiada con éxito!!")
+            else:
+                messages.info(request, "Contraseñas nuevas no coinciden...")
+        else:
+            messages.warning(request, "Contraseña no concuerda...")
+
+        return redirect("cambiar_clave")
+    else:
+        return render(request, "usuarios/cambiar_clave.html")
+
+    
 
 
 
@@ -229,3 +258,52 @@ def crear_usuario(request):
             return redirect("register")
     else:
         return render(request, "register.html")
+
+
+def correos1 (request): 
+    try:  
+        send_mail (
+            
+            "PanaderiasMaye",
+            "mensajes de prueba........ desde django",
+            settings.EMAIL_HOST_USER,
+            ["gonzacardona09@gmail.com"],
+            fail_silently = False,
+        )
+
+        return HttpResponse(f"correo enviado")
+    except Exception as e: 
+        return HttpResponse(f"Error {e}")
+    
+
+
+
+
+
+
+
+
+
+
+
+
+def correos2 (request): 
+    try:  
+        html_message="""hola mundo<strong style='color:blue;'>Django</strong> desde mi app
+        <br>
+        bienvenido 
+        """
+        send_mail (
+            
+            "PanaderiasMaye",
+            "",
+            settings.EMAIL_HOST_USER,
+            ["gonzacardona09@gmail.com"],
+            fail_silently = False,
+            html_message=html_message,
+        )
+
+        return HttpResponse(f"correo enviado")
+    except Exception as e: 
+        return HttpResponse(f"Error {e}")
+
