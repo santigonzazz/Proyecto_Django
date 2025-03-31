@@ -121,7 +121,7 @@ def dashboardAdmin(request):
             return render(request, "admin/admin-DashBoard.html", contexto)
         else:
             messages.info(request, "Usted no tiene permisos para éste módulo...")
-        return render(request, "index.html")
+        return redirect( "index")
     
     else:
         messages.info(request, "Debe loguearse primero...")
@@ -130,15 +130,68 @@ def dashboardAdmin(request):
     
 
 def CudUsuarios(request):
-    return render(request, "admin/adminCRUDU.html")
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre")
+        apellido = request.POST.get("apellido")
+        rol = request.POST.get("rol")
+        celular = request.POST.get("celular")
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        confirmar_password = request.POST.get('confirmar_password')
+                # Asegúrate de que este campo esté en tu formulario
+
+        if password == confirmar_password:
+            try:
+                # Crear el usuario usando tu modelo personalizado
+                nuevo_usuario = User(
+                    nombre=nombre,
+                    apellido=apellido,
+                    celular=celular,
+                    email=email,
+                    password=password,  # Recuerda que deberías encriptar la contraseña
+                    rol=rol  # Asignar un rol por defecto, si es necesario
+                )
+                nuevo_usuario.save()  # Guardar el usuario en la base de datos
+                messages.success(request, "Usuario creado correctamente!")
+                return redirect("admin_dashboard")  # Cambia 'index' por la vista a la que quieras redirigir
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+                return redirect("admin_dashboard")
+        else:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return redirect("admin_dashboard")
+    else:
+        return render(request, "admin/adminCRUDU.html")
 
 def crud_categorias(request): 
-    return render  (request, "admin/admin-CRUD-categorias.html")  
+    cate = Categoria.objects.all()
+    contexto = {
+        "categorias": cate
+    }
+    return render  (request, "admin/admin-CRUD-categorias.html", contexto)  
+
+def eliminar_categoria(request, id_categoria):
+    try:
+        cate = Categoria.objects.get(pk = id_categoria)
+        cate.delete()
+        messages.success(request, "Cita eliminada correctamente!")
+    except IntegrityError:
+        messages.warning(request, "Error: No puede eliminar el cita, está en uso.")
+    except Exception as e:
+        messages.error(request, f"Error: {e}")
+
+    return redirect("crud_categoria")
+
 
 def crud_productos(request):
-    return render (request,"admin/admin-CRUD-productos.html" )
-# def index2(request):
-#     return render(request, 'index2.html')
+    p = Producto.objects.all()
+    contexto = {
+        "productos": p
+    }
+    return render (request,"admin/admin-CRUD-productos.html", contexto) 
+
+def editar_perfil(request):
+    return render (request,"usuarios/user-crud.html" )
 
 #CRUD USUARIOS 
 

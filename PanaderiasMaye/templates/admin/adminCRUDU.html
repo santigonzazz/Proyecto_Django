@@ -12,33 +12,42 @@
             <div class="row mb-4 form-center">
                 <div class="col-md-6 offset-md-3">
                     <h1 class="title">Añadir nuevo Usuario</h1>
-                    <form class="form-user">
+                    <form class="form-user" method="post">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label for="itemName" class="form-label">Nombre:</label>
-                            <input type="text" class="form-control" id="name" required>
+                            <input type="text" class="form-control" id="name" name="nombre" required>
                         </div>
                         <div class="mb-3">
                             <label for="itemPrice" class="form-label">Apellido:</label>
-                            <input type="text" class="form-control" id="Apellido" required>
+                            <input type="text" class="form-control" id="Apellido" name="apellido" required>
                         </div>
                         <div class="spaces">
                             <div class="mb-3">
                             <label for="itemName" class="form-label">Rol:</label>
-                            <input type="text" class="form-control" id="rol" required>
+                            <select name="rol" class="form-select">
+                                <option value="">Seleccione</option>
+                                <option value="2" {% if datos.rol == 2 %}selected=""{% endif %}>Cliente</option>
+                                <option value="1" {% if datos.rol == 1 %}selected=""{% endif %}>Empleado</option>
+                            </select><br>                    
                             </div>
                             <div class="mb-3">
                                 <label for="itemName" class="form-label">Celular:</label>
-                                <input type="text" class="form-control" id="celular" required>
+                                <input type="text" class="form-control" id="celular" name="celular" required>
                             </div>
                         </div>
                         
                         <div class="mb-3">
                             <label for="itemName" class="form-label">Correo:</label>
-                            <input type="text" class="form-control" id="correo" required>
+                            <input type="text" class="form-control" id="correo" name="email" required>
                         </div>
                         <div class="mb-3">
                             <label for="itemName" class="form-label">Clave:</label>
-                            <input type="text" class="form-control" id="clave" required>
+                            <input type="password" class="form-control" id="clave" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Confirmar clave:</label>
+                            <input type="password" class="form-control" id="clave" name="confirmar_password" required>
                         </div>
                         <button type="submit" class="btn-create btn btn-primary" onclick="añadir_usuario()">Añadir Usuario</button>
                     </form>
@@ -154,7 +163,7 @@
             alert("Usuario eliminado correctamente")    
         }
         function añadir_usuario(){
-            alert("Usuario agregado correctamente")
+            alert("Usuario agregado correctamente") {% endcomment %}
         }
     </script>
 

@@ -15,4 +15,6 @@ urlpatterns = [
     path("facturas/", views.facturas, name="facturas"),
     path("register/", views.crear_usuario, name="register" ),
     path("logout/", views.logout, name="logout"),
+    path("editar-perfil/", views.editar_perfil, name="editar-perfil"),
+    path("eliminar-categoria/<int:id_categoria>/", views.eliminar_categoria, name="eliminar-categoria")
 ]
