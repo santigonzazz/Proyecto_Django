@@ -40,22 +40,26 @@ def login(request):
         usuario = request.POST.get("email")
         passwd = request.POST.get("password")
         try:
-            q = User.objects.get(email=usuario)
-            if verify_password(passwd, q.password):
+            q = User.objects.get(email=usuario, password=passwd)
+             # if verify_password(passwd, q.password):
             # Crear variable de sesión ========
-                request.session["auth"] = {
+            # Crear variable de sesión ========
+            request.session["auth"] = {
                 "id": q.id,
                 "foto": q.foto.url,
                 "nombre": q.nombre,
+                "apellido":q.apellido,
+                "email": q.email,
+                "celular": q.celular,
                 "rol": q.rol,
             }
             verificar = request.session.get("auth", False)
-            if verificar:
+            if verificar :
                 if verificar["rol"] == 1:
                     return redirect("admin_dashboard")
                 else:
                     return redirect("index")
-
+            return redirect("index")
         except User.DoesNotExist:
             messages.warning(request, "Usuario o contraseña no válidos..")
             request.session["auth"] = None
@@ -110,7 +114,11 @@ def contactanos(request):
     return render(request, 'contactanos.html')
 
 def facturas(request): 
-    return render  (request, "facturas.html") 
+    fac = Carrito.objects.filter()
+    contexto = {
+        "facturas": fac
+    }
+    return render(request, "admin/admin-facturas.html", contexto) 
 
 def about(request):
     return render(request, 'about.html')
@@ -219,8 +227,7 @@ def crud_productos(request):
     }
     return render (request,"admin/admin-CRUD-productos.html", contexto) 
 
-def editar_perfil(request):
-    return render (request,"usuarios/user-crud.html" )
+
 
 #CRUD USUARIOS 
 
@@ -258,6 +265,30 @@ def crear_usuario(request):
             return redirect("register")
     else:
         return render(request, "register.html")
+    
+
+def editar_perfil(request):
+    if request.method == 'POST':
+
+        logueado = request.session.get("auth", False)
+
+        q = User.objects.get(pk=logueado["id"])
+
+
+        try:
+            q.nombre = request.POST.get("nombre")
+            q.apellido = request.POST.get("apellido")
+            q.celular = request.POST.get("celular")
+            q.email = request.POST.get("email")
+            q.rol = request.POST.get("rol")
+            q.save()
+            messages.success(request, "Datos actualizados correctamente")
+            return redirect("index")
+        except Exception as e:
+            messages.error(request, f"Error {e} ")
+            return redirect("editar-perfil")
+    else:
+        return render(request,"usuarios/user-Crud.html" )
 
 
 def correos1 (request): 
@@ -307,3 +338,19 @@ def correos2 (request):
     except Exception as e: 
         return HttpResponse(f"Error {e}")
 
+def agregar_categoria(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        descripcion = request.POST.get("descripcion")
+
+        try:
+            nueva_categoria = Categoria(nombre=nombre, descripcion=descripcion)
+            nueva_categoria.save()
+            messages.success(request, "Categoría añadida correctamente!")
+            return redirect("crud_categoria")
+        except Exception as e:
+            messages.error(request, f"Error al añadir categoría: {e}")
+
+      # Redirige a la página de listado de categorías
+
+    return redirect(request, "admin/admin-CRUD-categorias.html")

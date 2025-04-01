@@ -1,13 +1,13 @@
 from django.db import models
 from django.core.validators import MinLengthValidator, RegexValidator, MinValueValidator
-
+from django.utils import timezone
 # Create your models here.
 class User(models.Model):
-    foto = models.ImageField(upload_to="usuarios", default="usuarios/default.png", max_length=254 )
+    foto = models.ImageField(upload_to="usuarios", default="usuarios/default.jpg")
     nombre= models.CharField(max_length= 100,  validators=[MinLengthValidator(2)])
     apellido= models.CharField(max_length= 100, validators=[MinLengthValidator(2)])
     celular= models.CharField(max_length=10)
-    email= models.EmailField(max_length= 254, unique=True)
+    email= models.EmailField(max_length= 254)
     password=  models.CharField(max_length= 100)
     direccion=  models.CharField(max_length= 120, blank=True, null=True)
     ROLES=(
@@ -58,7 +58,7 @@ class Categoria(models.Model):
     
 
 class Producto(models.Model):
-    foto = models.ImageField(upload_to="productos", default="productos/default.png", max_length=254 )
+    foto = models.ImageField(upload_to="productos" ,default="productos/pan9.jpeg")    
     nombre = models.CharField(max_length=120)
     descripcion = models.CharField(max_length=120)
     precio  = models.FloatField(validators=[MinValueValidator(0.01)])
@@ -82,7 +82,6 @@ class ProductoCategoria(models.Model):
 class Detalle_carrito(models.Model):
     cantidad= models.IntegerField()
     total= models.FloatField(validators=[MinValueValidator(0)])
-    servicio=models.CharField(max_length=150)
     producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk4_detalle_carrito_producto')
 
     class Meta:
@@ -93,11 +92,18 @@ class Detalle_carrito(models.Model):
         return f"{self.producto} {self.cantidad} {self.total} {self.servicio} "
 
 class Carrito(models.Model):
-    cantidad= models.IntegerField()
-    total= models.FloatField(validators=[MinValueValidator(0)])
-    servicio=models.CharField(max_length=150)
+    
+    SERVICIOS = (
+        (1, "Domicilio"),
+        (2, "Reserva")
+    )
+    servicio= models.IntegerField(choices=SERVICIOS, default=1)
     usuario= models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name='fk5_carrito_usuario')
-    Detalle_carrito=models.ForeignKey('Detalle_carrito', on_delete=models.DO_NOTHING, related_name='fk6_carrito_detalleCarrito')
+    Detalle_carrito = models.ForeignKey('Detalle_carrito', on_delete=models.DO_NOTHING, related_name='fk6_carrito_detalleCarrito')
+    fecha = models.DateTimeField(default=timezone.now)
+    cantidad= models.IntegerField()
+    
+    
 
     def __str__(self):
         return f"{self.usuario} {self.Detalle_carrito} {self.cantidad} {self.total}"
@@ -122,5 +128,3 @@ class Catalogo_inventario(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.precio} {self.marca}"
-
-

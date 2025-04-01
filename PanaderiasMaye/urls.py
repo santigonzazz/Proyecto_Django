@@ -20,4 +20,5 @@ urlpatterns = [
     path("correo1/", views.correos1, name="correo"),
     path("correo2/", views.correos2, name="correo2"),
     path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
+    path("agregar_categoria/", views.agregar_categoria, name="agregar_categoria"),  
 ]

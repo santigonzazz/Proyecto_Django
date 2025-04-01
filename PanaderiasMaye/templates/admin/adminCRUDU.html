@@ -1,4 +1,4 @@
-{% extends 'base3.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% block titulo %}Admin-Crud{% endblock %}
 
@@ -16,11 +16,11 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="itemName" class="form-label">Nombre:</label>
-                            <input type="text" class="form-control" id="name" name="nombre" required>
+                            <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}" title="solo se permite ingresar letras">
                         </div>
                         <div class="mb-3">
                             <label for="itemPrice" class="form-label">Apellido:</label>
-                            <input type="text" class="form-control" id="Apellido" name="apellido" required>
+                            <input type="text" class="form-control" id="Apellido" name="apellido" required pattern="[A-Za-z ]{2,}" title="solo se permite ingresar letras">
                         </div>
                         <div class="spaces">
                             <div class="mb-3">
