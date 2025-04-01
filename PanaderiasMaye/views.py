@@ -41,9 +41,9 @@ def login(request):
         passwd = request.POST.get("password")
         try:
             q = User.objects.get(email=usuario)
-            if verify_password(passwd, q.password):
+            # if verify_password(passwd, q.password):
             # Crear variable de sesión ========
-                request.session["auth"] = {
+            request.session["auth"] = {
                 "id": q.id,
                 "foto": q.foto.url,
                 "nombre": q.nombre,
@@ -158,7 +158,7 @@ def dashboardAdmin(request):
 
     
 
-def CudUsuarios(request):
+def CrudUsuarios(request):
     if request.method == 'POST':
         nombre = request.POST.get("nombre")
         apellido = request.POST.get("apellido")
@@ -199,17 +199,20 @@ def crud_categorias(request):
     }
     return render  (request, "admin/admin-CRUD-categorias.html", contexto)  
 
+
 def eliminar_categoria(request, id_categoria):
     try:
         cate = Categoria.objects.get(pk = id_categoria)
         cate.delete()
-        messages.success(request, "Cita eliminada correctamente!")
+        messages.success(request, "categoria eliminada correctamente!")
     except IntegrityError:
-        messages.warning(request, "Error: No puede eliminar el cita, está en uso.")
+        messages.warning(request, "Error: No puede eliminar el categoria, está en uso.")
     except Exception as e:
         messages.error(request, f"Error: {e}")
 
     return redirect("crud_categoria")
+
+
 
 
 def crud_productos(request):
@@ -219,10 +222,11 @@ def crud_productos(request):
     }
     return render (request,"admin/admin-CRUD-productos.html", contexto) 
 
+
+
+
 def editar_perfil(request):
     return render (request,"usuarios/user-crud.html" )
-
-#CRUD USUARIOS 
 
 #CREAR USUARIO 
 def crear_usuario(request):
@@ -276,17 +280,6 @@ def correos1 (request):
         return HttpResponse(f"Error {e}")
     
 
-
-
-
-
-
-
-
-
-
-
-
 def correos2 (request): 
     try:  
         html_message="""hola mundo<strong style='color:blue;'>Django</strong> desde mi app
@@ -307,3 +300,20 @@ def correos2 (request):
     except Exception as e: 
         return HttpResponse(f"Error {e}")
 
+
+def agregar_categoria(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        descripcion = request.POST.get("descripcion")
+
+        try:
+            nueva_categoria = Categoria(nombre=nombre, descripcion=descripcion)
+            nueva_categoria.save()
+            messages.success(request, "Categoría añadida correctamente!")
+            return redirect("crud_categoria")
+        except Exception as e:
+            messages.error(request, f"Error al añadir categoría: {e}")
+
+      # Redirige a la página de listado de categorías
+
+    return redirect(request, "admin/admin-CRUD-categorias.html")

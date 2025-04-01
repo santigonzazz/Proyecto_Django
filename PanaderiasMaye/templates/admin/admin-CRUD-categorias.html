@@ -1,4 +1,4 @@
-{% extends 'base3.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% block titulo %}Crud-Categorias{% endblock %}
     
@@ -11,7 +11,7 @@
         <div class="row mb-4">
             <div class="col-md-6 offset-md-3">
                 <h2 class="title">Añadir nueva Categoría</h2>
-                <form method="POST" action="">
+                <form method="post" action="{% url 'agregar_categoria' %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre Categoría:</label>
