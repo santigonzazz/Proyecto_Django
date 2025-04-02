@@ -1,170 +1,176 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block titulo %}Admin-Crud{% endblock %}
+{% block titulo %} Admin-Crudn {% endblock %}
 
 {% block body %}
 
-    <main>
-        <div class="container mt-5">
-            <h1 class="title text-center">ADMIN CRUD USUARIOS</h1>
+<main>
+    <div class="container mt-5">
+        <h1 class="title text-center">ADMIN CRUD USUARIOS</h1>
 
-            <!-- Create Form -->
-            <div class="row mb-4 form-center">
-                <div class="col-md-6 offset-md-3">
-                    <h1 class="title">Añadir nuevo Usuario</h1>
-                    <form class="form-user" method="post">
+        <!-- Create Form -->
+        <div class="row mb-4 form-center">
+            <div class="col-md-6 offset-md-3">
+                <h1 class="title">Añadir nuevo Usuario</h1>
+                <form class="form-user" method="post" action="" onsubmit="return validarFormulario()">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="apellido" class="form-label">Apellido:</label>
+                        <input type="text" class="form-control" id="apellido" name="apellido" pattern="[A-Za-z ]{2,}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rol" class="form-label">Rol:</label>
+                        <select name="rol" class="form-select" required>
+                            <option value="">Seleccione</option>
+                            <option value="2">Cliente</option>
+                            <option value="1">Empleado</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="celular" class="form-label">Celular:</label>
+                        <input type="text" class="form-control" id="celular" name="celular" required pattern="[0-9]{10}" title="Se solicita tener 10 digitos como minimo">
+                    </div>
+                    <div class="mb-3">
+                        <label for="correo" class="form-label">Correo:</label>
+                        <input type="email" class="form-control" id="correo" name="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" placeholder="example@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="clave" class="form-label">Clave:</label>
+                        <input type="password" class="form-control" id="clave" name="password" required minlength="8">
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirmar_clave" class="form-label">Confirmar clave:</label>
+                        <input type="password" class="form-control" id="confirmar_clave" name="confirmar_password" required>
+                    </div>
+                    <button type="submit" class="btn-create btn btn-primary">Añadir Usuario</button>
+                </form>
+            </div>
+        </div>
+<br><br>
+
+{% if messages %}
+    <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+        <!-- Read Items -->
+        <table class="table">
+            <thead>
+                <tr class="Cabezal_Tabla">
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Apellido</th>
+                    <th scope="col">Rol</th>
+                    <th scope="col">Celular</th>
+                    <th scope="col">Correo</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.nombre }}</td>
+                    <td>{{ usuario.apellido }}</td>
+                    <td>{{ usuario.get_rol_display }}</td>
+                    <td>{{ usuario.celular }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>
+                    <a href="#" class="btn btn-info" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#updateModal"
+                        onclick="cargarDatosUsuario('{{ usuario.id }}', '{{ usuario.nombre }}', '{{ usuario.apellido }}', '{{ usuario.rol }}', '{{ usuario.celular }}', '{{ usuario.email }}')">
+                        Editar
+                    </a>
+                    <a href="{% url 'eliminar_usuario' usuario.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar este usuario?')">
+                        Eliminar
+                    </a>  
+
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No hay usuarios disponibles.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    <!-- Update Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Actualizar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateUserForm" method="post">
                         {% csrf_token %}
+                        <input type="hidden" id="updateUserId" name="id">  <!-- ID oculto -->
+    
                         <div class="mb-3">
-                            <label for="itemName" class="form-label">Nombre:</label>
-                            <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}" title="solo se permite ingresar letras">
+                            <label for="updateItemName" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="updateItemName" name="nombre" pattern="[A-Za-z ]{2,}" required>
                         </div>
                         <div class="mb-3">
-                            <label for="itemPrice" class="form-label">Apellido:</label>
-                            <input type="text" class="form-control" id="Apellido" name="apellido" required pattern="[A-Za-z ]{2,}" title="solo se permite ingresar letras">
+                            <label for="updateItemApellido" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="updateItemApellido" name="apellido" pattern="[A-Za-z ]{2,}" required>
                         </div>
-                        <div class="spaces">
-                            <div class="mb-3">
-                            <label for="itemName" class="form-label">Rol:</label>
-                            <select name="rol" class="form-select">
+                        <div class="mb-3">
+                            <label for="rol" class="form-label">Rol:</label>
+                            <select name="rol" class="form-select" required>
                                 <option value="">Seleccione</option>
-                                <option value="2" {% if datos.rol == 2 %}selected=""{% endif %}>Cliente</option>
-                                <option value="1" {% if datos.rol == 1 %}selected=""{% endif %}>Empleado</option>
-                            </select><br>                    
-                            </div>
-                            <div class="mb-3">
-                                <label for="itemName" class="form-label">Celular:</label>
-                                <input type="text" class="form-control" id="celular" name="celular" required>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="itemName" class="form-label">Correo:</label>
-                            <input type="text" class="form-control" id="correo" name="email" required>
+                                <option value="2">Cliente</option>
+                                <option value="1">Empleado</option>
+                            </select>
                         </div>
                         <div class="mb-3">
-                            <label for="itemName" class="form-label">Clave:</label>
-                            <input type="password" class="form-control" id="clave" name="password" required>
+                            <label for="updateItemCelular" class="form-label">Celular</label>
+                            <input type="text" class="form-control" id="updateItemCelular" name="celular" pattern="[0-9]{10}" title="Se solicita tener 10 digitos como minimo" required>
                         </div>
                         <div class="mb-3">
-                            <label for="itemName" class="form-label">Confirmar clave:</label>
-                            <input type="password" class="form-control" id="clave" name="confirmar_password" required>
+                            <label for="updateItemCorreo" class="form-label">Correo</label>
+                            <input type="email" class="form-control" id="updateItemCorreo" name="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required>
                         </div>
-                        <button type="submit" class="btn-create btn btn-primary" onclick="añadir_usuario()">Añadir Usuario</button>
+                        <button type="submit" class="btn-actualizar btn btn-primary">Actualizar Usuario</button>
                     </form>
                 </div>
             </div>
-
-            <h1 class="title">Encontrar Usuario</h1>
-            <div class="search-bar">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Buscar Usuario" aria-label="Search" aria-describedby="search-addon">
-                    <button class="btn btn-outline-secondary" type="button" id="search-addon">
-                            <i class="fas fa-search"></i>
-                        </button>
-                </div>
-            </div>
-
-            <!-- Read Items -->
-            <h2>Usuario:</h2>
-            <div class="row" id="itemList">
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <p class="card-text">Nombre: Juan</p>
-                            <p class="card-text">Apllido: Perez</p>
-                            <p class="card-text">Rol: Cliente</p>
-                            <p class="card-text">Celular: 122345</p>
-                            <p class="card-text">Correo: Perezjuan@gmaiil.com</p>
-                            <p class="card-text">Tipo de Usuario: Cliente</p>
-                            <button class="btn btn-warning" data-bs-toggle="modal"
-                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
-                            <button class="btn btn-danger" onclick="eliminar_usuario()">Delete</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <p class="card-text">Nombre: Santiago</p>
-                            <p class="card-text">Apllido: Gonzalez</p>
-                            <p class="card-text">Rol: Panadeor Auxiliar</p>
-                            <p class="card-text">Celular: 3214312</p>
-                            <p class="card-text">Correo: SantiPanadero@gmaiil.com</p>
-                            <p class="card-text">Tipo de Usuario: Trabajador</p>
-                            <button class="btn btn-warning" data-bs-toggle="modal"
-                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
-                            <button class="btn btn-danger" onclick="eliminar_usuario()">Delete</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <p class="card-text">Nombre: Jhony</p>
-                            <p class="card-text">Apllido: Alcalde</p>
-                            <p class="card-text">Rol: Domiciliario</p>
-                            <p class="card-text">Celular: 6745633</p>
-                            <p class="card-text">Correo: JhonyDomiciliario02@gmaiil.com</p>
-                            <p class="card-text">Tipo de Usuario: Trabajador</p>
-                            <button class="btn btn-warning" data-bs-toggle="modal"
-                                data-bs-target="#updateModal"><a href="#" class="btn-edit">Editar</a></button>
-                            <button class="btn btn-danger" onclick="eliminar_usuario()">Delete</button>
-                        </div>
-                    </div>
-                </div>
-                
-            </div>
         </div>
+    </div>
+    
 
-        <!-- Update Modal -->
-        <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="updateModalLabel">Actualizar Usuario</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form>
-                            <div class="mb-3">
-                                <label for="updateItemName" class="form-label">Nombre</label>
-                                <input type="text" class="form-control" id="updateItemName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="updateItemName" class="form-label">Apellido</label>
-                                <input type="text" class="form-control" id="updateItemName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="updateItemName" class="form-label">Rol</label>
-                                <input type="text" class="form-control" id="updateItemName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="updateItemName" class="form-label">Celular</label>
-                                <input type="text" class="form-control" id="updateItemName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="updateItemName" class="form-label">Correo</label>
-                                <input type="text" class="form-control" id="updateItemName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="updateItemName" class="form-label">Tipo de Usuario</label>
-                                <input type="text" class="form-control" id="updateItemName" required>
-                            </div>
-                            <button type="submit" class="btn-actualizar btn btn-primary">Update Item</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <button class="btn-volverCambio btn btn-primary"><a href="../views/admin-DashBoard.html" class="btn-volverCambioLink">Volver a DashBoard</a></button>
-    </main><br>
-    <script>
-        function eliminar_usuario() {
-            alert("Usuario eliminado correctamente")    
+
+</main><br>
+
+<script>
+    function validarFormulario() {
+        let clave = document.getElementById("clave").value;
+        let confirmarClave = document.getElementById("confirmar_clave").value;
+        if (clave !== confirmarClave) {
+            alert("Las contraseñas no coinciden");
+            return false;
         }
-        function añadir_usuario(){
-            alert("Usuario agregado correctamente")
-        }
-    </script>
+        alert("Usuario agregado correctamente");
+        return true;
+    }
+    function cargarDatosUsuario(id, nombre, apellido, rol, celular, email) {
+    document.getElementById("updateUserId").value = id;
+    document.getElementById("updateItemName").value = nombre;
+    document.getElementById("updateItemApellido").value = apellido;
+    document.getElementById("updateItemRol").value = rol;
+    document.getElementById("updateItemCelular").value = celular;
+    document.getElementById("updateItemCorreo").value = email;
+
+    // Asegurar que el formulario tenga la acción correcta
+    document.getElementById("updateUserForm").action = `/editar_usuario/${id}/`;
+}
+
+</script>
 
 {% endblock %}

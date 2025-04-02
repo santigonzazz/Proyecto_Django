@@ -10,7 +10,7 @@ urlpatterns = [
     path("recuperar_clave/", views.clave, name="recuperar_clave"),
     path("admin-CRUD-categorias/",views.crud_categorias, name="crud_categoria"),
     path("admin-dashboard/", views.dashboardAdmin, name="admin_dashboard"),
-    path("adminCRUDU/", views.CudUsuarios, name="adminCRUDU"),
+    path("adminCRUDU/", views.CrudUsuarios, name="adminCRUDU"),
     path("admin-CRUD-productos/",views.crud_productos, name="crud_productos"),
     path("facturas/", views.facturas, name="facturas"),
     path("register/", views.crear_usuario, name="register" ),
@@ -21,4 +21,11 @@ urlpatterns = [
     path("correo2/", views.correos2, name="correo2"),
     path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
     path("agregar_categoria/", views.agregar_categoria, name="agregar_categoria"),  
+
+    path("editar_producto/<int:producto_id>/", views.editar_producto, name="editar_producto"),
+    path('eliminar-producto/<int:id_producto>/', views.eliminar_producto, name='eliminar_producto'),
+
+    path("editar_categoria/<int:categoria_id>/", views.editar_categoria, name="editar_categoria"),
+    path('eliminar_usuario/<int:id_usuario>/', views.eliminar_usuario, name='eliminar_usuario'),
+    path("editar_usuario/<int:usuario_id>/", views.editar_usuario, name="editar_usuario"),
 ]

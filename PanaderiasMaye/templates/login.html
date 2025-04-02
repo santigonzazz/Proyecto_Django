@@ -2,10 +2,7 @@
 {% load static %}
 {% block titulo %}Login{% endblock %}
 
-
-
 {% block body %}
-
     <main>
         <div class="container">
             <div class="row align-items-center">
@@ -13,26 +10,39 @@
                     <img src="{% static 'img/logopan.png' %}" alt="Bakery Bread" />
                 </div>
                 <div class="col-md-6">
-                    <h1 class="title">Inicia Sesión!!</h1>
+                    <h1 class="title">Inicia Sesión</h1>
+
+                    {% if messages %}
+                        <div class="alert alert-danger">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     <form method="post">
                         {% csrf_token %}
-                        <div class="mb-3" >
+                        <div class="mb-3">
                             <label for="email" class="form-label">Correo:</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="email" class="form-control" id="email" name="email" required autocomplete="email">
                         </div>
                         <div class="mb-3">
                             <label for="password" class="form-label">Contraseña:</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
                         </div>
                         <button type="submit" class="btn-login btn btn-primary">Inicia Sesión</button>
                     </form>
+
                     <div class="mensajes mt-3">
-                        <p>¿No tienes cuenta? <a href="{% url 'register' %}" class="btn-register btn btn-link">Registrate aquí</a></p>
-                        <p><a href="{% url 'recuperar_clave' %}" class="btn-clave btn btn-link">Olvidaste la Contraseña?</a></p>
+                        <p>¿No tienes cuenta? <a href="{% url 'register' %}" class="btn-register btn btn-link">Regístrate aquí</a></p>
+                        <p><a href="{% url 'recuperar_clave' %}" class="btn-clave btn btn-link">¿Olvidaste la contraseña?</a></p>
                     </div>
                 </div>
             </div>
         </div>
-    </main><br>
+    </main>
+
+
     
 {% endblock %}
+

@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 {% load static %}
 {% block titulo %}Crud-Categorias{% endblock %}
@@ -10,16 +11,16 @@
         <!-- Formulario para añadir nueva categoría -->
         <div class="row mb-4">
             <div class="col-md-6 offset-md-3">
-                <h2 class="title">Añadir nueva Categoría</h2>
-                <form method="POST" action="">
+                <center><h2 class="title">Añadir nueva Categoría</h2></center>
+                <form method="post" action="{% url 'agregar_categoria' %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre Categoría:</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required pattern="[A-Za-z]{2,}">
                     </div>
                     <div class="mb-3">
                         <label for="descripcion" class="form-label">Descripción:</label>
-                        <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+                        <input type="text" class="form-control" id="descripcion" name="descripcion" required pattern="[A-Za-z ]{2,}">
                     </div>
                     <button type="submit" class="btn btn-primary">Añadir Categoría</button>
                 </form>
@@ -56,8 +57,13 @@
                     <td>{{ categoria.nombre }}</td>
                     <td>{{ categoria.descripcion }}</td>
                     <td>
-                        <a href="javascript:confirmar_eliminar(`{% url 'eliminar-categoria' categoria.id %}`);" class="btn btn-secondary">Eliminar</a>
-                        <a href="#" class="btn btn-info">Editar</a>
+
+                        <a href="#" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#updateModal{{ categoria.id }}">Editar</a>
+
+
+                        <a href="#" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
+                            Eliminar
+                        </a> 
 
                     </td>
                 </tr>
@@ -71,18 +77,20 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form method="POST" action="">
+                                <form method="POST" action="{% url 'editar_categoria' categoria.id %}">
                                     {% csrf_token %}
+                                    <input type="hidden" name="categoria_id" value="{{ categoria.id }}">
                                     <div class="mb-3">
                                         <label class="form-label">Nuevo Nombre Categoría</label>
-                                        <input type="text" class="form-control" name="nombre" value="{{ categoria.nombre }}" required>
+                                        <input type="text" class="form-control" name="nombre" value="{{ categoria.nombre }}" required pattern="[A-Za-z]{2,}">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Descripción</label>
-                                        <input type="text" class="form-control" name="descripcion" value="{{ categoria.descripcion }}">
+                                        <input type="text" class="form-control" name="descripcion" value="{{ categoria.descripcion }}" required pattern="[A-Za-z ]{2,}">
                                     </div>
                                     <button type="submit" class="btn btn-primary">Actualizar Categoría</button>
                                 </form>
+                                
                             </div>
                         </div>
                     </div>
@@ -93,9 +101,6 @@
     </div>
 
 
-    <button class="btn btn-primary">
-        <a href="{% url 'admin_dashboard' %}" class="text-white text-decoration-none">Volver a Dashboard</a>
-    </button>
 </main>
 
 

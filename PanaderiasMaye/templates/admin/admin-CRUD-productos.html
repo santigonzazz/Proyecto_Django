@@ -34,10 +34,52 @@
                 <td>${{ producto.precio }}</td>
                 <td>{{ producto.disponibilidad }}</td>
                 <td>
-                    <a href="#" class="btn btn-warning">Editar</a>
-                    
-                    <a href="#" class="btn btn-danger" onclick="return confirm('¿Estás seguro?')">Eliminar</a>
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ producto.id }}">
+                        Editar
+                    </button>
+                    <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
+                        Eliminar
+                    </a>  
+                 
                 </td>
+                
+                 <!-- Modal de Edición -->
+            <div class="modal fade" id="updateModal{{ producto.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ producto.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateModalLabel{{ producto.id }}">Editar Producto</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form method="POST" action="{% url 'editar_producto' producto.id %}" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre del Producto</label>
+                                    <input type="text" class="form-control" name="nombre" value="{{ producto.nombre }}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Precio</label>
+                                    <input type="number" class="form-control" name="precio" value="{{ producto.precio }}" required min="0" step="0.01">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Disponibilidad</label>
+                                    <select class="form-control" name="disponibilidad" required>
+                                        <option value="Disponible" {% if producto.disponibilidad == "Disponible" %}selected{% endif %}>Disponible</option>
+                                        <option value="Agotado" {% if producto.disponibilidad == "Agotado" %}selected{% endif %}>Agotado</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Imagen del Producto</label>
+                                    <input type="file" class="form-control" name="foto">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Actualizar Producto</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             </tr>
             {% empty %}
             <tr>
@@ -47,21 +89,6 @@
         </tbody>
     </table>
 
-    <div aria-label="Page navigation example">
-        <ul class="pagination">
-            <li class="pagination-next-previous">
-                <a class="page-link pagination-next-previous">Previous</a>
-            </li>
-            <li class="page-item"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="pagination-next-previous">
-                <a class="page-link pagination-next-previous" href="#">Next</a>
-            </li>
-        </ul>
-    </div>
-
-    <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">Volver a Dashboard</a>
 </div>
 
 {% endblock %}

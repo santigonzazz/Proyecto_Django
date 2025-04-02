@@ -1,28 +1,35 @@
 {% extends 'base.html' %}
-{% load static  %}
+{% load static %}
+
 {% block titulo %} Inicio {% endblock %}
-{% block titulo-body %} Buenvenido a Panaderia's Maye!!! {% endblock %}
+{% block titulo-body %} Bienvenido a Panadería's Maye!!! {% endblock %}
 {% block body %} 
     <main>
-        <div class="container mb-5" > 
+        <div class="container mb-5"> 
             <center><h2>Contáctanos</h2></center>
-            <center><p>Si tienes alguna pregunta o comentario, no dudes en enviarnos un mensaje. ¡Estamos aqui para ayudarte!</p></center>
+            <center><p>Si tienes alguna pregunta o comentario, no dudes en enviarnos un mensaje. ¡Estamos aquí para ayudarte!</p></center>
             <form>
                 <div class="mb-3">
                     <label for="name" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="name" required>
+                    <input type="text" class="form-control" id="name" required 
+                           pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" 
+                           title="Solo se permiten letras y espacios">
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Correo Electrónico</label>
-                    <input type="email" class="form-control" id="email" required>
+                    <input type="email" class="form-control" id="email" required 
+                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" 
+                           title="Introduce un correo electrónico válido">
                 </div>
                 <div class="mb-3">
                     <label for="message" class="form-label">Mensaje</label>
-                    <textarea class="form-control" id="message" rows="5" required></textarea>
+                    <textarea class="form-control" id="message" rows="5" required 
+                              minlength="10" 
+                              placeholder="Escribe tu mensaje aquí..." 
+                              title="El mensaje debe tener al menos 10 caracteres"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary">Enviar</button>
             </form>
         </div>
     </main>
-
 {% endblock %}
