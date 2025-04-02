@@ -1,19 +1,42 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block titulo %}CambiarContraseña{% endblock %}
+
+{% block titulo %}Cambiar Contraseña{% endblock %}
 
 {% block body %}
     <form action="" method="post" class="card m-auto mt-8 col-3 p-3">
         {% csrf_token %}
         <h4>Cambiar contraseña</h4>
-        <input name="clave_actual" type="password" placeholder="Contraseña actual" class="form-control mb-4"><br>
+        
+        <!-- Contraseña actual -->
+        <input name="clave_actual" type="password" placeholder="Contraseña actual" class="form-control mb-4" 
+               required minlength="6" title="La contraseña debe tener al menos 6 caracteres"><br>
 
-        <input name="nueva" type="password" placeholder="Contraseña nueva" class="form-control mb-1"><br>
-        <input name="repite_nueva" type="password" placeholder="Repita contraseña" class="form-control mb-1"><br>
+        <!-- Contraseña nueva -->
+        <input name="nueva" type="password" placeholder="Contraseña nueva" class="form-control mb-1" 
+               required minlength="6" title="La contraseña debe tener al menos 6 caracteres"><br>
+
+        <!-- Repetir contraseña nueva -->
+        <input name="repite_nueva" type="password" placeholder="Repita contraseña" class="form-control mb-1" 
+               required minlength="6" title="La contraseña debe tener al menos 6 caracteres"
+               oninput="checkPasswordMatch()"><br>
 
         <button type="submit" class="btn btn-info">Guardar</button>
     </form>
+
+    <script>
+        function checkPasswordMatch() {
+            const nueva = document.querySelector('input[name="nueva"]');
+            const repite_nueva = document.querySelector('input[name="repite_nueva"]');
+
+            if (nueva.value !== repite_nueva.value) {
+                repite_nueva.setCustomValidity("Las contraseñas no coinciden");
+            } else {
+                repite_nueva.setCustomValidity('');
+            }
+        }
+    </script>
+
 {% endblock %}
-
-
-
+    
+    
