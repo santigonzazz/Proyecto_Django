@@ -17,12 +17,20 @@ urlpatterns = [
     path("logout/", views.logout, name="logout"),
     path("editar-perfil/", views.editar_perfil, name="editar-perfil"),
     path("eliminar-categoria/<int:id_categoria>/", views.eliminar_categoria, name="eliminar-categoria"),
-    path("correo1/", views.correos1, name="correo"),
-    path("correo2/", views.correos2, name="correo2"),
-    
-    path("crear_usuario/", views.crear_usuario, name="usuario_nuevo"),
-    
-    path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
 
+
+    path("editar_usuario/<int:usuario_id>/", views.editar_usuario, name="editar_usuario"),
+    path('eliminar_usuario/<int:id_usuario>/', views.eliminar_usuario, name='eliminar_usuario'),
+
+    path("editar_categoria/<int:categoria_id>/", views.editar_categoria, name="editar_categoria"),
+    
+# Crud de productos
+    
+    path('eliminar-producto/<int:id_producto>/', views.eliminar_producto, name='eliminar_producto'),
+    path("editar_producto/<int:producto_id>/", views.editar_producto, name="editar_producto"),
+
+# CRUD de usuarios
+    path("crear_usuario/", views.crear_usuario, name="usuario_nuevo"),
+    path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
     path("agregar_categoria/", views.agregar_categoria, name="agregar_categoria")
 ]

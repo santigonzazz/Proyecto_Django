@@ -56,8 +56,13 @@
                     <td>{{ categoria.nombre }}</td>
                     <td>{{ categoria.descripcion }}</td>
                     <td>
-                        <a href="javascript:confirmar_eliminar(`{% url 'eliminar-categoria' categoria.id %}`);" class="btn btn-secondary">Eliminar</a>
-                        <a href="#" class="btn btn-info">Editar</a>
+
+                        <a href="#" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#updateModal{{ categoria.id }}">Editar</a>
+
+
+                        <a href="#" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
+                            Eliminar
+                        </a> 
 
                     </td>
                 </tr>
@@ -71,8 +76,9 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form method="POST" action="">
+                                <form method="POST" action="{% url 'editar_categoria' categoria.id %}">
                                     {% csrf_token %}
+                                    <input type="hidden" name="categoria_id" value="{{ categoria.id }}">
                                     <div class="mb-3">
                                         <label class="form-label">Nuevo Nombre Categoría</label>
                                         <input type="text" class="form-control" name="nombre" value="{{ categoria.nombre }}" required>
@@ -83,6 +89,7 @@
                                     </div>
                                     <button type="submit" class="btn btn-primary">Actualizar Categoría</button>
                                 </form>
+                                
                             </div>
                         </div>
                     </div>
@@ -93,9 +100,6 @@
     </div>
 
 
-    <button class="btn btn-primary">
-        <a href="{% url 'admin_dashboard' %}" class="text-white text-decoration-none">Volver a Dashboard</a>
-    </button>
 </main>
 
 

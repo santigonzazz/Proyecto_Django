@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from .models import *
-
+from django.shortcuts import get_object_or_404, redirect
 from django.db.utils import IntegrityError
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -157,9 +157,9 @@ def dashboardAdmin(request):
         return redirect("login")
 
     
-
 def CrudUsuarios(request):
     if request.method == 'POST':
+        # Recoger los datos del formulario
         nombre = request.POST.get("nombre")
         apellido = request.POST.get("apellido")
         rol = request.POST.get("rol")
@@ -167,30 +167,104 @@ def CrudUsuarios(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirmar_password = request.POST.get('confirmar_password')
-                # Asegúrate de que este campo esté en tu formulario
 
+        # Validar si las contraseñas coinciden
         if password == confirmar_password:
             try:
-                # Crear el usuario usando tu modelo personalizado
+                # Encriptar la contraseña antes de guardarla
+                from django.contrib.auth.hashers import make_password
+                password = make_password(password)
+
+                # Crear el nuevo usuario
                 nuevo_usuario = User(
                     nombre=nombre,
                     apellido=apellido,
                     celular=celular,
                     email=email,
-                    password=password,  # Recuerda que deberías encriptar la contraseña
-                    rol=rol  # Asignar un rol por defecto, si es necesario
+                    password=password,  # Contraseña encriptada
+                    rol=rol  # Asignar un rol
                 )
-                nuevo_usuario.save()  # Guardar el usuario en la base de datos
+                nuevo_usuario.save()  # Guardar en la base de datos
                 messages.success(request, "Usuario creado correctamente!")
-                return redirect("admin_dashboard")  # Cambia 'index' por la vista a la que quieras redirigir
+                return redirect("admin_dashboard")  # Cambia por la vista a la que quieras redirigir
             except Exception as e:
                 messages.error(request, f"Error: {e}")
-                return redirect("admin_dashboard")
+                return redirect("admin_dashboard")  # Redirigir si hay error
         else:
             messages.error(request, "Las contraseñas no coinciden.")
-            return redirect("admin_dashboard")
+            return redirect("admin_dashboard")  # Redirigir si las contraseñas no coinciden
     else:
-        return render(request, "admin/adminCRUDU.html")
+        # Si es un GET, obtener todos los usuarios
+        usuarios = User.objects.all()
+        contexto = {
+            "usuarios": usuarios
+        }
+        return render(request, "admin/adminCRUDU.html", contexto)
+
+
+def editar_usuario(request, usuario_id):
+    try:
+        usuario = User.objects.get(id=usuario_id)
+        if request.method == 'POST':
+            # Obtener los datos del formulario
+            usuario.nombre = request.POST.get("nombre")
+            usuario.apellido = request.POST.get("apellido")
+            usuario.celular = request.POST.get("celular")
+            usuario.email = request.POST.get('email')
+            password = request.POST.get('password')
+            
+            # Si la contraseña se cambia, encriptarla
+            if password:
+                from django.contrib.auth.hashers import make_password
+                usuario.password = make_password(password)
+            
+            # Guardar los cambios
+            usuario.save()
+            messages.success(request, "Usuario actualizado correctamente.")
+            return redirect("adminCRUDU")
+        else:
+            contexto = {
+                "usuario": usuario
+            }
+            return render(request, "admin/editar_usuario.html", contexto)
+    except User.DoesNotExist:
+        messages.error(request, "Usuario no encontrado.")
+        return redirect("adminCRUDU")
+
+def eliminar_usuario(request, id_usuario):
+    try:
+        usuario = User.objects.get(pk=id_usuario)
+        usuario.delete()
+        messages.success(request, "Usuario eliminado correctamente.")
+    except User.DoesNotExist:
+        messages.error(request, "Usuario no encontrado.")
+    except IntegrityError:
+        messages.warning(request, "Error: No puede eliminar el usuario, está en uso.")
+    except Exception as e:
+        messages.error(request, f"Error: {e}")
+
+    return redirect("adminCRUDU")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+################################################################
 
 def crud_categorias(request): 
     cate = Categoria.objects.all()
@@ -212,19 +286,77 @@ def eliminar_categoria(request, id_categoria):
 
     return redirect("crud_categoria")
 
+def editar_categoria(request, categoria_id):
+    try:
+        cate = Categoria.objects.get(pk = categoria_id)
+        if request.method == 'POST':
+            # Obtener los datos del formulario
+            cate.nombre = request.POST.get("nombre")
+            cate.descripcion = request.POST.get("descripcion")
+            
+            # Guardar los cambios
+            cate.save()
+            messages.success(request, "Categoría actualizada correctamente.")
+            return redirect("crud_categoria")
+        else:
+            contexto = {
+                "categoria": cate
+            }
+            return render(request, "admin/editar_categoria.html", contexto)
+    except Categoria.DoesNotExist:
+        messages.error(request, "Categoría no encontrada.")
+        return redirect("crud_categoria")
+
+######################################################################### 
 
 
+# CRUD PRODUCTOS
 
 def crud_productos(request):
     p = Producto.objects.all()
     contexto = {
         "productos": p
     }
-    return render (request,"admin/admin-CRUD-productos.html", contexto) 
+    return render (request,"admin/admin-CRUD-productos.html", contexto)
+
+def eliminar_producto(request, id_producto):
+    try:
+        p = Producto.objects.get(pk = id_producto)
+        p.delete()
+        messages.success(request, "Producto eliminado correctamente.")
+    except IntegrityError:
+        messages.warning(request, "Error: No puede eliminar el producto")
+    except Exception as e:
+        messages.error(request, f"Error: {e}")
+    return redirect("crud_productos")
+
+
+def editar_producto(request, producto_id):
+    try:
+        p = Producto.objects.get(pk = producto_id)
+        if request.method == 'POST':
+            # Obtener los datos del formulario
+            p.nombre = request.POST.get("nombre")
+            p.precio = request.POST.get("precio")
+            p.stock = request.POST.get("stock")
+            p.disponibilidad = request.POST.get("disponibilidad")
+            
+            # Guardar los cambios
+            p.save()
+            messages.success(request, "Producto actualizado correctamente.")
+            return redirect("crud_productos")
+        else:
+            contexto = {
+                "producto": p
+            }
+            return render(request, "admin/editar_producto.html", contexto)
+    except Producto.DoesNotExist:
+        messages.error(request, "Producto no encontrado.")
+        return redirect("crud_productos")
 
 
 
-
+######################################################################
 def editar_perfil(request):
     return render (request,"usuarios/user-crud.html" )
 
@@ -263,42 +395,7 @@ def crear_usuario(request):
     else:
         return render(request, "register.html")
 
-
-def correos1 (request): 
-    try:  
-        send_mail (
-            
-            "PanaderiasMaye",
-            "mensajes de prueba........ desde django",
-            settings.EMAIL_HOST_USER,
-            ["gonzacardona09@gmail.com"],
-            fail_silently = False,
-        )
-
-        return HttpResponse(f"correo enviado")
-    except Exception as e: 
-        return HttpResponse(f"Error {e}")
     
-
-def correos2 (request): 
-    try:  
-        html_message="""hola mundo<strong style='color:blue;'>Django</strong> desde mi app
-        <br>
-        bienvenido 
-        """
-        send_mail (
-            
-            "PanaderiasMaye",
-            "",
-            settings.EMAIL_HOST_USER,
-            ["gonzacardona09@gmail.com"],
-            fail_silently = False,
-            html_message=html_message,
-        )
-
-        return HttpResponse(f"correo enviado")
-    except Exception as e: 
-        return HttpResponse(f"Error {e}")
 
 
 def agregar_categoria(request):
