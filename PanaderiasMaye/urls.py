@@ -29,5 +29,10 @@ urlpatterns = [
     path("editar_categoria/<int:categoria_id>/", views.editar_categoria, name="editar_categoria"),
     path('eliminar_usuario/<int:id_usuario>/', views.eliminar_usuario, name='eliminar_usuario'),
     path("editar_usuario/<int:usuario_id>/", views.editar_usuario, name="editar_usuario"),
-    path("eliminar_categoria/<int:id_categoria>/", views.eliminar_categoria, name="eliminar_categoria" )
+    path("eliminar_categoria/<int:id_categoria>/", views.eliminar_categoria, name="eliminar_categoria" ),
+
+    #carrito
+    path("carrito/<int:producto_id>/", views.agregar_carrito, name="agregar_carrito"),
+    path("carrito/", views.ver_carrito, name="ver_carrito" )
+    
 ]

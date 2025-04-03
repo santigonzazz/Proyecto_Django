@@ -90,14 +90,40 @@
               <h3>Carrito de Compras</h3>
               <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>  
-            
-              {% for carrito in car %}
-                  <h6>hana banana</h6>
-                  <div><p>efbu</p><p>sedvs</p><p>vsze</p></div>
-              {% endfor %}
+              <p>Desde carrito</p>
+              {% if carrito %}
+              <table>
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio</th>
+                      <th>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for item in carrito.values %}
+                      <tr>
+                        <td>{{ item.nombre }} </td>
+                        <td> {{ item.cantidad }} </td>
+                        <td>${{ item.precio }} </td>
+                        <td>$ {{ item.cantidad|floatformat:2 }} </td>
+                        <td>
+                          <a href="#">Eliminar</a>
+                        </td>
+                      </tr>  
+                    {% endfor %}
+                  </tbody>
+              </table>
+              <h3>Total: {{ item.cantidad|floatformat:2 }} </h3>
           </div>
             <h1 class="title">{% block titulo-body %}  {% endblock %} </h1><br>
-        </div>
+        
+          {% else %}
+            <p>Tu carrito esta vacío </p>
+          {% endif %}
+          </div>
+        
 
     </main>
 

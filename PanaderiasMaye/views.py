@@ -11,7 +11,8 @@ from .utils import *
 
 def index(request):
     cat_id = request.GET.get("cat")  
-
+    carrito = request.session.get('carrito', {})
+    total = 0
     if cat_id:
         try:
             categoria = Categoria.objects.get(id=cat_id)  
@@ -29,7 +30,9 @@ def index(request):
     contexto = {
         "productoInfo": productos,
         "categorias": categorias,  
-        "carrito": car
+        "carrito": car,
+        'carrito': carrito,
+        'total': total
     }
     return render(request, 'index.html', contexto)
 
@@ -274,44 +277,47 @@ def crear_usuario(request):
 
 def editar_perfil(request):
     if request.method == 'POST':
-        logueado = request.session.get("auth", False)
-
-        if not logueado:
+    
+        user_id = request.session.get("auth", {}).get("id")
+        if not user_id:
             messages.error(request, "Debes iniciar sesión para editar tu perfil.")
-            return redirect("login")  
+            return redirect("login")
 
         try:
-            q = User.objects.get(pk=logueado["id"])
+            q = User.objects.get(pk=user_id)
 
-            q.nombre = request.POST.get("nombre", q.nombre)
-            q.apellido = request.POST.get("apellido", q.apellido)
-            q.celular = request.POST.get("celular", q.celular)
-            
-            email_form = request.POST.get("email")
-            if email_form:  # Si el email fue enviado en el formulario, actualizarlo
-                q.email = email_form  
+            nombre = request.POST.get("nombre").strip()
+            apellido = request.POST.get("apellido").strip()
+            celular = request.POST.get("celular").strip()
+            email = request.POST.get("email").strip()
 
-            if 'foto' in request.FILES:
-                nueva_foto = request.FILES['foto']
-                q.foto = nueva_foto
-
+            q.nombre = nombre
+            q.apellido = apellido
+            q.celular = celular
+            q.email = email
             q.save()
 
-            # Actualizamos la sesión con los nuevos datos
-            request.session["auth"]["nombre"] = q.nombre
-            request.session["auth"]["apellido"] = q.apellido
-            request.session["auth"]["celular"] = q.celular
-            request.session["auth"]["email"] = q.email
-            request.session["auth"]["foto"] = q.foto.url if q.foto else "usuarios/default.jpg"
-
+            request.session["auth"] = {
+                "id": q.id,
+                "nombre": nombre,
+                "apellido": apellido,
+                "celular": celular,
+                "email": email,
+                "foto": q.foto.url,
+            }
             messages.success(request, "Datos actualizados correctamente")
-            return redirect("index")
-        
-        except Exception as e:
-            messages.error(request, f"Error {e}")
             return redirect("editar-perfil")
-
-    return render(request, "usuarios/user-Crud.html")
+        except Exception as e:
+            messages.error(request, f"Error: {e}")
+            return redirect("editar-perfil")
+    else:
+        # Verificamos si el usuario está logueado antes de proceder
+        user_id = request.session.get("auth", {}).get("id")
+        if not user_id:
+            messages.error(request, "Debes iniciar sesión para editar tu perfil.")
+            return redirect("login")
+        
+        return render(request, "usuarios/user-Crud.html")
 
 
 def correos1 (request): 
@@ -578,3 +584,52 @@ def eliminar_categoria(request, id_categoria):
     except Exception as e:
         messages.error(request, f"Error: {e}")
     return redirect("crud_categoria")
+
+
+#Carrito:
+
+def agregar_carrito(request, producto_id):
+        logueado = request.session.get("auth", False)
+        usuario_logueado = logueado.get("id")
+        usuario = request.session["auth"]["id"] 
+        producto = Producto.objects.get(id=producto_id)
+        carrito = request.session.get('carrito', {})
+        if not logueado:
+            messages.error(request, "Inicia sesion para añadir al carrito ")
+            return redirect("login")
+        else:
+            if usuario == usuario_logueado:
+                if str(producto.id) in carrito:
+                    carrito[str(producto.id)]['cantidad']+= 1
+                else:
+                    carrito[str(producto.id)] = {
+                'foto': producto.foto.url,
+                'nombre': producto.nombre,
+                'precio': producto.precio,
+                'cantidad': 1
+                    }
+
+                request.session['carrito'] = carrito
+
+                messages.success(request, f'{producto.nombre} agregado al carrito!!! ')
+                # return redirect("about")
+            else:
+                return redirect("register")
+            
+   
+
+        return redirect('ver_carrito')
+
+def ver_carrito(request):
+    if request.user.is_authenticated:
+        carrito = request.session.get('carrito', {})
+        total = 0
+
+        for item in carrito.values():
+            total +=float(item['precio']) * item['cantidad']
+        
+        return redirect('index')
+    else:
+        messages.error(request, 'Inicia sesion para ver tu carrito ')
+        return redirect('login')
+
