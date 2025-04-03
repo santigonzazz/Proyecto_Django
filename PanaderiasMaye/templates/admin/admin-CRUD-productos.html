@@ -6,6 +6,47 @@
 <div class="container mt-5">
     <h1 class="text-center">ADMIN CRUD PRODUCTOS</h1>
 
+    <div class="row mb-4 form-center">
+        <div class="col-md-6 offset-md-3">
+            <h1 class="title">Añadir nuevo Producto</h1>
+            <form class="form-user" method="post" action="{% url 'agregar_producto' %}" onsubmit="return validarFormulario()" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nombre:</label>
+                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}">
+                </div>
+                <div class="mb-3">
+                    <label for="apellido" class="form-label">Descripción:</label>
+                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="rol" class="form-label">Disponibilidad:</label>
+                    <select name="disponibilidad" class="form-select" required>
+                        <option value="">Seleccione</option>
+                        <option value="SI">Disponible</option>
+                        <option value="NO">No Disponible</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="img" class="form-label">Seleccione la imagen (jpg, png)</label>
+                    <input type="file" class="form-control" name="foto" accept="image/*">
+                </div>
+                <div class="mb-3">
+                    <label for="celular" class="form-label">Precio:</label>
+                    <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01" title="Se solicita tener 10 digitos como minimo">
+                </div>
+                <button type="submit" class="btn-create btn btn-primary">Crear Producto</button>
+            </form>
+        </div>
+    </div>
+<br><br>
+{% if messages %}
+<div class="alert alert-success" role="alert">
+{% for message in messages %}
+    <p>{{ message }}</p>
+{% endfor %}
+</div>
+{% endif %}
     <!-- Tabla de Productos -->
     <table class="table">
         <thead>
@@ -60,7 +101,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Precio</label>
-                                    <input type="number" class="form-control" name="precio" value="{{ producto.precio }}" required min="0" step="0.01">
+                                    <input type="number" class="form-control" name="precio" value="{{ producto.precio|floatformat:2|cut:',' }}" required min="0" step="0.01">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Disponibilidad</label>
@@ -71,7 +112,7 @@
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Imagen del Producto</label>
-                                    <input type="file" class="form-control" name="foto">
+                                    <input type="file" class="form-control" name="foto"  >
                                 </div>
                                 <button type="submit" class="btn btn-primary">Actualizar Producto</button>
                             </form>

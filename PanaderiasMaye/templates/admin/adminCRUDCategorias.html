@@ -1,0 +1,112 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %}Crud-Categorias{% endblock %}
+    
+{% block body %}
+<main>
+    <div class="container mt-5">
+        <h1 class="title text-center">ADMIN CRUD CATEGORÍAS</h1>
+
+        <!-- Formulario para añadir nueva categoría -->
+        <div class="row mb-4">
+            <div class="col-md-6 offset-md-3">
+                <center><h2 class="title">Añadir nueva Categoría</h2></center>
+                <form method="post" action="{% url 'agregar_categoria' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre Categoría:</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required pattern="[A-Za-z]{2,}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción:</label>
+                        <input type="text" class="form-control" id="descripcion" name="descripcion" required pattern="[A-Za-z ]{2,}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Añadir Categoría</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Barra de búsqueda -->
+        <h2 class="title">Buscar Categoría</h2>
+        <div class="search-bar"> 
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Buscar Categoría">
+                <button class="btn btn-outline-secondary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <br>
+        <!-- Tabla de Categorías -->
+        <h2 class="title">Categorías</h2>
+        {% if messages %}
+        <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+        </div>
+        {% endif %}
+        <table class="table">
+            <thead>
+                <tr class="Cabezal_Tabla">
+                    <th scope="col">id</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Descripción</th>
+                    <th scope="col">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for categoria in categorias %}
+                <tr>
+                    <th scope="row">{{ forloop.counter }}</th>
+                    <td>{{ categoria.nombre }}</td>
+                    <td>{{ categoria.descripcion }}</td>
+                    <td>
+
+                        <a href="#" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#updateModal{{ categoria.id }}">Editar</a>
+
+
+                        <a href="{% url 'eliminar_categoria' categoria.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar esta categoria?')">Eliminar</a>
+
+                    </td>
+                </tr>
+
+                <!-- Modal de actualización -->
+                <div class="modal fade" id="updateModal{{ categoria.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ categoria.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="updateModalLabel{{ categoria.id }}">Actualizar Categoría</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form method="POST" action="{% url 'editar_categoria' categoria.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="categoria_id" value="{{ categoria.id }}">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nuevo Nombre Categoría</label>
+                                        <input type="text" class="form-control" name="nombre" value="{{ categoria.nombre }}" required pattern="[A-Za-z]{2,}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Descripción</label>
+                                        <input type="text" class="form-control" name="descripcion" value="{{ categoria.descripcion }}" required pattern="[A-Za-z ]{2,}">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Actualizar Categoría</button>
+                                </form>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+</main>
+
+
+
+{% endblock %}

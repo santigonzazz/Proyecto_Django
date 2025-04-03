@@ -173,7 +173,7 @@ def crud_categorias(request):
     contexto = {
         "categorias": cate
     }
-    return render  (request, "admin/admin-CRUD-categorias.html", contexto)  
+    return render  (request, "admin/adminCRUDCategorias.html", contexto)  
 
 def eliminar_categoria(request, id_categoria):
     try:
@@ -224,7 +224,7 @@ def crear_usuario(request):
                 )
                 q.save()  # Guardar el usuario en la base de datos
                 messages.success(request, "Usuario creado correctamente!")
-                return redirect("index")  # Cambia 'index' por la vista a la que quieras redirigir
+                return redirect("login")  # Cambia 'index' por la vista a la que quieras redirigir
             except Exception as e:
                 messages.error(request, f"Error: {e}")
                 return redirect("register")
@@ -237,26 +237,44 @@ def crear_usuario(request):
 
 def editar_perfil(request):
     if request.method == 'POST':
-
         logueado = request.session.get("auth", False)
 
-        q = User.objects.get(pk=logueado["id"])
-
+        if not logueado:
+            messages.error(request, "Debes iniciar sesión para editar tu perfil.")
+            return redirect("login")  
 
         try:
-            q.nombre = request.POST.get("nombre")
-            q.apellido = request.POST.get("apellido")
-            q.celular = request.POST.get("celular")
-            q.email = request.POST.get("email")
-            q.rol = request.POST.get("rol")
+            q = User.objects.get(pk=logueado["id"])
+
+            q.nombre = request.POST.get("nombre", q.nombre)
+            q.apellido = request.POST.get("apellido", q.apellido)
+            q.celular = request.POST.get("celular", q.celular)
+            
+            email_form = request.POST.get("email")
+            if email_form:  # Si el email fue enviado en el formulario, actualizarlo
+                q.email = email_form  
+
+            if 'foto' in request.FILES:
+                nueva_foto = request.FILES['foto']
+                q.foto = nueva_foto
+
             q.save()
+
+            # Actualizamos la sesión con los nuevos datos
+            request.session["auth"]["nombre"] = q.nombre
+            request.session["auth"]["apellido"] = q.apellido
+            request.session["auth"]["celular"] = q.celular
+            request.session["auth"]["email"] = q.email
+            request.session["auth"]["foto"] = q.foto.url if q.foto else "usuarios/default.jpg"
+
             messages.success(request, "Datos actualizados correctamente")
             return redirect("index")
+        
         except Exception as e:
-            messages.error(request, f"Error {e} ")
+            messages.error(request, f"Error {e}")
             return redirect("editar-perfil")
-    else:
-        return render(request,"usuarios/user-Crud.html" )
+
+    return render(request, "usuarios/user-Crud.html")
 
 
 def correos1 (request): 
@@ -321,7 +339,7 @@ def agregar_categoria(request):
 
       # Redirige a la página de listado de categorías
 
-    return redirect(request, "admin/admin-CRUD-categorias.html")
+    return redirect("crud_categorias")
 
 def CrudUsuarios(request):
     if request.method == 'POST':
@@ -418,7 +436,7 @@ def eliminar_producto(request, id_producto):
         messages.warning(request, "Error: No puede eliminar el producto")
     except Exception as e:
         messages.error(request, f"Error: {e}")
-    return redirect("crud_productos")
+    return redirect("adminCRUDU")
 
 
 def editar_producto(request, producto_id):
@@ -426,10 +444,11 @@ def editar_producto(request, producto_id):
         p = Producto.objects.get(pk = producto_id)
         if request.method == 'POST':
             # Obtener los datos del formulario
-            p.nombre = request.POST.get("nombre")
-            p.precio = request.POST.get("precio")
+            p.nombre = request.POST.get("nombre", p.nombre)
+            p.precio = request.POST.get("precio", p.precio)
             p.stock = request.POST.get("stock")
-            p.disponibilidad = request.POST.get("disponibilidad")
+            p.disponibilidad = request.POST.get("disponibilidad", p.disponibilidad)
+            p.foto = request.FILES.get("foto", p.foto)
             
             # Guardar los cambios
             p.save()
@@ -443,6 +462,40 @@ def editar_producto(request, producto_id):
     except Producto.DoesNotExist:
         messages.error(request, "Producto no encontrado.")
         return redirect("crud_productos")
+    
+
+
+def agregar_producto(request):
+    if request.method == 'POST':
+        print(request.POST)
+        print(request.FILES)
+        
+        nombre = request.POST.get("nombre")
+        descripcion = request.POST.get("descripcion")
+        precio = request.POST.get("precio")
+        disponibilidad = request.POST.get("disponibilidad")
+        foto = request.FILES.get("foto")  # Se obtiene la imagen del formulario
+
+        if not nombre or not descripcion or not precio or not disponibilidad or not foto:
+            messages.error(request, "Todos los campos son obligatorios ")
+            return redirect("crud_productos")
+        try:
+            # Crear el producto usando el modelo Producto
+            producto = Producto(
+                nombre=nombre,
+                descripcion=descripcion,
+                precio=precio,
+                disponibilidad=disponibilidad,
+                foto=foto  if foto else "productos/pan9.jpeg" # Se asigna la imagen si se sube
+            )
+            producto.save()  # Guardar el producto en la base de datos
+            messages.success(request, "¡Producto creado correctamente!")
+            return redirect("crud_productos")  # Redirige a la lista de productos (ajusta según tu vista)
+        except Exception as e:
+            messages.error(request, f"Error al crear el producto: {e}")
+            return redirect("crud_productos")
+    else:
+        return render(request, "admin-CRUD-productos.html")
     
 def editar_categoria(request, categoria_id):
     try:
@@ -464,3 +517,14 @@ def editar_categoria(request, categoria_id):
     except Categoria.DoesNotExist:
         messages.error(request, "Categoría no encontrada.")
         return redirect("crud_categoria")
+    
+def eliminar_categoria(request, id_categoria):
+    try:
+        c = Categoria.objects.get(pk = id_categoria)
+        c.delete()
+        messages.success(request, "Categoria eliminada correctamente.")
+    except IntegrityError:
+        messages.warning(request, "Error: No puede eliminar la categoria")
+    except Exception as e:
+        messages.error(request, f"Error: {e}")
+    return redirect("crud_categoria")

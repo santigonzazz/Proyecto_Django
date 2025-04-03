@@ -7,9 +7,19 @@
         <main>
             <div class="container mt-5">
                 <h1 class="title text-center">PERSONALIZACION DE CUENTA DE USUARIO</h1>
-                <form action="" method="post">
+                <form action="{% url 'editar_usuario' request.session.auth.id %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
-                    <div class="editUser"><h3>Tu foto</h3><div class="img-section"><div class="user-img"><img src="{{ request.session.auth.foto }}" alt="Bakery Bread" class="img-user-crud" /></div><div class="btn-container-crud-user"><button class="btn-ed">quitar</button><button class="btn-ed">cambiar</button></div></div></div>
+                    <div class="editUser"><h3>Tu foto</h3>
+                        <div class="img-section">
+                            <div class="user-img"><img src="{{ request.session.auth.foto }}" alt="Bakery Bread" class="img-user-crud" /></div>
+                        <div class="btn-container-crud-user">
+                            <button class="btn-ed">quitar</button>
+                            <label for="">Cambiar foto de perfil</label><br>
+                            <input type="file" class="form-control" name="foto" accept="image/*">
+                        </div>
+                </div>
+            </div>
+
                     <div class="editUser">
                         <strong><h5>Nombre</h5></strong>
                         <input type="text" class="form-control" value="{{ request.session.auth.nombre }}" name="nombre">
@@ -24,7 +34,7 @@
                     </div>
                     <div class="editUser">
                         <strong><h5>Correo</h5></strong>
-                        <input type="text" class="form-control" placeholder="{{ request.session.auth.email }}" disabled></div>
+                        <input type="text" class="form-control" value="{{ request.session.auth.email }}" name="email" readonly></div>
                     <div class="editUser"><button class="btn-ed">Actualizar</button></div>
                 </form>
 
