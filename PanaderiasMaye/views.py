@@ -114,11 +114,23 @@ def contactanos(request):
     return render(request, 'contactanos.html')
 
 def facturas(request): 
-    fac = Carrito.objects.filter()
-    contexto = {
-        "facturas": fac
-    }
-    return render(request, "admin/admin-facturas.html", contexto) 
+    verificar = request.session.get("auth", False)
+
+    if verificar:
+        if verificar["rol"] == 1:
+            fac = Carrito.objects.filter()
+            contexto = {
+                "facturas": fac
+            }
+            return render(request, "admin/admin-facturas.html", contexto) 
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return redirect( "index")
+    
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+    
 
 def about(request):
     return render(request, 'about.html')
@@ -169,11 +181,24 @@ def dashboardAdmin(request):
 
 
 def crud_categorias(request): 
-    cate = Categoria.objects.all()
-    contexto = {
-        "categorias": cate
-    }
-    return render  (request, "admin/adminCRUDCategorias.html", contexto)  
+    verificar = request.session.get("auth", False)
+
+    if verificar:
+        if verificar["rol"] == 1:
+            cate = Categoria.objects.all()
+            contexto = {
+                "categorias": cate
+            }
+            return render  (request, "admin/adminCRUDCategorias.html", contexto)
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return redirect( "index")
+    
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+
+      
 
 def eliminar_categoria(request, id_categoria):
     try:
@@ -189,11 +214,23 @@ def eliminar_categoria(request, id_categoria):
 
 
 def crud_productos(request):
-    p = Producto.objects.all()
-    contexto = {
-        "productos": p
-    }
-    return render (request,"admin/admin-CRUD-productos.html", contexto) 
+    verificar = request.session.get("auth", False)
+
+    if verificar:
+        if verificar["rol"] == 1:
+            p = Producto.objects.all()
+            contexto = {
+                "productos": p
+            }
+            return render (request,"admin/admin-CRUD-productos.html", contexto) 
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return redirect( "index")
+    
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+    
 
 
 
@@ -342,48 +379,60 @@ def agregar_categoria(request):
     return redirect("crud_categorias")
 
 def CrudUsuarios(request):
-    if request.method == 'POST':
-        # Recoger los datos del formulario
-        nombre = request.POST.get("nombre")
-        apellido = request.POST.get("apellido")
-        rol = request.POST.get("rol")
-        celular = request.POST.get("celular")
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        confirmar_password = request.POST.get('confirmar_password')
+    verificar = request.session.get("auth", False)
 
-        # Validar si las contraseñas coinciden
-        if password == confirmar_password:
-            try:
-                # Encriptar la contraseña antes de guardarla
-                from django.contrib.auth.hashers import make_password
-                password = make_password(password)
+    if verificar:
+        if verificar["rol"] == 1:
+            if request.method == 'POST':
+                # Recoger los datos del formulario
+                nombre = request.POST.get("nombre")
+                apellido = request.POST.get("apellido")
+                rol = request.POST.get("rol")
+                celular = request.POST.get("celular")
+                email = request.POST.get('email')
+                password = request.POST.get('password')
+                confirmar_password = request.POST.get('confirmar_password')
 
-                # Crear el nuevo usuario
-                nuevo_usuario = User(
-                    nombre=nombre,
-                    apellido=apellido,
-                    celular=celular,
-                    email=email,
-                    password=password,  # Contraseña encriptada
-                    rol=rol  # Asignar un rol
-                )
-                nuevo_usuario.save()  # Guardar en la base de datos
-                messages.success(request, "Usuario creado correctamente!")
-                return redirect("admin_dashboard")  # Cambia por la vista a la que quieras redirigir
-            except Exception as e:
-                messages.error(request, f"Error: {e}")
-                return redirect("admin_dashboard")  # Redirigir si hay error
+                # Validar si las contraseñas coinciden
+                if password == confirmar_password:
+                    try:
+                        # Encriptar la contraseña antes de guardarla
+                        from django.contrib.auth.hashers import make_password
+                        password = make_password(password)
+
+                        # Crear el nuevo usuario
+                        nuevo_usuario = User(
+                            nombre=nombre,
+                            apellido=apellido,
+                            celular=celular,
+                            email=email,
+                            password=password,  # Contraseña encriptada
+                            rol=rol  # Asignar un rol
+                        )
+                        nuevo_usuario.save()  # Guardar en la base de datos
+                        messages.success(request, "Usuario creado correctamente!")
+                        return redirect("adminCRUDU")  # Cambia por la vista a la que quieras redirigir
+                    except Exception as e:
+                        messages.error(request, f"Error: {e}")
+                        return redirect("admin_dashboard")  # Redirigir si hay error
+                else:
+                    messages.error(request, "Las contraseñas no coinciden.")
+                    return redirect("admin_dashboard")  # Redirigir si las contraseñas no coinciden
+            else:
+                # Si es un GET, obtener todos los usuarios
+                usuarios = User.objects.all()
+                contexto = {
+                    "usuarios": usuarios
+                }
+                return render(request, "admin/adminCRUDU.html", contexto)
         else:
-            messages.error(request, "Las contraseñas no coinciden.")
-            return redirect("admin_dashboard")  # Redirigir si las contraseñas no coinciden
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return redirect( "index")
+    
     else:
-        # Si es un GET, obtener todos los usuarios
-        usuarios = User.objects.all()
-        contexto = {
-            "usuarios": usuarios
-        }
-        return render(request, "admin/adminCRUDU.html", contexto)
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+    
 
 
 def editar_usuario(request, usuario_id):
@@ -396,6 +445,7 @@ def editar_usuario(request, usuario_id):
             usuario.celular = request.POST.get("celular")
             usuario.email = request.POST.get('email')
             password = request.POST.get('password')
+            
             
             # Si la contraseña se cambia, encriptarla
             if password:
@@ -436,7 +486,7 @@ def eliminar_producto(request, id_producto):
         messages.warning(request, "Error: No puede eliminar el producto")
     except Exception as e:
         messages.error(request, f"Error: {e}")
-    return redirect("adminCRUDU")
+    return redirect("crud_productos")
 
 
 def editar_producto(request, producto_id):

@@ -3,6 +3,13 @@
     {% block titulo %}Crud-User{% endblock %}
 
 
+    {% if messages %}
+    <div class="alert alert-danger">
+      {% for message in messages %}
+          <p>{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
     {% block body %}
         <main>
             <div class="container mt-5">

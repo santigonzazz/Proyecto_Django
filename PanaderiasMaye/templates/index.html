@@ -4,8 +4,15 @@
 {% block titulo-body %} Buenvenido a Panaderia's Maye!!! {% endblock %}
 {% block body %} 
 
+{% if messages %}
+  <div class="alert alert-danger">
+      {% for message in messages %}
+          <p>{{ message }}</p>
+      {% endfor %}
+  </div>
+{% endif %}
     <main>
-
+        
         <div class="search-bar">
             <div class="input-group">
                 <input type="text" class="form-control" placeholder="Buscar Producto" aria-label="Search" aria-describedby="search-addon">
