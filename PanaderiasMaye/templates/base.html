@@ -92,39 +92,36 @@
             </div>  
               <p>Desde carrito</p>
               {% if carrito %}
-              <table>
-                  <thead>
-                    <tr>
-                      <th>Producto</th>
-                      <th>Cantidad</th>
-                      <th>Precio</th>
-                      <th>Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {% for item in carrito.values %}
-                      <tr>
-                        <td>{{ item.nombre }} </td>
-                        <td> {{ item.cantidad }} </td>
-                        <td>${{ item.precio }} </td>
-                        <td>$ {{ item.cantidad|floatformat:2 }} </td>
-                        <td>
-                          <a href="#">Eliminar</a>
-                        </td>
-                      </tr>  
-                    {% endfor %}
-                  </tbody>
-              </table>
-              <h3>Total: {{ item.cantidad|floatformat:2 }} </h3>
-          </div>
-            <h1 class="title">{% block titulo-body %}  {% endblock %} </h1><br>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item_id, item in carrito.items %}
+                <tr>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.cantidad }}</td>
+                    <td>${{ item.precio|floatformat:2 }}</td>
+                    <td>${{ item.total|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'eliminar_producto' item_id %}">Eliminar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h3>Total General: ${{ total }}</h3>
+{% else %}
+    <p>Tu carrito está vacío.</p>
+{% endif %}
+      <a href="{% url 'ver_carrito_completo' %}" class="btn-login btn btn-link">Continuar con la Compra</a>
+      </div>
         
-          {% else %}
-            <p>Tu carrito esta vacío </p>
-          {% endif %}
-          </div>
-        
-
     </main>
 
     {% block body %} 

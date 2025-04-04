@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 
 from django.db.utils import IntegrityError
@@ -81,10 +81,15 @@ def login(request):
 def logout(request):
     try:
         del request.session["auth"]
-        return redirect("index")
+
+        if 'carrito' in request.session:
+            del request.session['carrito']
+
+
+        messages.success(request, "Has cerrado sesión correctamente")
     except Exception as e:
         messages.info(request, "No se pudo cerrar sesión, intente de nuevo")
-        return redirect("index")
+    return redirect("index")
     
 
 def cambiar_clave(request):
@@ -589,47 +594,114 @@ def eliminar_categoria(request, id_categoria):
 #Carrito:
 
 def agregar_carrito(request, producto_id):
-        logueado = request.session.get("auth", False)
-        usuario_logueado = logueado.get("id")
-        usuario = request.session["auth"]["id"] 
-        producto = Producto.objects.get(id=producto_id)
-        carrito = request.session.get('carrito', {})
-        if not logueado:
-            messages.error(request, "Inicia sesion para añadir al carrito ")
-            return redirect("login")
-        else:
-            if usuario == usuario_logueado:
-                if str(producto.id) in carrito:
-                    carrito[str(producto.id)]['cantidad']+= 1
-                else:
-                    carrito[str(producto.id)] = {
-                'foto': producto.foto.url,
-                'nombre': producto.nombre,
-                'precio': producto.precio,
-                'cantidad': 1
-                    }
+    logueado = request.session.get("auth")
 
-                request.session['carrito'] = carrito
+    if not logueado:
+        messages.error(request, "Inicia sesión para añadir al carrito.")
+        return redirect("login")
+    
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito = request.session.get('carrito', {})
 
-                messages.success(request, f'{producto.nombre} agregado al carrito!!! ')
-                # return redirect("about")
-            else:
-                return redirect("register")
-            
-   
+    if str(producto.id) in carrito:
+        carrito[str(producto.id)]['cantidad'] += 1
+    else:
+        carrito[str(producto.id)] = {
+            'id': producto.id,
+            'foto': producto.foto.url,
+            'nombre': producto.nombre,
+            'precio': float(producto.precio),  # Asegurar que sea float
+            'cantidad': 1,
+            'total': 0
+        }
+    
+    # **Actualizar el total por producto**
+    carrito[str(producto.id)]['total'] = carrito[str(producto.id)]['cantidad'] * carrito[str(producto.id)]['precio']
 
-        return redirect('ver_carrito')
+    request.session['carrito'] = carrito
+    messages.success(request, f"{producto.nombre} agregado correctamente al carrito.")
+    return redirect('ver_carrito')
+
 
 def ver_carrito(request):
-    if request.user.is_authenticated:
-        carrito = request.session.get('carrito', {})
-        total = 0
+    logueado = request.session.get("auth")
 
-        for item in carrito.values():
-            total +=float(item['precio']) * item['cantidad']
-        
-        return redirect('index')
+    if not logueado:
+        messages.error(request, "Inicia sesión para ver el carrito.")
+        return redirect("login")
+
+    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
+    total_general = 0
+
+    for key, item in carrito.items():
+        item['total'] = float(item['precio']) * item['cantidad']  # Asegurar conversión a float
+        total_general += item['total']
+
+    request.session['carrito'] = carrito  # Guardar cambios en la sesión
+
+    print(f"Total General Calculado: {total_general}")  # <-- Agrega esta línea para depuración
+
+    contexto = {
+        "carrito": carrito,
+        "total": total_general
+    }
+    return render(request, 'index.html', contexto)
+
+
+
+def eliminar_producto(request, producto_id):
+    logueado = request.session.get("auth")
+
+    if not logueado:
+        messages.error(request, "Inicia sesión para eliminar productos del carrito.")
+        return redirect("login")
+
+    carrito = request.session.get('carrito', {})
+
+    # Verifica si el producto está en el carrito
+    if str(producto_id) in carrito:
+        del carrito[str(producto_id)]  # Elimina el producto del carrito
+        messages.success(request, "Producto eliminado del carrito.")
     else:
-        messages.error(request, 'Inicia sesion para ver tu carrito ')
-        return redirect('login')
+        messages.error(request, "El producto no está en el carrito.")
 
+    request.session['carrito'] = carrito  # Guarda los cambios en la sesión
+    return redirect('ver_carrito_completo')  # Redirige a la vist
+
+
+
+def ver_carrito_completo(request):
+    logueado = request.session.get("auth")
+
+    if not logueado:
+        messages.error(request, "Inicia sesión para ver el carrito.")
+        return redirect("login")
+
+    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
+    total_general = 0
+
+    for item in carrito.values():
+        item['total'] = float(item['cantidad']) * float(item['precio'])
+        total_general += item['total']
+
+    request.session['carrito'] = carrito  # Guardar cambios en la sesión
+
+    print(f"Total General Calculado: {total_general}")  # <-- Agrega esta línea para depuración
+
+    contexto = {
+        "carrito": carrito,
+        "total": total_general
+    }
+    return render(request, 'carrito.html', contexto)
+
+def actualizar_cantidad(request, producto_id):
+    if request.method == "POST":
+        nueva_cantidad = int(request.POST.get("cantidad", 1))
+        carrito = request.session.get("carrito", {})
+
+        if str(producto_id) in carrito:
+            carrito[str(producto_id)]['cantidad'] = nueva_cantidad
+            carrito[str(producto_id)]['total'] = nueva_cantidad * float(carrito[str(producto_id)]['precio'])
+
+        request.session["carrito"] = carrito
+        return redirect("ver_carrito_completo")
