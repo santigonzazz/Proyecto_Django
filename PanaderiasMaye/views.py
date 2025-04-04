@@ -13,6 +13,14 @@ def index(request):
     cat_id = request.GET.get("cat")  
     carrito = request.session.get('carrito', {})
     total = 0
+    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
+    total_general = 0
+
+    for item in carrito.values():
+        item['total'] = float(item['cantidad']) * float(item['precio'])
+        total_general += item['total']
+
+        
     if cat_id:
         try:
             categoria = Categoria.objects.get(id=cat_id)  
@@ -32,7 +40,9 @@ def index(request):
         "categorias": categorias,  
         "carrito": car,
         'carrito': carrito,
-        'total': total
+        'total': total,
+        "carrito": carrito,
+        "totalg": total_general
     }
     return render(request, 'index.html', contexto)
 

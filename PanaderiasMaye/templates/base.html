@@ -115,7 +115,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <h3>Total General: ${{ total }}</h3>
+    <h3>Total General: ${{ totalg }}</h3>
 {% else %}
     <p>Tu carrito está vacío.</p>
 {% endif %}
@@ -123,7 +123,7 @@
       </div>
         
     </main>
-
+    <h1 class="title">{% block titulo-body %}  {% endblock %} </h1><br>
     {% block body %} 
     
     {% endblock %}
