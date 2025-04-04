@@ -83,7 +83,6 @@ class Detalle_carrito(models.Model):
     cantidad= models.IntegerField()
     total= models.FloatField(validators=[MinValueValidator(0)])
     producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk4_detalle_carrito_producto')
-
     class Meta:
         verbose_name = "Detalle Carrito"
         verbose_name_plural = "Detalle Del Carrito"
@@ -97,11 +96,16 @@ class Carrito(models.Model):
         (1, "Domicilio"),
         (2, "Reserva")
     )
+    ESTADOS = (
+        (1, "Pendiente"),
+        (2, "Pagado")
+    )
     servicio= models.IntegerField(choices=SERVICIOS, default=1)
     usuario= models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name='fk5_carrito_usuario')
     Detalle_carrito = models.ForeignKey('Detalle_carrito', on_delete=models.DO_NOTHING, related_name='fk6_carrito_detalleCarrito')
     fecha = models.DateTimeField(default=timezone.now)
     cantidad= models.IntegerField()
+    estado = models.IntegerField(choices=ESTADOS, default=1)
     
     
 

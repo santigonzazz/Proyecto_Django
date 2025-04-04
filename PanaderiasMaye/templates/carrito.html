@@ -38,13 +38,13 @@
   
 </style>
   <main>
-    <div class="container mt-5" id="contaner-carrito">
+    <div class="container mt-5 mb-5" id="contaner-carrito">
         <h2 class="text-center mb-4">Carrito de Compras</h2>
         
         <div class="row">
             <div class="col-lg-8">
                 <div class="card p-3">
-                    <table class="table carrito-table">
+                    <table class="table carrito-table m-3">
                         <thead>
                             <tr>
                                 <th>Producto</th>
@@ -58,7 +58,7 @@
                         <tbody>
                             {% for producto_id, item in carrito.items %}
                             <tr>
-                                <td><img src="{{ item.foto }}" alt="Imagen" class="img-fluid" width="80"></td>
+                                <td><img src="{{ item.foto }}" alt="Imagen" class="img-fluid" width="80" style="height: 50px;"></td>
                                 <td>{{ item.nombre }}</td>
                                 <td>${{ item.precio|floatformat:2 }}</td>
                                 <td>
@@ -70,7 +70,7 @@
                                 </td>
                                 <td>${{ item.total|floatformat:2 }}</td>
                                 <td>
-                                    <a href="{% url 'eliminar_producto' producto_id %}" class="btn">Eliminar </a>
+                                    <a href="{% url 'eliminar_producto_carrito' producto_id %}" class="btn">Eliminar </a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -84,13 +84,13 @@
                 <div class="card p-4 card-compra">
                     <h4>Total de la compra:</h4>
                     <h2 class="btn-carrito-pesos">$ {{ total }}</h2>
-                    <button class="btn w-100 mt-3">Finalizar Compra</button>
+                    <a href="{% url 'formulario_pago' %}" class="btn w-100 mt-3">Finalizar Compra</a>
                 </div>
             </div>
         </div>
     </div>
   </main>
-<br><br>
+<br><br><br>
 
 <script>
     function cambiarCantidad(productoId, cambio) {

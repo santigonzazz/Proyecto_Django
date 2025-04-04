@@ -41,7 +41,7 @@ class CategoriaAdmin(admin.ModelAdmin):
 
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
-    list_display = ["id", "cantidad", "servicio", "usuario"]
+    list_display = ["id", "servicio", "usuario"]
     search_fields = ["servicio", "usuario"]
     list_filter = ["usuario"]
 

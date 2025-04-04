@@ -20,7 +20,7 @@ def index(request):
         item['total'] = float(item['cantidad']) * float(item['precio'])
         total_general += item['total']
 
-        
+
     if cat_id:
         try:
             categoria = Categoria.objects.get(id=cat_id)  
@@ -237,8 +237,10 @@ def crud_productos(request):
     if verificar:
         if verificar["rol"] == 1:
             p = Producto.objects.all()
+            c = Categoria.objects.all()
             contexto = {
-                "productos": p
+                "productos": p,
+                "catProduct": c
             }
             return render (request,"admin/admin-CRUD-productos.html", contexto) 
         else:
@@ -540,16 +542,18 @@ def agregar_producto(request):
     if request.method == 'POST':
         print(request.POST)
         print(request.FILES)
-        
+
         nombre = request.POST.get("nombre")
         descripcion = request.POST.get("descripcion")
         precio = request.POST.get("precio")
         disponibilidad = request.POST.get("disponibilidad")
         foto = request.FILES.get("foto")  # Se obtiene la imagen del formulario
+        categoria_ids = request.POST.getlist("categorias")  # Se obtiene una lista de los IDs de categorías seleccionadas
 
-        if not nombre or not descripcion or not precio or not disponibilidad or not foto:
-            messages.error(request, "Todos los campos son obligatorios ")
+        if not nombre or not descripcion or not precio or not disponibilidad or not foto or not categoria_ids:
+            messages.error(request, "Todos los campos son obligatorios")
             return redirect("crud_productos")
+
         try:
             # Crear el producto usando el modelo Producto
             producto = Producto(
@@ -557,11 +561,15 @@ def agregar_producto(request):
                 descripcion=descripcion,
                 precio=precio,
                 disponibilidad=disponibilidad,
-                foto=foto  if foto else "productos/pan9.jpeg" # Se asigna la imagen si se sube
+                foto=foto if foto else "productos/pan9.jpeg"  # Se asigna la imagen si se sube
             )
             producto.save()  # Guardar el producto en la base de datos
+            for categoria_id in categoria_ids:
+                categoria = Categoria.objects.get(id=categoria_id)
+                ProductoCategoria.objects.create(producto=producto, categoria=categoria)
+
             messages.success(request, "¡Producto creado correctamente!")
-            return redirect("crud_productos")  # Redirige a la lista de productos (ajusta según tu vista)
+            return redirect("crud_productos")  
         except Exception as e:
             messages.error(request, f"Error al crear el producto: {e}")
             return redirect("crud_productos")
@@ -659,7 +667,7 @@ def ver_carrito(request):
 
 
 
-def eliminar_producto(request, producto_id):
+def eliminar_producto_carrito(request, producto_id):
     logueado = request.session.get("auth")
 
     if not logueado:
@@ -715,3 +723,97 @@ def actualizar_cantidad(request, producto_id):
 
         request.session["carrito"] = carrito
         return redirect("ver_carrito_completo")
+
+#Facturas y PAGOS 
+
+
+def formulario_pago(request):
+    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
+    total_general = 0
+
+    for item in carrito.values():
+            item['total'] = float(item['cantidad']) * float(item['precio'])
+            total_general += item['total']
+    
+    if request.method == "POST":
+        carrito_id = request.session.get('carrito_id')
+        if not carrito_id:
+            messages.error(request, "No se encontró una factura para confirmar.")
+            return redirect('ver_carrito')
+
+        try:
+            factura = Carrito.objects.get(id=carrito_id)
+            factura.estado = 2
+            factura.save()
+        except Carrito.DoesNotExist:
+            messages.error(request, "La factura no existe.")
+            return redirect('ver_carrito')
+
+        # Vaciar carrito y limpiar sesión
+        request.session['carrito'] = {}
+        del request.session['carrito_id']
+
+        messages.success(request, "Pago simulado exitoso. ¡Gracias por tu compra!")
+        return redirect('ver_carrito')
+    
+    print(f"Tofakldakldj:{total_general} ")
+    contexto = {
+            "carrito": carrito,
+            "total_general": total_general
+        }
+    return render(request, 'pago.html', contexto)
+
+def procesar_pedido(request):
+    logueado = request.session.get("auth")
+    
+    if not logueado:
+        messages.error(request, "Debes loguearte primero para continuar con la compra...")
+        return redirect("login")
+    
+    carrito = request.session.get('carrito', {})
+    if not carrito:
+        messages.error(request, "Tu carrito está vacío. No puedes procesar un pedido vacío.")
+        return redirect("ver_carrito")
+    
+    total_general = sum(item['cantidad'] * item['precio'] for item in carrito.values())
+
+    # Crear un nuevo carrito (factura)
+    nuevo_carrito = Carrito(
+        usuario_id=logueado["id"],
+        fecha=timezone.now(),
+        total=total_general,
+        estado=1  # 1 significa 'Pendiente' por ejemplo
+    )
+    nuevo_carrito.save()
+    # Crear los detalles del carrito (productos)
+    for producto_id, item in carrito.items():
+        Detalle_carrito.objects.create(
+            carrito=nuevo_carrito,
+            producto_id=int(producto_id),
+            cantidad=item['cantidad'],
+            precio_unitario=item['precio'],
+            total=item['cantidad'] * item['precio']
+        )
+    
+    # Guardar el ID del carrito en la sesión para confirmar el pago después
+    request.session['carrito_id'] = nuevo_carrito.id
+    
+    # Mensaje de éxito
+    messages.success(request, "Tu pedido ha sido procesado exitosamente. ¡Redirigiendo al pago!")
+    return redirect('formulario_pago') 
+
+def confirmar_pago(request):
+    carrito_id = request.session.get('carrito_id')
+    if not carrito_id:
+        messages.error(request,"No hay facturas por pagar.. ")
+        return redirect('ver_carrito')
+    
+    factura = Carrito.objects.get(id=carrito_id)
+    factura.estado = 2
+    factura.save()
+
+    request.session['carrito'] = {}        
+    del request.session['carrito_id']
+
+    messages.success(request, "Pago realizado correctamente, y factura guardada correctamente!!!! ")
+    return redirect("index")

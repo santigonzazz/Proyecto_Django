@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %}Pagos{% endblock %}
+
+{% block body %}
+
+<style>
+     
+    #contaner-carrito {
+        background-color: #eae0c8; /* Color Beige */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .card {
+        border: none;
+        
+        background-color: #F5F5DC;
+    }
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+    }
+    .btn-success:hover {
+        background-color: #218838;
+    }
+    .btn-carrito-pesos{
+        color: black;
+    }
+
+</style>
+<main>
+    <div class="container mt-5" >
+        <h1 class="title text-center">FOMRULARIO DE PAGO</h1>
+
+        {% if messages %}
+            <div class="alert alert-success">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+    <div class="container mt-5">
+        <h2 class="text-center">Formulario de Pago</h2>
+        <form action="{% url 'procesar_pedido' %}" method="POST">
+            {% csrf_token %}
+            <!-- Listado de productos -->
+            <div class="product-list">
+                <h4>Productos a comprar</h4>
+                <div class="card p-3" >
+                <table class="table carrito-table m-3">
+                    <thead>
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item_id, item in carrito.items %}
+                            <tr>
+                                <td><img src="{{ item.foto }}" alt="Imagen" class="img-fluid" width="80" style="height: 50px;"></td>
+                                <td>{{ item.nombre }}</td>
+                                <td>{{ item.cantidad }}</td>
+                                <td>${{ item.precio|floatformat:2 }}</td>
+                                <td>${{ item.total|floatformat:2 }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+                <h3>Total General: ${{ total_general }}</h3>
+            </div>
+    
+            <!-- Nombre del destinatario -->
+            <div class="mb-3">
+                <label for="nombre_destinatario" class="form-label">Nombre de quien recibe</label>
+                <input type="text" class="form-control" id="nombre_destinatario" name="nombre_destinatario" required>
+            </div>
+    
+            <!-- Dirección -->
+            <div class="mb-3">
+                <label for="direccion" class="form-label">Dirección de entrega</label>
+                <input type="text" class="form-control" id="direccion" name="direccion" required>
+            </div>
+    
+            <!-- Especificaciones de la dirección -->
+            <div class="mb-3">
+                <label for="especificaciones" class="form-label">Especificaciones de la dirección</label>
+                <textarea class="form-control" id="especificaciones" name="especificaciones" rows="3"></textarea>
+            </div>
+    
+            <!-- Medios de pago -->
+            <div class="mb-3">
+                <label for="medio_pago" class="form-label">Selecciona el medio de pago</label>
+                <select class="form-select" id="medio_pago" name="medio_pago" required>
+                    <option value="" disabled selected>Seleccione una opción</option>
+                    <option value="tarjeta">Tarjeta de Crédito/Débito</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="efectivo">Pago en Efectivo</option>
+                </select>
+            </div>
+    
+            <!-- Botón de pago -->
+            <div class="d-grid gap-2">
+                <a href="{% url 'confirmar_pago' %}" class="btn btn-primary">Pagar</a>
+            </div>
+    
+        </form>
+    </div>
+</main>
+{% endblock %}
+

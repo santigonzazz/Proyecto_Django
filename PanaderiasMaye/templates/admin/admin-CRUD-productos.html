@@ -9,7 +9,8 @@
     <div class="row mb-4 form-center">
         <div class="col-md-6 offset-md-3">
             <h1 class="title">Añadir nuevo Producto</h1>
-            <form class="form-user" method="post" action="{% url 'agregar_producto' %}" onsubmit="return validarFormulario()" enctype="multipart/form-data">
+            <form class="form-user" method="post" action="{% url 'agregar_producto' %}"
+                onsubmit="return validarFormulario()" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="name" class="form-label">Nombre:</label>
@@ -17,36 +18,55 @@
                 </div>
                 <div class="mb-3">
                     <label for="apellido" class="form-label">Descripción:</label>
-                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}" required>
+                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}"
+                        required>
+                </div>
+                <div class="mb-3 form-acomodado">
+                    
+                    <div>
+                        <label for="celular" class="form-label">Precio:</label>
+                        <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
+                            title="Se solicita tener 10 digitos como minimo">
+                   </div> 
+                    <div>
+                        <label for="rol" class="form-label">Disponibilidad:</label>
+                        <select name="disponibilidad" class="form-select" required>
+                            <option value="">Seleccione</option>
+                            <option value="SI">Disponible</option>
+                            <option value="NO">No Disponible</option>
+                        </select>
+                    </div>       
                 </div>
                 <div class="mb-3">
-                    <label for="rol" class="form-label">Disponibilidad:</label>
-                    <select name="disponibilidad" class="form-select" required>
-                        <option value="">Seleccione</option>
-                        <option value="SI">Disponible</option>
-                        <option value="NO">No Disponible</option>
-                    </select>
+                    <label for="rol" class="form-label">Categorías:</label>
+                    <div>
+                        {% for i in catProduct %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}">
+                                <label class="form-check-label" for="categoria{{ i.id }}">
+                                    {{ i.nombre }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="img" class="form-label">Seleccione la imagen (jpg, png)</label>
                     <input type="file" class="form-control" name="foto" accept="image/*">
                 </div>
-                <div class="mb-3">
-                    <label for="celular" class="form-label">Precio:</label>
-                    <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01" title="Se solicita tener 10 digitos como minimo">
-                </div>
+                
                 <button type="submit" class="btn-create btn btn-primary">Crear Producto</button>
             </form>
         </div>
     </div>
-<br><br>
-{% if messages %}
-<div class="alert alert-success" role="alert">
-{% for message in messages %}
-    <p>{{ message }}</p>
-{% endfor %}
-</div>
-{% endif %}
+    <br><br>
+    {% if messages %}
+    <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
     <!-- Tabla de Productos -->
     <table class="table">
         <thead>
@@ -56,70 +76,112 @@
                 <th>Nombre</th>
                 <th>Precio</th>
                 <th>Disponibilidad</th>
+                <th>Categoria</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for producto in productos %}
             <tr>
-                
+
                 <td>
                     {% if producto.foto %}
-                        <img src="{{ producto.foto.url }}"  style="width: 50px; height: 50px;">
+                    <img src="{{ producto.foto.url }}" style="width: 50px; height: 50px;">
                     {% else %}
-                        Sin imagen
+                    Sin imagen
                     {% endif %}
                 </td>
                 <td>{{ producto.id }}</td>
                 <td>{{ producto.nombre }}</td>
                 <td>${{ producto.precio }}</td>
-                <td>{{ producto.disponibilidad }}</td>
                 <td>
-                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ producto.id }}">
+                    {% for relacion in producto.fk2_producto_categoria.all %}
+                        {{ relacion.categoria.nombre }}<br> <!-- Mostrar todas las categorías asociadas -->
+                    {% endfor %}
+                </td>
+                <td>
+                    {% if producto.disponibilidad == "SI" %}
+                        Disponible
+                    {% else %}
+                        No Disponible
+                    {% endif %}
+                </td>
+                <td>
+                    <button class="btn btn-warning" data-bs-toggle="modal"
+                        data-bs-target="#updateModal{{ producto.id }}">
                         Editar
                     </button>
-                    <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
+                    <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-danger"
+                        onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
                         Eliminar
-                    </a>  
-                 
+                    </a>
+
                 </td>
-                
-                 <!-- Modal de Edición -->
-            <div class="modal fade" id="updateModal{{ producto.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ producto.id }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="updateModalLabel{{ producto.id }}">Editar Producto</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form method="POST" action="{% url 'editar_producto' producto.id %}" enctype="multipart/form-data">
+
+                <!-- Modal de Edición -->
+                <div class="modal fade" id="updateModal{{ producto.id }}" tabindex="-1"
+                    aria-labelledby="updateModalLabel{{ producto.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="updateModalLabel{{ producto.id }}">Editar Producto</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form class="form-user" method="post" action="{% url 'agregar_producto' %}"
+                                onsubmit="return validarFormulario()" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="mb-3">
-                                    <label class="form-label">Nombre del Producto</label>
-                                    <input type="text" class="form-control" name="nombre" value="{{ producto.nombre }}" required>
+                                    <label for="name" class="form-label">Nombre:</label>
+                                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}">
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Precio</label>
-                                    <input type="number" class="form-control" name="precio" value="{{ producto.precio|floatformat:2|cut:',' }}" required min="0" step="0.01">
+                                    <label for="apellido" class="form-label">Descripción:</label>
+                                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}"
+                                        required>
+                                </div>
+                                <div class="mb-3 form-acomodado">
+                                    
+                                    <div>
+                                        <label for="celular" class="form-label">Precio:</label>
+                                        <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
+                                            title="Se solicita tener 10 digitos como minimo">
+                                   </div> 
+                                    <div>
+                                        <label for="rol" class="form-label">Disponibilidad:</label>
+                                        <select name="disponibilidad" class="form-select" required>
+                                            <option value="">Seleccione</option>
+                                            <option value="SI">Disponible</option>
+                                            <option value="NO">No Disponible</option>
+                                        </select>
+                                    </div>       
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Disponibilidad</label>
-                                    <select class="form-control" name="disponibilidad" required>
-                                        <option value="Disponible" {% if producto.disponibilidad == "Disponible" %}selected{% endif %}>Disponible</option>
-                                        <option value="Agotado" {% if producto.disponibilidad == "Agotado" %}selected{% endif %}>Agotado</option>
-                                    </select>
+                                    <label for="rol" class="form-label">Categorías:</label>
+                                    <div>
+                                        {% for i in catProduct %}
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}">
+                                                <label class="form-check-label" for="categoria{{ i.id }}">
+                                                    {{ i.nombre }}
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label">Imagen del Producto</label>
-                                    <input type="file" class="form-control" name="foto"  >
+                                    <label for="img" class="form-label">Seleccione la imagen (jpg, png)</label>
+                                    <input type="file" class="form-control" name="foto" accept="image/*">
                                 </div>
-                                <button type="submit" class="btn btn-primary">Actualizar Producto</button>
+                                
+                                <button type="submit" class="btn-create btn btn-primary">Crear Producto</button>
                             </form>
+                                
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
             </tr>
             {% empty %}
