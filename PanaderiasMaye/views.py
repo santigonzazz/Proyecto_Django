@@ -1,6 +1,11 @@
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
+from django.utils.dateparse import parse_date
+from django.db.models import Sum
+from xhtml2pdf import pisa
+from django.template.loader import get_template
+from django.template.loader import render_to_string
 
 from django.db.utils import IntegrityError
 from django.contrib import messages
@@ -726,94 +731,175 @@ def actualizar_cantidad(request, producto_id):
 
 #Facturas y PAGOS 
 
-
 def formulario_pago(request):
-    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
+    logueado = request.session.get("auth")
+    carrito_sesion = request.session.get('carrito', {}).copy()
     total_general = 0
 
-    for item in carrito.values():
-            item['total'] = float(item['cantidad']) * float(item['precio'])
-            total_general += item['total']
-    
+    for item in carrito_sesion.values():
+        item['total'] = float(item['cantidad']) * float(item['precio'])
+        total_general += item['total']
+
     if request.method == "POST":
         carrito_id = request.session.get('carrito_id')
         if not carrito_id:
-            messages.error(request, "No se encontró una factura para confirmar.")
+            messages.error(request, "No se encontró la factura para pagar.")
             return redirect('ver_carrito')
 
         try:
+            metodo = request.POST.get('metodo_pago')
             factura = Carrito.objects.get(id=carrito_id)
             factura.estado = 2
+            factura.meotdo_pago = metodo
             factura.save()
         except Carrito.DoesNotExist:
             messages.error(request, "La factura no existe.")
             return redirect('ver_carrito')
+        
+        print("metodo pago", factura.meotdo_pago)
 
-        # Vaciar carrito y limpiar sesión
+        # Limpiar sesión
         request.session['carrito'] = {}
         del request.session['carrito_id']
 
-        messages.success(request, "Pago simulado exitoso. ¡Gracias por tu compra!")
+        messages.success(request, "¡Pago exitoso!")
         return redirect('ver_carrito')
     
-    print(f"Tofakldakldj:{total_general} ")
     contexto = {
-            "carrito": carrito,
-            "total_general": total_general
-        }
+        "carrito": carrito_sesion,
+        "total_general": total_general,
+        "carrito_id": request.session.get('carrito_id')
+    }
+
     return render(request, 'pago.html', contexto)
+
 
 def procesar_pedido(request):
     logueado = request.session.get("auth")
-    
+
     if not logueado:
-        messages.error(request, "Debes loguearte primero para continuar con la compra...")
+        messages.error(request, "Debes loguearte primero para continuar... ")
         return redirect("login")
     
-    carrito = request.session.get('carrito', {})
-    if not carrito:
-        messages.error(request, "Tu carrito está vacío. No puedes procesar un pedido vacío.")
-        return redirect("ver_carrito")
+    carrito_sesion = request.session.get('carrito', {})
+    if not carrito_sesion:
+        messages.error(request, "Tu carrito está vacío.")
+        return redirect('ver_carrito')
     
-    total_general = sum(item['cantidad'] * item['precio'] for item in carrito.values())
+    total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
 
-    # Crear un nuevo carrito (factura)
-    nuevo_carrito = Carrito(
+    nuevo_carrito = Carrito.objects.create(
         usuario_id=logueado["id"],
         fecha=timezone.now(),
-        total=total_general,
-        estado=1  # 1 significa 'Pendiente' por ejemplo
+        cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),  # Total de productos
+        estado=1
     )
-    nuevo_carrito.save()
-    # Crear los detalles del carrito (productos)
-    for producto_id, item in carrito.items():
-        Detalle_carrito.objects.create(
+
+    for producto_id, item in carrito_sesion.items():
+        detalle = Detalle_carrito.objects.create(
             carrito=nuevo_carrito,
             producto_id=int(producto_id),
             cantidad=item['cantidad'],
-            precio_unitario=item['precio'],
             total=item['cantidad'] * item['precio']
         )
-    
-    # Guardar el ID del carrito en la sesión para confirmar el pago después
+
     request.session['carrito_id'] = nuevo_carrito.id
-    
-    # Mensaje de éxito
-    messages.success(request, "Tu pedido ha sido procesado exitosamente. ¡Redirigiendo al pago!")
-    return redirect('formulario_pago') 
 
-def confirmar_pago(request):
-    carrito_id = request.session.get('carrito_id')
-    if not carrito_id:
-        messages.error(request,"No hay facturas por pagar.. ")
-        return redirect('ver_carrito')
-    
-    factura = Carrito.objects.get(id=carrito_id)
-    factura.estado = 2
-    factura.save()
+    messages.success(request, "Tu pedido ha sido procesado correctamente.")
+    return redirect('formulario_pago')
 
-    request.session['carrito'] = {}        
+#FACTURAS
+
+def facturas_usuario(request):
+    logueado = request.session.get("auth")
+    
+    if not logueado:
+        messages.error(request, "Debes iniciar sesión para ver tus facturas.")
+        return redirect("login")
+
+    usuario_id = logueado["id"]
+    fecha_filtro = request.GET.get("fecha", "")
+
+    facturas = Carrito.objects.filter(usuario_id=usuario_id, estado=2).order_by("-fecha")
+
+    if fecha_filtro:
+        try:
+            fecha_filtrada = parse_date(fecha_filtro)
+            facturas = facturas.filter(fecha__date=fecha_filtrada)
+        except:
+            messages.warning(request, "Fecha inválida.")
+
+    # Crea una lista de facturas con sus totales
+    facturas_con_totales = []
+    for factura in facturas:
+        total = factura.detalles.aggregate(total=Sum('total'))["total"] or 0
+        facturas_con_totales.append({
+            "factura": factura,
+            "total": total
+        })
+
+    contexto = {
+        "facturas_con_totales": facturas_con_totales,
+        "fecha_filtro": fecha_filtro
+    }
+
+    return render(request, "facturas.html", contexto)
+
+def exportar_factura_pdf(request, factura_id):
+    # Asegúrate que el campo se llama 'usuario', cámbialo si es necesario
+    carrito = Carrito.objects.get(id=factura_id)
+    detalles = Detalle_carrito.objects.filter(carrito=carrito)
+    total = detalles.aggregate(total=Sum('total'))['total'] or 0
+
+    template_path = 'factura_pdf.html'
+    context = {
+        'factura': carrito,
+        'detalles': detalles,
+        'total': total,
+    }
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="factura_{carrito.id}.pdf"'
+
+    template = get_template(template_path)
+    html = template.render(context)
+    pisa.CreatePDF(html, dest=response)
+
+    return response
+
+def enviar_correo_confirmacion(carrito):
+    asunto = f"Confirmación de pago - Pedido #{carrito.id}"
+    destinatario = carrito.usuario.email
+
+    mensaje_html = render_to_string('correo_confirmacion.html', {
+        'carrito': carrito,
+        'detalles': carrito.detalles.all(),
+        'total': sum(detalle.total for detalle in carrito.detalles.all()),
+    })
+
+    send_mail(
+        asunto,
+        '',  # mensaje en texto plano (opcional)
+        settings.EMAIL_HOST_USER,
+        [destinatario],
+        html_message=mensaje_html
+    )
+
+
+def confirmar_pago(request, carrito_id):
+    # Obtener el carrito solo si pertenece al usuario autenticado
+    logueado = request.session.get("auth")
+    carrito = get_object_or_404(Carrito, id=carrito_id, usuario=logueado["id"])
+
+    # Cambiar estado a "Pagado" (2)
+    carrito.estado = 2
+    carrito.save()
+
+    # Enviar el correo después de guardar los cambios
+    enviar_correo_confirmacion(carrito)
+
+    # Redirigir a una vista de éxito o mensaje
+    messages.success(request, "Factura enviada a tu correo, graicas por tu compra... ")
+    request.session['carrito'] = {}
     del request.session['carrito_id']
-
-    messages.success(request, "Pago realizado correctamente, y factura guardada correctamente!!!! ")
-    return redirect("index")
+    return redirect('index')  

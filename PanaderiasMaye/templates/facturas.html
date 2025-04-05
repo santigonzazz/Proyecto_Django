@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %}Facturas {% endblock %}
+
+{% block body %}
+<style>
+    .card-factura{
+        background-color: antiquewhite;
+    }
+</style>
+<main >
+<div class="container py-5">   
+    <h2 class="mb-4 text-center fw-bold" style="color: #212529;">Mis Facturas</h2>
+
+    <!-- Filtro de Fecha -->
+    <form method="GET" class="row g-3 align-items-center mb-5 bg-light p-3 rounded shadow-sm">
+        <div class="col-auto">
+            <label for="fecha" class="form-label fw-semibold" style="color: #212529;">Filtrar por fecha:</label>
+        </div>
+        <div class="col-auto">
+            <input type="date" name="fecha" value="{{ fecha_filtro }}" class="form-control">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-dark">Filtrar</button>
+        </div>
+    </form>
+
+    {% for item in facturas_con_totales %}
+        {% with factura=item.factura total=item.total %}
+        <div class="card mb-4 shadow-sm border-0 card-factura">
+            <div class="card-header p-3 m-4" style="background-color: #f8d775; color: #212529;">
+                <strong>Factura ID: {{ factura.id }}</strong>
+            </div>
+            <div class="card-body bg-light m-4">
+                <p><strong>Fecha:</strong> {{ factura.fecha|date:"Y-m-d H:i" }}</p>
+                <p><strong>Método de Servicio:</strong> {{ factura.get_meotdo_pago_display }}</p>
+                <p><strong>Estado:</strong> 
+                    {% if factura.estado == 2 %}
+                        <span class="badge bg-dark text-white">Pagado</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Pendiente</span>
+                    {% endif %}
+                </p>
+
+                <h5 class="mt-4 mb-3 fw-bold">Productos Comprados:</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover bg-white ">
+                        <thead style="background-color: #fdf6e3; color: #212529;">
+                            <tr class="text-center">
+                                <th>Producto</th>
+                                <th>Precio Unitario</th>
+                                <th>Cantidad</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            {% for detalle in factura.detalles.all %}
+                            <tr>
+                                <td>{{ detalle.producto.nombre }}</td>
+                                <td>${{ detalle.producto.precio }}</td>
+                                <td>{{ detalle.cantidad }}</td>
+                                <td>${{ detalle.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-center mt-3">
+                    <p class="fw-bold fs-5" style="color: #28a745;">Total Compra: ${{ total }}</p>
+                    <a href="{% url 'exportar_factura_pdf' factura.id %}" class="btn btn-outline-dark btn-sm mt-2">Descargar PDF</a>
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+    {% empty %}
+        <div class="alert alert-warning text-center mt-5">
+            <p>No hay facturas registradas.</p>
+        </div>
+    {% endfor %}
+</div>
+</main>
+{% endblock %}

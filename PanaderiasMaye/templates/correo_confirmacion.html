@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmación de Pago</title>
+</head>
+<body>
+    <h2>¡Gracias por tu compra, {{ carrito.usuario.nombre }}!</h2>
+    <p>Tu pago ha sido procesado con éxito.</p>
+
+    <h3>Detalles del pedido:</h3>
+    <ul>
+        {% for detalle in detalles %}
+            <li>{{ detalle.producto.nombre }} - Cantidad: {{ detalle.cantidad }} - Subtotal: ${{ detalle.total }}</li>
+        {% endfor %}
+    </ul>
+
+    <p><strong>Total Pagado:</strong> ${{ total }}</p>
+    <p>Fecha: {{ carrito.fecha }}</p>
+    <p>Metodo de Pago: {{ carrito.get_metodo_pago_display }} </p>
+</body>
+</html>

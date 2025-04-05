@@ -42,5 +42,12 @@ urlpatterns = [
 
     path("formulario-pago/", views.formulario_pago, name='formulario_pago'),
     path("procesar-pedido/", views.procesar_pedido, name='procesar_pedido'),
-    path("confirmar-pago/", views.confirmar_pago, name='confirmar_pago' )
+    
+
+    #Facturas
+    path('mis-facturas/', views.facturas_usuario, name='facturas_usuario'),
+    path('factura/<int:factura_id>/exportar/', views.exportar_factura_pdf, name='exportar_factura_pdf'),
+
+    #Correos
+    path('confirmar-pago/<int:carrito_id>/', views.confirmar_pago, name='confirmar_pago'),
 ]

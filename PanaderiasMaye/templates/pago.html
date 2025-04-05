@@ -28,6 +28,47 @@
         color: black;
     }
 
+    .loader {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 0.8s linear infinite;
+        margin: 10px auto;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .modal-content {
+    background-color: #fff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    width: 300px;
+    max-width: 90%;
+}
+
+    .no-scroll {
+        overflow: hidden;
+    }
 </style>
 <main>
     <div class="container mt-5" >
@@ -44,7 +85,7 @@
     </div>
     <div class="container mt-5">
         <h2 class="text-center">Formulario de Pago</h2>
-        <form action="{% url 'procesar_pedido' %}" method="POST">
+        <form action="{% url 'confirmar_pago' carrito_id %}" method="POST">
             {% csrf_token %}
             <!-- Listado de productos -->
             <div class="product-list">
@@ -97,21 +138,54 @@
             <!-- Medios de pago -->
             <div class="mb-3">
                 <label for="medio_pago" class="form-label">Selecciona el medio de pago</label>
-                <select class="form-select" id="medio_pago" name="medio_pago" required>
+                <select class="form-select" id="metodo_pago" name="metodo_pago" required>
                     <option value="" disabled selected>Seleccione una opción</option>
-                    <option value="tarjeta">Tarjeta de Crédito/Débito</option>
-                    <option value="paypal">PayPal</option>
-                    <option value="efectivo">Pago en Efectivo</option>
+                    <option value="1">Nequi</option>
+                    <option value="2">Bancolombia</option>
+                    <option value="3">Tarjeta Credito</option>
+                    <option value="4">Pago en Efectivo</option>
                 </select>
             </div>
     
             <!-- Botón de pago -->
-            <div class="d-grid gap-2">
-                <a href="{% url 'confirmar_pago' %}" class="btn btn-primary">Pagar</a>
+            <div class="text-center mt-4">
+                <button type="submit" id="btnPagar" class="btn btn-primary">Pagar</button>
+            
+                <!-- Spinner -->
             </div>
-    
         </form>
     </div>
+    <div id="modalSpinner" class="modal-overlay">
+        <div class="modal-content">
+            <div class="loader"></div>
+            <p>Procesando tu pago...</p>
+        </div>
+    </div>
+    </main>
 </main>
+
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        const btnPagar = document.getElementById('btnPagar');
+        const modalSpinner = document.getElementById('modalSpinner');
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            btnPagar.disabled = true;
+            btnPagar.textContent = 'Procesando...';
+
+            // Mostrar modal y bloquear scroll
+            modalSpinner.style.display = 'flex';
+            document.body.classList.add('no-scroll');
+
+            // Enviar el formulario luego de una pausa
+            setTimeout(() => {
+                form.submit();
+            }, 1200);
+        });
+    });
+</script>
+
 {% endblock %}
 

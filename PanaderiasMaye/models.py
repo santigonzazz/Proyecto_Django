@@ -80,6 +80,7 @@ class ProductoCategoria(models.Model):
    
 
 class Detalle_carrito(models.Model):
+    carrito = models.ForeignKey('Carrito', on_delete=models.CASCADE, related_name='detalles', null=True)
     cantidad= models.IntegerField()
     total= models.FloatField(validators=[MinValueValidator(0)])
     producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk4_detalle_carrito_producto')
@@ -88,7 +89,7 @@ class Detalle_carrito(models.Model):
         verbose_name_plural = "Detalle Del Carrito"
 
     def __str__(self):
-        return f"{self.producto} {self.cantidad} {self.total} {self.servicio} "
+        return f"{self.producto} {self.cantidad} {self.total}  "
 
 class Carrito(models.Model):
     
@@ -100,17 +101,21 @@ class Carrito(models.Model):
         (1, "Pendiente"),
         (2, "Pagado")
     )
+    METODOS_PAGOS = (
+        (1, "Nequi"),
+        (2, "Bancolombia"),
+        (3, "Tarjeta de Crédito"),
+        (4, "Efectivo")
+    )
     servicio= models.IntegerField(choices=SERVICIOS, default=1)
     usuario= models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name='fk5_carrito_usuario')
-    Detalle_carrito = models.ForeignKey('Detalle_carrito', on_delete=models.DO_NOTHING, related_name='fk6_carrito_detalleCarrito')
     fecha = models.DateTimeField(default=timezone.now)
     cantidad= models.IntegerField()
     estado = models.IntegerField(choices=ESTADOS, default=1)
-    
-    
+    metodo_pago = models.IntegerField(choices=METODOS_PAGOS, default=4)
 
     def __str__(self):
-        return f"{self.usuario} {self.Detalle_carrito} {self.cantidad} {self.total}"
+        return f"{self.usuario} {self.cantidad}"
 
 
 class Inventario(models.Model):

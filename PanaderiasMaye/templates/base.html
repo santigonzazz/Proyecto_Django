@@ -67,7 +67,7 @@
                                 No hay sesión
                             {% endif %}
                             <a href="{% url 'editar-perfil' %}">Settings</a>
-                            <a href="">Facturas</a>
+                            <a href="{% url 'facturas_usuario' %}">Facturas</a>
                             {% if request.session.auth.rol == 1 %}
                               <a href="{% url 'admin_dashboard' %}">Dashboard</a>
                             {% endif %}

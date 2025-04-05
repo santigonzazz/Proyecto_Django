@@ -39,16 +39,29 @@ class CategoriaAdmin(admin.ModelAdmin):
     list_display = ["id", "nombre", "descripcion"]
     search_fields = ["id", "fecha"]
 
+class DetalleCarritoInline(admin.TabularInline):  
+    model = Detalle_carrito
+    extra = 0  # No agregar filas vacías por defecto
+    readonly_fields = ('producto', 'cantidad', 'total')
+
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
     list_display = ["id", "servicio", "usuario"]
     search_fields = ["servicio", "usuario"]
     list_filter = ["usuario"]
+    inlines =[DetalleCarritoInline]
+
+    def mostrar_productos(self, obj):
+        detalles = obj.detalles.all()
+        return ",".join([f"{detalle.producto} ({detalle.cantidad} X {detalle.total}) " for detalle in detalles ])
+    
+    mostrar_productos.short_description = "Productos... "
+
 
 @admin.register(Detalle_carrito)
 class DetalleCarritoAdmin(admin.ModelAdmin):
-    list_display = ["id", "cantidad", "total", "producto"]
-    search_fields = ["producto"]
+    list_display = ["id", "cantidad", "total", "producto", "carrito"]
+    search_fields = ["producto__nombre"]
     list_filter = ["producto"]
     list_editable = ["cantidad", "total"]
 
