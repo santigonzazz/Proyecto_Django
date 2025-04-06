@@ -786,18 +786,25 @@ def procesar_pedido(request):
     if not carrito_sesion:
         messages.error(request, "Tu carrito está vacío.")
         return redirect('ver_carrito')
-    
+
+    # Validación de stock
+    for producto_id, item in carrito_sesion.items():
+        producto = get_object_or_404(Producto, id=int(producto_id))
+        if item['cantidad'] > producto.cantidad:
+            messages.success(request, f"La cantidad del pedido para {producto.nombre} no puede superar la cantidad de productos disponibles.")
+            return redirect('ver_carrito_completo')
+
     total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
 
     nuevo_carrito = Carrito.objects.create(
         usuario_id=logueado["id"],
         fecha=timezone.now(),
-        cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),  # Total de productos
+        cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),
         estado=1
     )
 
     for producto_id, item in carrito_sesion.items():
-        detalle = Detalle_carrito.objects.create(
+        Detalle_carrito.objects.create(
             carrito=nuevo_carrito,
             producto_id=int(producto_id),
             cantidad=item['cantidad'],
@@ -805,10 +812,8 @@ def procesar_pedido(request):
         )
 
     request.session['carrito_id'] = nuevo_carrito.id
-
     messages.success(request, "Tu pedido ha sido procesado correctamente.")
     return redirect('formulario_pago')
-
 #FACTURAS
 
 def facturas_usuario(request):
@@ -888,22 +893,33 @@ def enviar_correo_confirmacion(carrito):
 
 
 def confirmar_pago(request, carrito_id):
-    # Obtener el carrito solo si pertenece al usuario autenticado
     logueado = request.session.get("auth")
     carrito = get_object_or_404(Carrito, id=carrito_id, usuario=logueado["id"])
 
-    # Cambiar estado a "Pagado" (2)
+    if carrito.estado == 2:
+        messages.info(request, "Este pedido ya ha sido pagado.")
+        return redirect("facturas_usuario")
+
+    # Descontar productos del inventario
+    for detalle in carrito.detalles.all():
+        producto = detalle.producto
+        if detalle.cantidad > producto.cantidad:
+            messages.error(request, f"No hay suficiente stock para {producto.nombre}.")
+            return redirect("formulario_pago")
+
+        producto.cantidad -= detalle.cantidad
+        producto.save()
+
     carrito.estado = 2
     carrito.save()
 
-    # Enviar el correo después de guardar los cambios
     enviar_correo_confirmacion(carrito)
 
-    # Redirigir a una vista de éxito o mensaje
-    messages.success(request, "Factura enviada a tu correo, graicas por tu compra... ")
+    messages.success(request, "Factura enviada a tu correo, gracias por tu compra... ")
     request.session['carrito'] = {}
     del request.session['carrito_id']
-    return redirect('index')  
+
+    return redirect('facturas_usuario')
 
 def politica_privacidad(request):
     return render(request, 'politica_privacidad.html')
