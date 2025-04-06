@@ -22,11 +22,11 @@
         <table class="table">
             <thead>
                 <tr class="Cabezal_Tabla">
-                    <th>Imagen</th>
                     <th>id</th>
                     <th>Nombre</th>
-                    <th>Precio</th>
-                    <th>Disponibilidad</th>
+                    <th>Servicio</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -38,10 +38,9 @@
                     <td>{{ factura.usuario }}</td>
                     <td>{{ factura.servicio }}</td>
                     <td>{{ factura.cantidad }}</td>
-                    <td>${{ factura.Detalle_carrito }}</td>
-                    <td>{{ factura.total }}</td>
+                    <td>${{ factura.total }}</td>
                     <td>
-                        <a href="#" class="btn btn-warning">Editar</a>
+                        <a href="#" class="btn btn-success">Descargar</a>
 
                         <a href="#" class="btn btn-danger" onclick="return confirm('¿Estás seguro?')">Eliminar</a>
                     </td>
@@ -54,8 +53,6 @@
             </tbody>
         </table>
 
-        <button class="btn-volverCambio btn btn-primary"><a href="../views/admin-DashBoard.html"
-                class="btn-volverCambioLink">Volver a DashBoard</a></button>
 </main><br>
 
 

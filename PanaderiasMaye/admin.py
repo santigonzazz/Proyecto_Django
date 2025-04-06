@@ -21,7 +21,7 @@ class ProveedorAdmin(admin.ModelAdmin):
 
 @admin.register(Producto)
 class ProductoAdmin(admin.ModelAdmin):
-    list_display = ["id", "nombre", "descripcion", "precio", "disponibilidad"]
+    list_display = ["id", "nombre", "descripcion", "cantidad", "precio", "disponibilidad"]
     search_fields = ["nombre", "disponibilidad"]
     list_filter = ["disponibilidad"]
     list_editable = ["disponibilidad"]

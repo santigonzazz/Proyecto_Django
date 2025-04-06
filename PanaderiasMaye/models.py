@@ -61,12 +61,14 @@ class Producto(models.Model):
     foto = models.ImageField(upload_to="productos" ,default="productos/pan9.jpeg")    
     nombre = models.CharField(max_length=120)
     descripcion = models.CharField(max_length=120)
+    cantidad = models.IntegerField(default=100)
     precio  = models.FloatField(validators=[MinValueValidator(0.01)])
     DISPONIBILIDAD = (
         ("SI", "Disponible"),
         ("NO", "No Disponible")
     )
     disponibilidad = models.CharField(max_length=2, choices=DISPONIBILIDAD, default="SI")
+    
 
     def __str__(self):
         return f"{self.nombre}, {self.precio} {self.disponibilidad}"

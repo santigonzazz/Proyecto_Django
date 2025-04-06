@@ -507,11 +507,12 @@ def eliminar_usuario(request, id_usuario):
 
 def eliminar_producto(request, id_producto):
     try:
-        p = Producto.objects.get(pk = id_producto)
-        p.delete()
+        producto = Producto.objects.get(id=id_producto)  
+        ProductoCategoria.objects.filter(producto=producto).delete()
+        producto.delete()
         messages.success(request, "Producto eliminado correctamente.")
     except IntegrityError:
-        messages.warning(request, "Error: No puede eliminar el producto")
+        messages.warning(request, "Error: No puede eliminar el producto.")
     except Exception as e:
         messages.error(request, f"Error: {e}")
     return redirect("crud_productos")
@@ -771,7 +772,7 @@ def formulario_pago(request):
         "carrito_id": request.session.get('carrito_id')
     }
 
-    return render(request, 'pago.html', contexto)
+    return render(request, 'usuarios/pago.html', contexto)
 
 
 def procesar_pedido(request):
@@ -843,7 +844,7 @@ def facturas_usuario(request):
         "fecha_filtro": fecha_filtro
     }
 
-    return render(request, "facturas.html", contexto)
+    return render(request, "usuarios/facturas.html", contexto)
 
 def exportar_factura_pdf(request, factura_id):
     # Asegúrate que el campo se llama 'usuario', cámbialo si es necesario

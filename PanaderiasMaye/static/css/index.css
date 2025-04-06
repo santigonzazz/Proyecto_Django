@@ -532,4 +532,7 @@ footer .text-center p {
         transform: translateY(0);
     }
 }
-
+.btn-success{
+    background-color: #198754;
+    color: white;
+}

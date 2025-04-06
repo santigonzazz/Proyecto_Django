@@ -18,8 +18,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="apellido" class="form-label">Descripción:</label>
-                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}"
-                        required>
+                    <input type="text" class="form-control" id="descripcion" name="descripcion" required>
                 </div>
                 <div class="mb-3 form-acomodado">
                     
@@ -42,7 +41,7 @@
                     <div>
                         {% for i in catProduct %}
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}">
+                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}" min="1">
                                 <label class="form-check-label" for="categoria{{ i.id }}">
                                     {{ i.nombre }}
                                 </label>
@@ -52,7 +51,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="img" class="form-label">Seleccione la imagen (jpg, png)</label>
-                    <input type="file" class="form-control" name="foto" accept="image/*">
+                    <input type="file" class="form-control" name="foto" accept="image/*" required min="1">
                 </div>
                 
                 <button type="submit" class="btn-create btn btn-primary">Crear Producto</button>
@@ -74,6 +73,7 @@
                 <th>Imagen</th>
                 <th>id</th>
                 <th>Nombre</th>
+                <th>Stock</th>
                 <th>Precio</th>
                 <th>Disponibilidad</th>
                 <th>Categoria</th>
@@ -93,6 +93,7 @@
                 </td>
                 <td>{{ producto.id }}</td>
                 <td>{{ producto.nombre }}</td>
+                <td>{{ producto.cantidad }}</td>
                 <td>${{ producto.precio }}</td>
                 <td>
                     {% for relacion in producto.fk2_producto_categoria.all %}
@@ -129,16 +130,16 @@
                                     aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form class="form-user" method="post" action="{% url 'agregar_producto' %}"
+                            <form class="form-user" method="post" action="{% url 'editar_producto' producto.id %}"
                                 onsubmit="return validarFormulario()" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <div class="mb-3">
                                     <label for="name" class="form-label">Nombre:</label>
-                                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}">
+                                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}" value="{{ producto.nombre }}">
                                 </div>
                                 <div class="mb-3">
                                     <label for="apellido" class="form-label">Descripción:</label>
-                                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}"
+                                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}" value="{{ producto.descripcion }}"
                                         required>
                                 </div>
                                 <div class="mb-3 form-acomodado">
@@ -146,11 +147,11 @@
                                     <div>
                                         <label for="celular" class="form-label">Precio:</label>
                                         <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
-                                            title="Se solicita tener 10 digitos como minimo">
+                                            title="Se solicita tener 10 digitos como minimo" pattern="[A-Za-z ]{2,}" value="{{ producto.precio }}" required>
                                    </div> 
                                     <div>
                                         <label for="rol" class="form-label">Disponibilidad:</label>
-                                        <select name="disponibilidad" class="form-select" required>
+                                        <select name="disponibilidad" class="form-select" value="{{ producto.precio }}" required>
                                             <option value="">Seleccione</option>
                                             <option value="SI">Disponible</option>
                                             <option value="NO">No Disponible</option>
@@ -175,7 +176,7 @@
                                     <input type="file" class="form-control" name="foto" accept="image/*">
                                 </div>
                                 
-                                <button type="submit" class="btn-create btn btn-primary">Crear Producto</button>
+                                <button type="submit" class="btn btn-primary">Actualizar Producto</button>
                             </form>
                                 
                             </div>

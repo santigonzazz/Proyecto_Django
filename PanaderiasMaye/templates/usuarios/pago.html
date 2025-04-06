@@ -120,7 +120,8 @@
             <!-- Nombre del destinatario -->
             <div class="mb-3">
                 <label for="nombre_destinatario" class="form-label">Nombre de quien recibe</label>
-                <input type="text" class="form-control" id="nombre_destinatario" name="nombre_destinatario" required>
+                <input type="text" class="form-control" id="nombre_destinatario" name="nombre_destinatario" required 
+                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" title="Solo se permiten letras y espacios">
             </div>
     
             <!-- Dirección -->
