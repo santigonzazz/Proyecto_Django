@@ -1,31 +1,256 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Playfair+Display:wght@700&display=swap');
 
-.team-member {
-    margin-bottom: 20px;
+body {
+    font-family: 'Quicksand', sans-serif;
+    background-color: #fff8f0;
+    color: #5c4033;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    overflow-x: hidden;
 }
 
-.team-member img {
+/* Imágenes decorativas (esquinas) */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 200px;
+    height: 100%;
+    background-image: url('../img/1.jpg'), url('../img/2.webp');
+    background-repeat: no-repeat;
+    background-position: top left, bottom right;
+    background-size: 600px, 600px;
+    mix-blend-mode: luminosity;
+    opacity: 0.4;
+    z-index: -3;
+    filter: brightness(1.2) saturate(1.2);
+}
+
+/* Textura artesanal */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-image: url('https://www.transparenttextures.com/patterns/beige-paper.png');
+    opacity: 0.6;
+    z-index: -2;
+    background-size: contain;
+}
+
+/* Banner */
+.banner-fondo {
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.titulo-animacion {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.3rem;
+    color: #7b3f00;
+    animation: fadeInDown 1s ease-in-out;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.6);
+}
+
+/* Títulos secciones */
+.title {
+    font-size: 2.3rem;
+    color: #a0522d;
+    font-weight: 600;
+    text-align: center;
+    margin: 3rem auto 2rem;
+    position: relative;
+}
+
+.title::after {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 3px;
+    background: #d2a679;
+    margin: 10px auto 0;
+    border-radius: 3px;
+}
+
+/* Contenedor de tarjetas */
+.equipo-container {
+    display: flex;
+    justify-content: center;
+    gap: 60px;
+    padding: 30px 20px;
+    max-width: 1200px;
+    margin: auto;
+    flex-wrap: wrap;
+}
+
+.columna {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+/* Tarjetas */
+.card-animacion {
+    width: 260px;
+    height: 360px;
+    perspective: 1000px;
+    transition: transform 0.3s ease;
+}
+
+.card-inner-animacion {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.8s ease;
+    transform-style: preserve-3d;
+}
+
+.card-animacion:hover .card-inner-animacion {
+    transform: rotateY(180deg);
+}
+
+.card-front-animacion,
+.card-back-animacion {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 18px;
+    backface-visibility: hidden;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.card-front-animacion img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border-radius: 10px;
+    border-radius: 18px;
+    filter: brightness(0.95);
 }
 
-.team-member .card-body {
-    padding: 20px;
+.card-back-animacion {
+    background-color: #fff2e0;
+    transform: rotateY(180deg);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
 }
 
-.team-member .card-title {
-    font-weight: bold;
-    font-size: 18px;
+.card-title-animacion {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: #8b4513;
+    margin-bottom: 10px;
 }
 
-.team-member .card-text {
-    font-size: 16px;
-    
+.card-text-animacion {
+    font-size: 1rem;
+    color: #6b4c3b;
 }
 
-.card-body{
-    margin: 5px;
-    background-color: beige;
-    border-radius: 8px;
+.card-text-bottom {
+    margin-top: 12px;
+    font-style: italic;
+    color: #8b5e3c;
+}
+
+/* Sección Sobre Nosotros */
+.about-section {
+    background: rgba(255, 247, 236, 0.96);
+    padding: 60px 30px;
+    margin-top: 70px;
+    border-radius: 20px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    border: 2px dashed #e6c6a0;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.about-title {
+    font-size: 2.6rem;
+    color: #7b3f00;
+    font-family: 'Playfair Display', serif;
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+
+.about-title::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: #d8a772;
+    margin: 10px auto 0;
+    border-radius: 2px;
+}
+
+.about-row {
+    display: flex;
+    gap: 50px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.about-col {
+    flex: 1 1 400px;
+}
+
+.about-subtitle {
+    font-size: 1.6rem;
+    color: #a0522d;
+    margin-bottom: 12px;
+}
+
+.about-col p {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #5c4033;
+}
+
+/* Animaciones */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .equipo-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .columna {
+        width: 100%;
+        align-items: center;
+    }
+
+    .card-animacion {
+        width: 90%;
+        height: 330px;
+    }
+
+    .about-row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .about-section {
+        padding: 40px 20px;
+    }
 }

@@ -50,4 +50,7 @@ urlpatterns = [
 
     #Correos
     path('confirmar-pago/<int:carrito_id>/', views.confirmar_pago, name='confirmar_pago'),
+
+    path('privacidad/', views.politica_privacidad, name='politica_privacidad'),
+
 ]

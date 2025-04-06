@@ -161,31 +161,6 @@ nav {
 }
 
 
-.team-member {
-    margin-bottom: 20px;
-}
-
-.team-member img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-}
-
-.team-member .card-body {
-    padding: 20px;
-}
-
-.team-member .card-title {
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.team-member .card-text {
-    font-size: 16px;
-
-}
-
 .card-body {
     margin: 5px;
     border-radius: 8px;
@@ -226,40 +201,135 @@ nav {
     display: contents;
 }
 
+
+
+/* PARTE DEL FOOTER */
 footer {
     background-color: #343a40;
     color: #fff;
-    padding: 3rem 0;
+    padding: 1rem 0; /* Reducido de 2rem a 1rem */
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.3px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-
+footer h5 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #f9e8d9;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #555;
+    padding-bottom: 0.3rem;
+    text-align: center;
+    width: 100%;
+}
+footer p {
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    margin-bottom: 0.4rem;
+}
+footer ul {
+    padding-left: 0;
+    list-style: none;
+    margin-bottom: 0.4rem;
+}
+footer ul li {
+    margin-bottom: 0.3rem;
+}
+footer a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+footer a:hover {
+    color: #deb887;
+    text-decoration: underline;
+}
+footer .social-icons a {
+    font-size: 1.2rem;
+    margin-right: 0.7rem;
+    color: #ffffff;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+footer .social-icons a:hover {
+    transform: scale(1.1);
+    color: #deb887;
+}
+footer hr {
+    border-top: 1px solid #777;
+    opacity: 0.5;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+footer .text-center p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+.social-container {
+    text-align: center;
+}
+.social-icons {
+    padding-left: 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.social-icons li {
+    display: inline-block;
+    margin: 0 0.4rem;
+}
+.social-icons a {
+    font-size: 1.4rem;
+    color: #ffffff;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+.social-icons a:hover {
+    transform: scale(1.1);
+    color: #deb887;
+}
 .social-icons a {
     font-size: 1.25rem;
 }
+.footer-links {
+    text-align: center;
+}
+.footer-links ul {
+    padding-left: 0;
+    margin: 0;
+}
+.footer-links li {
+    margin-bottom: 0.4rem;
+}
+.footer-links a {
+    display: inline-block;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+.footer-links a:hover {
+    color: #deb887; /* tono cálido dorado */
+    text-decoration: underline;
+}
+
+
 
 .btn-outline-secondary {
     background-color: black;
     background-color: rgb(250, 193, 87);
     border: none;
 }
-
 .offcanvas-header {
     background-color: rgb(250, 193, 87);
 }
-
 .spaces {
     display: flex;
     justify-content: space-between;
 }
-
 .mb-3 {
     width: 98%;
     margin-left: 10px;
 }
-
 .fa-search {
     color: white;
 }
-
 .image-container img {
     max-width: 100%;
     height: auto;
@@ -379,3 +449,87 @@ footer {
     border-radius: 15px;
     border: solid 1px;
 }
+
+/* politicas de privacidad */
+.politica-privacidad {
+    background: rgb(58, 58, 58);
+    padding: 3rem 1rem;
+    border-radius: 12px;
+    animation: fadeIn 1s ease-in-out;
+    font-family: 'Georgia', serif;
+}
+
+.card-politica {
+    background-color: #f8f4ef;
+    color: #3b3b3b;
+    border-left: 10px solid #c7a17a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-politica:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-politica h2,
+.card-politica h4 {
+    color: #7a5c42;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.card-politica h4 {
+    font-size: 1.2rem;
+    margin-top: 1.5rem;
+    border-bottom: 1px dashed #c7a17a;
+    padding-bottom: 0.5rem;
+}
+
+.card-politica p,
+.card-politica li {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #3b3b3b;
+    text-align: justify;
+}
+
+.card-politica ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.card-politica a {
+    color: #a67c52;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.card-politica a:hover {
+    text-decoration: underline;
+    color: #8b5e3c;
+}
+
+.fecha {
+    color: #9c9c9c;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    display: block;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

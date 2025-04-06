@@ -903,3 +903,7 @@ def confirmar_pago(request, carrito_id):
     request.session['carrito'] = {}
     del request.session['carrito_id']
     return redirect('index')  
+
+def politica_privacidad(request):
+    return render(request, 'politica_privacidad.html')
+
