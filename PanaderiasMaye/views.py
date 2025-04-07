@@ -112,7 +112,7 @@ def cambiar_clave(request):
         clave_actual = request.POST.get("clave_actual")
         nueva = request.POST.get("nueva")
         repite_nueva = request.POST.get("repite_nueva")
-        logueado = request.session.get("auth", False)
+        logueado = request.session.get("auth")
 
         q = User.objects.get(pk=logueado["id"])
         if verify_password(clave_actual, q.password):
@@ -127,7 +127,7 @@ def cambiar_clave(request):
 
         return redirect("cambiar_clave")
     else:
-        return render(request, "usuarios/cambiar_clave.html")
+        return render(request, "cambiar_clave.html")
 
     
 

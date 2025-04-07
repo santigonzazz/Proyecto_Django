@@ -17,37 +17,42 @@
     {% block body %}
     {% endblock %}
 
-<footer class="mt-auto">
-    <div class="container">
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <h5>Sobre Nosotros</h5>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac ante mollis quam tristique convallis.</p>
-        </div>
-        <div class="col-md-4 mb-3">
-          <h5>Links</h5>
-          <ul class="list-unstyled">
-            <li><a href="#" class="text-decoration-none text-white">Home</a></li>
-            <li><a href="#" class="text-decoration-none text-white">Services</a></li>
-            <li><a href="#" class="text-decoration-none text-white">Contact</a></li>
-          </ul>
-        </div>
-        <div class="col-md-4 mb-3">
-          <h5>Siguenos!!</h5>
-          <ul class="list-inline social-icons">
-            <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-facebook"></i></a></li>
-            <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-twitter"></i></a></li>
-            <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-instagram"></i></a></li>
-          </ul>
-        </div>
+    <footer class="mt-auto">
+      <div class="container">
+          <div class="row">
+            <div class="col-md-4 mb-2">
+                  <h5>Sobre Nosotros</h5>
+                  <p>Innovamos con tecnología para hacer tu vida y tu negocio más fácil. Nuestra misión es acercar soluciones accesibles, útiles y humanas para todos.</p>
+              </div>
+              <div class="col-md-4 mb-4">
+                <h5>Links</h5>
+                <div class="footer-links text-center mt-3">
+                  <ul class="list-unstyled">
+                    <li><a href="{% url 'index' %}" class="text-decoration-none text-white">Inicio</a></li>
+                    <li><a href="{% url 'index' %}" class="text-decoration-none text-white">Productos</a></li>
+                    <li><a href="{% url 'contactanos' %}" class="text-decoration-none text-white">Contáctenos</a></li>
+                    <li><a href="{% url 'politica_privacidad' %}" class="text-decoration-none text-white">Política de Privacidad</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div class="col-md-4 mb-4">
+                <h5>Síguenos</h5>
+                <div class="social-container text-center mt-3">
+                  <ul class="list-inline social-icons">
+                    <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-facebook"></i></a></li>
+                    <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-twitter"></i></a></li>
+                    <li class="list-inline-item"><a href="#" class="text-white"><i class="fa-brands fa-instagram"></i></a></li>
+                  </ul>
+                </div>
+              </div>
+          </div>
+          <hr class="mb-4">
+          <div class="row">
+              <div class="col-md-12 text-center">
+                  <p>&copy; 2023 Derechos reservados por Panadería´s Maye</p>
+              </div>
+          </div>
       </div>
-      <hr class="mb-4">
-      <div class="row">
-        <div class="col-md-12 text-center">
-          <p>&copy; 2023 Derechos reservados por Panaderia´s Maye</p>
-        </div>
-      </div>
-    </div>
   </footer>
 
   <script src="{% static 'js/bootstrap.min.js' %}"></script>

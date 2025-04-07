@@ -79,7 +79,6 @@ nav {
     justify-content: center;
     align-items: center;
     margin: 5px;
-    font-family: 'Times New Roman', Times, serif;
     padding: 10px;
 }
 
@@ -535,4 +534,53 @@ footer .text-center p {
 .btn-success{
     background-color: #198754;
     color: white;
+}
+.btn-crudu{
+    background-color: rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-crudp{
+    background-color:rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-crudc{
+    background-color:rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-crudf{
+    background-color:rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.crud-buttoons{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
 }

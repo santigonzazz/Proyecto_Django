@@ -29,7 +29,7 @@
                     <div>
                         <label for="celular" class="form-label">Precio:</label>
                         <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
-                            title="Se solicita tener 10 digitos como minimo">
+                        title="Se solicita tener 10 digitos como minimo">
                    </div> 
                     <div>
                         <label for="rol" class="form-label">Disponibilidad:</label>
@@ -142,20 +142,19 @@
                                     <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}" value="{{ producto.nombre }}">
                                 </div>
                                 <div>
-                                    <label for="celular" class="form-label">Cantidad:</label>
-                                    <input type="number" class="form-control" id="precio" name="precio" required min="0" pattern="[0-9]{10}" value="{{ producto.cantidad }}>
-                               </div> 
+                                    <label for="celular" class="form-label">Stock:</label>
+                                    <input type="number" class="form-control" id="precio" name="precio" required min="0" pattern="[0-9]{10}" value="{{ producto.cantidad }}">
+                                </div> 
                                 <div class="mb-3">
                                     <label for="apellido" class="form-label">Descripción:</label>
-                                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}" value="{{ producto.descripcion }}"
-                                        required>
+                                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}" value="{{ producto.descripcion }}" required>
                                 </div>
                                 <div class="mb-3 form-acomodado">
                                     
                                     <div>
                                         <label for="celular" class="form-label">Precio:</label>
                                         <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
-                                            title="Se solicita tener 10 digitos como minimo" pattern="[A-Za-z ]{2,}" value="{{ producto.precio }}" required>
+                                        title="Se solicita tener 10 digitos como minimo" pattern="[A-Za-z ]{2,}" value="{{ producto.precio }}" required>
                                    </div> 
                                     <div>
                                         <label for="rol" class="form-label">Disponibilidad:</label>

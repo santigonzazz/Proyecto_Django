@@ -16,11 +16,11 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="name" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}">
+                        <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}" title="No se permiten numeros ni caracteres especiales">
                     </div>
                     <div class="mb-3">
                         <label for="apellido" class="form-label">Apellido:</label>
-                        <input type="text" class="form-control" id="apellido" name="apellido" pattern="[A-Za-z ]{2,}" required>
+                        <input type="text" class="form-control" id="apellido" name="apellido" pattern="[A-Za-z ]{2,}" title="No se permiten numeros ni caracteres especiales" required>
                     </div>
                     <div class="mb-3">
                         <label for="rol" class="form-label">Rol:</label>
@@ -124,18 +124,14 @@
                         <div class="mb-3">
                             <label for="rol" class="form-label">Rol:</label>
                             <select name="rol" class="form-select" required>
-                                <option value="">Seleccione</option>
-                                <option value="2">Cliente</option>
-                                <option value="1">Empleado</option>
+                                <option value="" >Seleccione</option>
+                                <option value="2" {% if usuario.rol == 2 %}selected=""{% endif %}>Cliente</option>
+                                <option value="1" {% if usuario.rol == 1 %}selected=""{% endif %}>Empleado</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label for="updateItemCelular" class="form-label">Celular</label>
-                            <input type="text" class="form-control" id="updateItemCelular" name="celular" pattern="[0-9]{10}" title="Se solicita tener 10 digitos como minimo" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="updateItemCorreo" class="form-label">Correo</label>
-                            <input type="email" class="form-control" id="updateItemCorreo" name="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" required>
+                            <input type="text" class="form-control" id="updateItemCelular" value="{{ request.session.auth.celular }}" name="celular" pattern="[0-9]{10}" title="Se solicita tener 10 digitos como minimo" required>
                         </div>
                         <button type="submit" class="btn-actualizar btn btn-primary">Actualizar Usuario</button>
                     </form>
@@ -144,33 +140,47 @@
         </div>
     </div>
     
-
-
 </main><br>
-
 <script>
     function validarFormulario() {
         let clave = document.getElementById("clave").value;
         let confirmarClave = document.getElementById("confirmar_clave").value;
-        if (clave !== confirmarClave) {
-            alert("Las contraseñas no coinciden");
+        let nombre = document.getElementById("name").value;
+        let apellido = document.getElementById("apellido").value;
+
+        // Validación de letras solamente para nombre y apellido
+        let soloLetras = /^[A-Za-záéíóúÁÉÍÓÚñÑ ]+$/;
+
+        if (!soloLetras.test(nombre)) {
+            alert("El campo nombre solo permite letras.");
             return false;
         }
-        // alert("Usuario agregado correctamente");
+
+        if (!soloLetras.test(apellido)) {
+            alert("El campo apellido solo permite letras.");
+            return false;
+        }
+
+        if (clave !== confirmarClave) {
+            alert("Las contraseñas no coinciden.");
+            return false;
+        }
+
         return true;
     }
+
     function cargarDatosUsuario(id, nombre, apellido, rol, celular, email) {
-    document.getElementById("updateUserId").value = id;
-    document.getElementById("updateItemName").value = nombre;
-    document.getElementById("updateItemApellido").value = apellido;
-    document.getElementById("updateItemRol").value = rol;
-    document.getElementById("updateItemCelular").value = celular;
-    document.getElementById("updateItemCorreo").value = email;
+        document.getElementById("updateUserId").value = id;
+        document.getElementById("updateItemName").value = nombre;
+        document.getElementById("updateItemApellido").value = apellido;
+        document.getElementById("updateItemRol").value = rol;
+        document.getElementById("updateItemCelular").value = celular;
+        document.getElementById("updateItemCorreo").value = email;
 
-    // Asegurar que el formulario tenga la acción correcta
-    document.getElementById("updateUserForm").action = `/editar_usuario/${id}/`;
-}
-
+        // Asegurar que el formulario tenga la acción correcta
+        document.getElementById("updateUserForm").action = `/editar_usuario/${id}/`;
+    }
 </script>
+
 
 {% endblock %}
