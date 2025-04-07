@@ -14,7 +14,7 @@
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="name" class="form-label">Nombre:</label>
-                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}">
+                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-zñÑ\s]{2,}">
                 </div>
                 <div>
                     <label for="celular" class="form-label">Cantidad:</label>
@@ -139,7 +139,7 @@
                                 {% csrf_token %}
                                 <div class="mb-3">
                                     <label for="name" class="form-label">Nombre:</label>
-                                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}" value="{{ producto.nombre }}">
+                                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-zñÑ\s]{2,}" value="{{ producto.nombre }}">
                                 </div>
                                 <div>
                                     <label for="celular" class="form-label">Stock:</label>
@@ -147,7 +147,7 @@
                                 </div> 
                                 <div class="mb-3">
                                     <label for="apellido" class="form-label">Descripción:</label>
-                                    <input type="text" class="form-control" id="descripcion" name="descripcion" pattern="[A-Za-z ]{2,}" value="{{ producto.descripcion }}" required>
+                                    <input type="text" class="form-control" id="descripcion" name="descripcion" value="{{ producto.descripcion }}" required>
                                 </div>
                                 <div class="mb-3 form-acomodado">
                                     
@@ -170,7 +170,13 @@
                                     <div>
                                         {% for i in catProduct %}
                                             <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}">
+                                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}"
+                                                    {% for cat in producto.fk2_producto_categoria.all %}
+                                                        {% if cat.categoria.id == i.id %}
+                                                            checked
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                >
                                                 <label class="form-check-label" for="categoria{{ i.id }}">
                                                     {{ i.nombre }}
                                                 </label>

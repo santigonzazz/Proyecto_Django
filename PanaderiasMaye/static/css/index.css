@@ -337,6 +337,7 @@ footer .text-center p {
 
 .col-md-6 {
     flex: 0 0 auto;
+    margin: auto;
 }
 
 .row-dashboard {

@@ -141,14 +141,26 @@ def facturas(request):
 
     if verificar:
         if verificar["rol"] == 1:
-            fac = Carrito.objects.filter()
+            facturas_raw = Carrito.objects.all().prefetch_related('detalles')  # optimización con prefetch
+
+            facturas = []
+            for f in facturas_raw:
+                total = sum(detalle.total for detalle in f.detalles.all())
+                facturas.append({
+                    "id": f.id,
+                    "usuario": f.usuario,
+                    "servicio": f.get_servicio_display(),  # muestra el nombre del servicio
+                    "cantidad": f.cantidad,
+                    "total": total
+                })
+
             contexto = {
-                "facturas": fac
+                "facturas": facturas
             }
             return render(request, "admin/admin-facturas.html", contexto) 
         else:
-            messages.info(request, "Usted no tiene permisos para éste módulo...")
-        return redirect( "index")
+            messages.info(request, "Usted no tiene permisos para este módulo...")
+            return redirect("index")
     
     else:
         messages.info(request, "Debe loguearse primero...")
@@ -520,24 +532,39 @@ def eliminar_producto(request, id_producto):
 
 def editar_producto(request, producto_id):
     try:
-        p = Producto.objects.get(pk = producto_id)
+        p = Producto.objects.get(pk=producto_id)
+
         if request.method == 'POST':
             # Obtener los datos del formulario
             p.nombre = request.POST.get("nombre", p.nombre)
             p.precio = request.POST.get("precio", p.precio)
             p.stock = request.POST.get("stock")
+            p.descripcion = request.POST.get("descripcion", p.descripcion)
             p.disponibilidad = request.POST.get("disponibilidad", p.disponibilidad)
-            p.foto = request.FILES.get("foto", p.foto)
-            
-            # Guardar los cambios
+            foto_nueva = request.FILES.get("foto")
+            if foto_nueva:
+                p.foto = foto_nueva
+
             p.save()
+
+            # 🔁 Actualizar las categorías
+            nuevas_categorias = request.POST.getlist("categorias")
+            ProductoCategoria.objects.filter(producto=p).delete()  # Elimina las relaciones actuales
+            for cat_id in nuevas_categorias:
+                categoria = Categoria.objects.get(id=cat_id)
+                ProductoCategoria.objects.create(producto=p, categoria=categoria)
+
             messages.success(request, "Producto actualizado correctamente.")
             return redirect("crud_productos")
+
         else:
             contexto = {
-                "producto": p
+                "producto": p,
+                "catProduct": Categoria.objects.all(),  # 👈 necesario si vas a renderizar categorías
+                "categorias_producto": p.fk2_producto_categoria.all()
             }
             return render(request, "admin/editar_producto.html", contexto)
+
     except Producto.DoesNotExist:
         messages.error(request, "Producto no encontrado.")
         return redirect("crud_productos")

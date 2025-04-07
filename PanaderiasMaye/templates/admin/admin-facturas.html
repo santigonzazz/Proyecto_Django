@@ -33,15 +33,13 @@
             <tbody>
                 {% for factura in facturas %}
                 <tr>
-
                     <td>{{ factura.id }}</td>
                     <td>{{ factura.usuario }}</td>
                     <td>{{ factura.servicio }}</td>
                     <td>{{ factura.cantidad }}</td>
-                    <td>${{ factura.total }}</td>
+                    <td>${{ factura.total|floatformat:2 }}</td>
                     <td>
                         <a href="#" class="btn btn-success">Descargar</a>
-
                     </td>
                 </tr>
                 {% empty %}
