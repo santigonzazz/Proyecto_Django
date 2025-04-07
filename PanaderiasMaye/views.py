@@ -951,3 +951,86 @@ def confirmar_pago(request, carrito_id):
 def politica_privacidad(request):
     return render(request, 'politica_privacidad.html')
 
+
+def procesar_reserva(request):
+    logueado = request.session.get("auth")
+
+    if not logueado:
+        messages.error(request, "Debes loguearte primero para continuar... ")
+        return redirect("login")
+    
+    carrito_sesion = request.session.get('carrito', {})
+    if not carrito_sesion:
+        messages.error(request, "Tu carrito está vacío.")
+        return redirect('ver_carrito')
+
+    # Validación de stock
+    for producto_id, item in carrito_sesion.items():
+        producto = get_object_or_404(Producto, id=int(producto_id))
+        if item['cantidad'] > producto.cantidad:
+            messages.success(request, f"La cantidad del pedido para {producto.nombre} no puede superar la cantidad de productos disponibles.")
+            return redirect('ver_carrito_completo')
+
+    total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
+
+    nuevo_carrito = Carrito.objects.create(
+        usuario_id=logueado["id"],
+        fecha=timezone.now(),
+        cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),
+        estado=1
+    )
+
+    for producto_id, item in carrito_sesion.items():
+        Detalle_carrito.objects.create(
+            carrito=nuevo_carrito,
+            producto_id=int(producto_id),
+            cantidad=item['cantidad'],
+            total=item['cantidad'] * item['precio']
+        )
+
+    request.session['carrito_id'] = nuevo_carrito.id
+    messages.success(request, "Tu pedido ha sido procesado correctamente.")
+    return redirect('formulario_reserva')
+
+
+def formulario_reserva(request):
+    logueado = request.session.get("auth")
+    carrito_sesion = request.session.get('carrito', {}).copy()
+    total_general = 0
+
+    for item in carrito_sesion.values():
+        item['total'] = float(item['cantidad']) * float(item['precio'])
+        total_general += item['total']
+
+    if request.method == "POST":
+        carrito_id = request.session.get('carrito_id')
+        if not carrito_id:
+            messages.error(request, "No se encontró la factura para pagar.")
+            return redirect('ver_carrito')
+
+        try:
+            metodo = request.POST.get('metodo_pago')
+            factura = Carrito.objects.get(id=carrito_id)
+            factura.estado = 2
+            factura.meotdo_pago = metodo
+            factura.save()
+        except Carrito.DoesNotExist:
+            messages.error(request, "La factura no existe.")
+            return redirect('ver_carrito')
+        
+        print("metodo pago", factura.meotdo_pago)
+
+        # Limpiar sesión
+        request.session['carrito'] = {}
+        del request.session['carrito_id']
+
+        messages.success(request, "¡Pago exitoso!")
+        return redirect('ver_carrito')
+    
+    contexto = {
+        "carrito": carrito_sesion,
+        "total_general": total_general,
+        "carrito_id": request.session.get('carrito_id')
+    }
+
+    return render(request, 'usuarios/reserva.html', contexto)

@@ -42,6 +42,8 @@ urlpatterns = [
 
     path("formulario-pago/", views.formulario_pago, name='formulario_pago'),
     path("procesar-pedido/", views.procesar_pedido, name='procesar_pedido'),
+    path("procesar-reserva/", views.procesar_reserva, name='procesar_reserva'),
+    path("formulario-reserva/", views.formulario_reserva, name='formulario_reserva'),
     
 
     #Facturas
