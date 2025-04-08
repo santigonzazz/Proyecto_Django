@@ -3,7 +3,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.utils.dateparse import parse_date
 from django.db.models import Sum
-from xhtml2pdf import pisa
+import re
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
+# from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.template.loader import render_to_string
 
@@ -79,7 +83,7 @@ def login(request):
                     return redirect("index")
             return redirect("index")
         except User.DoesNotExist:
-            messages.warning(request, "Usuario o contraseña no válidos..")
+            messages.warning(request, "Correo o contraseña no válidos..")
             request.session["auth"] = None
         except Exception as e:
             messages.error(request, f"Error: {e}")
@@ -136,12 +140,35 @@ def cambiar_clave(request):
 def contactanos(request):
     return render(request, 'contactanos.html')
 
+def validacion_contactanos(request):
+    if request.method == 'POST':
+
+        user_id = request.session.get("auth", {}).get("id")
+        if not user_id:
+            messages.error(request, "Debes iniciar sesión para editar tu perfil.")
+            return redirect("login")
+        
+        errores = []
+
+        nombre = request.POST.get("nombre", "").strip()
+        email = request.POST.get("email", "").strip()
+        mensaje = request.POST.get("mensaje", "").strip()
+
+        if not nombre:
+            errores.append("El parametro Nombre debe tener un valor!! ")
+        else:
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
+                errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
+
+
+
+
 def facturas(request): 
     verificar = request.session.get("auth", False)
 
     if verificar:
         if verificar["rol"] == 1:
-            facturas_raw = Carrito.objects.all().prefetch_related('detalles')  # optimización con prefetch
+            facturas_raw = Carrito.objects.all().prefetch_related('detalles')  
 
             facturas = []
             for f in facturas_raw:
@@ -171,8 +198,7 @@ def about(request):
     return render(request, 'about.html')
 
 
-# def register(request):
-#     return render(request, 'register.html')
+
 
 def clave (request):
     return render(request, 'recuperarclave.html')
@@ -276,29 +302,80 @@ def crud_productos(request):
 #CREAR USUARIO 
 def crear_usuario(request):
     if request.method == 'POST':
-        nombre = request.POST.get("nombre")
-        apellido = request.POST.get("apellido")
-        celular = request.POST.get("celular")
-        email = request.POST.get('email')
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        celular = request.POST.get("celular", "").strip()
+        email = request.POST.get('email', "").strip()
         password = request.POST.get('password')
         confirmar_password = request.POST.get('confirmar_password')
-        direccion = request.POST.get('direccion')  # Asegúrate de que este campo esté en tu formulario
+        direccion = request.POST.get('direccion', "").strip()  
+
+        errores = []
+        
+        if not nombre:
+            errores.append("El parametro Nombre debe tener un valor!! ")
+        else:
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
+                errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
+
+        if not apellido:
+            errores.append("El parametro Apellido debe tener un valor!!")
+        else:
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", apellido):
+                errores.append("Apellido Invalido. Solo se permiten letras y espacios... ")
+
+        if not celular:
+            errores.append("El parametro Celular debe tener un valor ")
+        else:
+            if len(celular) < 10 or len(celular) > 10:
+                errores.append("El celular solo es de 10 digitos... ")
+            elif not re.fullmatch(r"\d{10}", celular):
+                errores.append("Número de Celular invalido. Solo numeros!! ")
+
+        if not email:
+            errores.append("El parametro Correo debe tener un valor!! ")
+        else:
+                
+            try:
+                validate_email(email)
+                print(f"Correo  {email} ")
+
+            except ValidationError:
+                errores.append("Correo electrónico inválido.")
+
+        if not password:
+            errores.append("El parametro Contraseña debe tener un valor!! ")
+        else:
+            if len(password) < 6:
+                errores.append("La contraseña debe tener al menos 6 caracteres.")
+
+        if not confirmar_password:
+            errores.append("El parametro Confirmar Contraseña debe tener un valor!! ")
+        else:
+            if password != confirmar_password:
+                errores.append("Las contraseñas no coinciden.")
+
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("register")
+
 
         if password == confirmar_password:
             try:
-                # Crear el usuario usando tu modelo personalizado
                 q = User(
                     nombre=nombre,
                     apellido=apellido,
                     celular=celular,
                     email=email,
-                    password=password,  # Recuerda que deberías encriptar la contraseña
+                    password=password,  
                     direccion=direccion,
-                    rol=2  # Asignar un rol por defecto, si es necesario
+                    rol=2  
                 )
-                q.save()  # Guardar el usuario en la base de datos
+                q.save()  
                 messages.success(request, "Usuario creado correctamente!")
-                return redirect("login")  # Cambia 'index' por la vista a la que quieras redirigir
+                return redirect("login")  
             except Exception as e:
                 messages.error(request, f"Error: {e}")
                 return redirect("register")
@@ -325,10 +402,41 @@ def editar_perfil(request):
             celular = request.POST.get("celular").strip()
             email = request.POST.get("email").strip()
 
+            if q.email != email:
+                messages.error(request, "No puedes cambiar el correo ")
+                return redirect("editar-perfil")
+            
+            errores = []
+
+            if not nombre:
+                errores.append("El Parametro Nombre debe tener un valor ")
+            else:
+                if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
+                    errores.append("Nombre Invalido. Solo se permiten letras y espacios... ") 
+            
+            if not apellido:
+                errores.append("El Parametro Apellido debe tener un valor ")
+            else:
+                if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", apellido):
+                    errores.append("Apellido Invalido. Solo se permiten letras y espacios... ") 
+
+            if not celular:
+                errores.append("El parametro Celular debe tener un valor ")
+            else:
+                if len(celular) < 10 or len(celular) > 10:
+                    errores.append("El celular solo es de 10 digitos... ")
+                elif not re.fullmatch(r"\d{10}", celular):
+                    errores.append("Número de Celular invalido. Solo numeros!! ")
+
+            if errores:
+                for error in errores:
+                    messages.error(request, error)
+                return redirect("editar-perfil")
+
+
             q.nombre = nombre
             q.apellido = apellido
             q.celular = celular
-            q.email = email
             q.save()
 
             request.session["auth"] = {
@@ -339,6 +447,7 @@ def editar_perfil(request):
                 "email": email,
                 "foto": q.foto.url,
             }
+            
             messages.success(request, "Datos actualizados correctamente")
             return redirect("editar-perfil")
         except Exception as e:
@@ -483,14 +592,10 @@ def editar_usuario(request, usuario_id):
             usuario.nombre = request.POST.get("nombre")
             usuario.apellido = request.POST.get("apellido")
             usuario.celular = request.POST.get("celular")
-            usuario.email = request.POST.get('email')
+            #usuario.email = request.POST.get('email')
             password = request.POST.get('password')
             
-            
-            # Si la contraseña se cambia, encriptarla
-            if password:
-                from django.contrib.auth.hashers import make_password
-                usuario.password = make_password(password)
+        
             
             # Guardar los cambios
             usuario.save()
@@ -896,7 +1001,7 @@ def exportar_factura_pdf(request, factura_id):
 
     template = get_template(template_path)
     html = template.render(context)
-    pisa.CreatePDF(html, dest=response)
+    # pisa.CreatePDF(html, dest=response)
 
     return response
 

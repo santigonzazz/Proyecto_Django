@@ -115,6 +115,8 @@ class Carrito(models.Model):
     cantidad= models.IntegerField()
     estado = models.IntegerField(choices=ESTADOS, default=1)
     metodo_pago = models.IntegerField(choices=METODOS_PAGOS, default=4)
+    nombre_destinatario = models.CharField(max_length=150, null=True)
+    fecha_reserva = models.DateTimeField(null=True)
 
     def __str__(self):
         return f"{self.usuario} {self.cantidad}"

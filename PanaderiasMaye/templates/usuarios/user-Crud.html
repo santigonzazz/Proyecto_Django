@@ -7,7 +7,7 @@
 {% block body %}
 
 {% if messages %}
-    <div class="alert alert-success">
+    <div class="alert  {% if messages == success %} alert-success {% else %} alert-danger {% endif %} ">
     {% for message in messages %}
         <p>{{ message }}</p>
     {% endfor %}
@@ -15,7 +15,7 @@
 {% endif %}
 <main>
     <div class="container mt-5">
-        <h1 class="title text-center">PERSONALIZACION DE CUENTA DE USUARIO</h1>
+        <h1 class="title text-center">PERSONALIZACIÓN DE CUENTA DE USUARIO</h1>
         <form action="{% url 'editar-perfil' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
@@ -23,21 +23,19 @@
                 <strong>
                     <h5>Nombre</h5>
                 </strong>
-                <input type="text" class="form-control" value="{{ request.session.auth.nombre }}" name="nombre" required 
-                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" title="Solo se permiten letras y espacios">
+                <input type="text" class="form-control" value="{{ request.session.auth.nombre }}" name="nombre">
             </div>
             <div class="editUser">
                 <strong>
                     <h5>Apellido</h5>
                 </strong>
-                <input type="text" class="form-control" value="{{ request.session.auth.apellido }}" name="apellido" required 
-                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" title="Solo se permiten letras y espacios">
+                <input type="text" class="form-control" value="{{ request.session.auth.apellido }}" name="apellido">
             </div>
             <div class="editUser">
                 <strong>
-                    <h5>celular</h5>
+                    <h5>Celular</h5>
                 </strong>
-                <input type="text" class="form-control" value="{{ request.session.auth.celular }}" name="celular" required pattern="[0-9]{10}" title="Debe contener 10 dígitos" autocomplete="tel">
+                <input type="text" class="form-control" value="{{ request.session.auth.celular }}" name="celular" autocomplete="tel">
             </div>
             <div class="editUser">
                 <strong>

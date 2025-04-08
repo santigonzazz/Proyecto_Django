@@ -15,29 +15,29 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" name="nombre" id="nombre" autocomplete="given-name" required 
-                        pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" title="Solo se permiten letras y espacios" autocomplete="family-name">
+                        <input type="text" class="form-control" name="nombre" id="nombre" autocomplete="given-name"  
+                        autocomplete="family-name">
                     </div>
                     <div class="mb-3">
                         <label for="apellido" class="form-label">Apellido</label>
-                        <input type="text" class="form-control" name="apellido" id="apellido" required 
-                        pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" title="Solo se permiten letras y espacios" autocomplete="family-name">
+                        <input type="text" class="form-control" name="apellido" id="apellido"  
+                        title="Solo se permiten letras y espacios" autocomplete="family-name">
                     </div>
                     <div class="mb-3">
                         <label for="celular" class="form-label">Celular</label>
-                        <input type="tel" class="form-control" id="celular" name="celular" required pattern="[0-9]{10}" title="Debe contener 10 dígitos" autocomplete="tel">
+                        <input type="tel" class="form-control" id="celular" name="celular" autocomplete="tel">
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">Correo</label>
-                        <input type="email" class="form-control" id="email" name="email" required autocomplete="email">
+                        <input type="text" class="form-control" id="email" name="email" autocomplete="email">
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" id="password" name="password" required autocomplete="new-password">
+                        <input type="password" class="form-control" id="password" name="password" autocomplete="new-password">
                     </div>
                     <div class="mb-3">
                         <label for="confirm_password" class="form-label">Confirmar Contraseña</label>
-                        <input type="password" class="form-control" id="confirm_password" name="confirmar_password" required autocomplete="new-password">
+                        <input type="password" class="form-control" id="confirm_password" name="confirmar_password" autocomplete="new-password">
                     </div>
                     <button type="submit" class="btn-register btn btn-primary">Regístrate</button>
                 </form>
