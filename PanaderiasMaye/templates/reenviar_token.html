@@ -1,0 +1,18 @@
+{% extends "base2.html" %}
+{% load static %}
+
+{% block titulo %}Token reenviado{% endblock %}
+
+{% block body %}
+<main class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="alert alert-success shadow-sm p-4 text-center rounded">
+                <h4 class="mb-3">¡Nuevo código enviado!</h4>
+                <p>Revisa tu bandeja de entrada (y tu carpeta de spam) para verificar tu cuenta.</p>
+                <a href="{% url 'verificar_codigo' %}" class="btn btn-primary mt-3">Ingresar código</a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

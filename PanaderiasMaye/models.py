@@ -15,6 +15,8 @@ class User(models.Model):
         (2, 'Clientes'),
     )
     rol= models.IntegerField(choices= ROLES, default=2)
+    token = models.CharField(max_length=100, blank=True, null=True)
+    verificado = models.BooleanField(default=False)
     def __str__(self):
         return f'{self.nombre} {self.apellido}'
 

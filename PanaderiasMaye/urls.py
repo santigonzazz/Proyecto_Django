@@ -58,4 +58,10 @@ urlpatterns = [
 
     path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
 
+    # Tokens:
+
+    path("verificar-codigo/", views.verificar_codigo, name="verificar_codigo" ),
+    path("reenviar-token/", views.reenviar_token, name="reenviar_token" )
+    
+
 ]

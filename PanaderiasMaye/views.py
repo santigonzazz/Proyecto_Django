@@ -7,7 +7,7 @@ import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-# from xhtml2pdf import pisa
+from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.template.loader import render_to_string
 
@@ -17,6 +17,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .utils import *
 from django.contrib.auth.hashers import make_password
+import uuid
 # Create your views here.
 
 def index(request):
@@ -63,20 +64,22 @@ def login(request):
         usuario = request.POST.get("email")
         passwd = request.POST.get("password")
         try:
-            q = User.objects.get(email=usuario, password=passwd)
-             # if verify_password(passwd, q.password):
-            # Crear variable de sesión ========
-            # Crear variable de sesión ========
-            request.session["auth"] = {
-                "id": q.id,
-                "foto": q.foto.url,
-                "nombre": q.nombre,
-                "apellido":q.apellido,
-                "email": q.email,
-                "celular": q.celular,
-                "rol": q.rol,
-            }
+            q = User.objects.get(email=usuario)
+            if verify_password(passwd, q.password):
+                request.session["auth"] = {
+                    "id": q.id,
+                    "foto": q.foto.url,
+                    "nombre": q.nombre,
+                    "apellido":q.apellido,
+                    "email": q.email,
+                    "celular": q.celular,
+                    "rol": q.rol,
+                }
             verificar = request.session.get("auth", False)
+            if not q.verificado:
+                messages.error(request, "Debes verificar tu cuenta antes!!")
+                return redirect("login")
+            
             if verificar :
                 if verificar["rol"] == 1:
                     return redirect("admin_dashboard")
@@ -365,18 +368,24 @@ def crear_usuario(request):
 
         if password == confirmar_password:
             try:
+                token = str(uuid.uuid4()).split('-')[0]
                 q = User(
                     nombre=nombre,
                     apellido=apellido,
                     celular=celular,
                     email=email,
-                    password=password,  
+                    password=hash_password(password),  
                     direccion=direccion,
-                    rol=2  
+                    rol=2,
+                    token = token,
+                    verificado = False  
                 )
                 q.save()  
-                messages.success(request, "Usuario creado correctamente!")
-                return redirect("login")  
+
+                enviar_token(email, token)
+                request.session['correo_verificacion'] = email
+                messages.success(request, "Token enviado correctamente!")
+                return redirect("verificar_codigo")  
             except Exception as e:
                 messages.error(request, f"Error: {e}")
                 return redirect("register")
@@ -782,7 +791,7 @@ def agregar_carrito(request, producto_id):
 
     request.session["carrito"] = carrito
     messages.success(request, f"{producto.nombre} agregado correctamente al carrito.")
-    return redirect("ver_carrito_completo")
+    return redirect("index")
 
 
 def ver_carrito_completo(request):
@@ -1006,7 +1015,7 @@ def exportar_factura_pdf(request, factura_id):
 
     template = get_template(template_path)
     html = template.render(context)
-    # pisa.CreatePDF(html, dest=response)
+    pisa.CreatePDF(html, dest=response)
 
     return response
 
@@ -1193,3 +1202,62 @@ def eliminar_usuario_admin(request, id_usuario):
         messages.error(request, f"Error inesperado: {e}")
 
     return redirect("adminCRUDU")
+
+#Enviar TOKENS
+
+def enviar_token(email, token):
+    asunto = "Verifica tu cuenta"
+    mensaje = f"Tu código de verificación es: {token} "
+    remitente = settings.EMAIL_HOST_USER
+    destinatarios = [email]
+
+    send_mail(asunto, mensaje, remitente, destinatarios)
+
+def verificar_codigo(request):
+    email = request.session.get('correo_verificacion')
+    if not email:
+        return redirect('register')
+    
+    if request.method == 'POST':
+        codigo = request.POST.get("codigo")
+        intentos = request.session.get('intentos', 0)
+
+        try:
+            usuario = User.objects.get(email=email)
+            if usuario.token == codigo:
+                usuario.verificado = True
+                usuario.token = None
+                usuario.save()
+                messages.success(request,"Cuenta verificada correctamente!!  ")
+                request.session.pop('correo_verificacion', None)
+                request.session.pop('intentos', None)
+                return redirect("login")
+            else:
+                intentos +=1
+                request.session['intentos'] =  intentos
+                if intentos >= 3:
+                    messages.error(request, "Demasiados Intentos. Solicita un nuevo Código ")
+                    return redirect("reenviar_token")
+                messages.warning(request, f"Codigo Incorrecto. Te quedan {intentos}/3 ")
+        except User.DoesNotExist:
+            messages.error(request, "Usuario no encontrado")
+            return redirect("register")
+    return render(request, "verificar_codigo.html")
+
+def reenviar_token(request):
+    email = request.session.get("correo_verificacion")
+    if not email:
+        return redirect("register")
+    
+    try:
+        usuario = User.objects.get(email=email)
+        nuevo_token = str(uuid.uuid4()).split('-')[0]
+        usuario.token = nuevo_token
+        usuario.save()
+        enviar_token(email, nuevo_token)
+        request.session['intentos'] = 0
+        messages.success(request, "Nuevo codigo enviado al correo!! ")
+    except User.DoesNotExist:
+            messages.error(request, "No se encontró el usuario ")
+    
+    return redirect("verificar_codigo")
