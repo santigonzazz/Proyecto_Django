@@ -7,7 +7,7 @@ class User(models.Model):
     nombre= models.CharField(max_length= 100,  validators=[MinLengthValidator(2)])
     apellido= models.CharField(max_length= 100, validators=[MinLengthValidator(2)])
     celular= models.CharField(max_length=10)
-    email= models.EmailField(max_length= 254)
+    email= models.EmailField(max_length= 254, unique=True)
     password=  models.CharField(max_length= 100)
     direccion=  models.CharField(max_length= 120, blank=True, null=True)
     ROLES=(

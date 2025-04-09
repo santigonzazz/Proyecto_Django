@@ -1,46 +1,48 @@
 {% extends 'base.html' %}
-{% load static  %}
+{% load static %}
 {% block titulo %} Carrito {% endblock %}
-{% block titulo-body %} Buenvenido a Panaderia's Maye!!! {% endblock %}
-{% block body %} 
+{% block titulo-body %} Bienvenido a Panaderia's Maye!!! {% endblock %}
+{% block body %}
 
 {% if messages %}
-  <div class="alert alert-danger">
-      {% for message in messages %}
-          <p>{{ message }}</p>
-      {% endfor %}
-  </div>
+<div class="alert alert-danger">
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+</div>
 {% endif %}
 
 <style>
-     
-        #contaner-carrito {
-            background-color: #eae0c8; /* Color Beige */
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .card {
-            border: none;
-            
-            background-color: #F5F5DC;
-        }
-        .btn-success {
-            background-color: #28a745;
-            border: none;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-        }
-        .btn-carrito-pesos{
-            color: black;
-        }
-  
+    #contaner-carrito {
+        background-color: #eae0c8;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card {
+        border: none;
+        background-color: #F5F5DC;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .btn-carrito-pesos {
+        color: black;
+    }
 </style>
-  <main>
+
+<main>
     <div class="container mt-5 mb-5" id="contaner-carrito">
         <h2 class="text-center mb-4">Carrito de Compras</h2>
-        
+
         <div class="row">
             <div class="col-lg-8">
                 <div class="card p-3">
@@ -64,13 +66,18 @@
                                 <td>
                                     <form action="{% url 'actualizar_cantidad' producto_id %}" method="POST">
                                         {% csrf_token %}
-                                        <input type="number" name="cantidad" value="{{ item.cantidad }}" min="1" class="form-control" style="width: 80px; display: inline;">
+                                        <input type="number" name="cantidad" value="{{ item.cantidad }}" min="1"
+                                               {% if item.stock %} max="{{ item.stock }}" {% endif %}
+                                               class="form-control" required style="width: 80px; display: inline;">
                                         <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
                                     </form>
                                 </td>
                                 <td>${{ item.total|floatformat:2 }}</td>
                                 <td>
-                                    <a href="{% url 'eliminar_producto_carrito' producto_id %}" class="btn">Eliminar </a>
+                                    <a href="{% url 'eliminar_producto_carrito' producto_id %}" class="btn btn-danger btn-sm"
+                                       onclick="return confirm('¿Estás seguro de que deseas eliminar este producto del carrito?')">
+                                       Eliminar
+                                    </a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -78,33 +85,20 @@
                     </table>
                 </div>
             </div>
-    
-            <!-- Total General -->
+
+
             <div class="col-lg-4">
                 <div class="card p-4 card-compra">
                     <h4>Total de la compra:</h4>
                     <h2 class="btn-carrito-pesos">$ {{ total }}</h2>
                     <a href="{% url 'procesar_pedido' %}" class="btn w-100 mt-3">Finalizar Compra</a>
+
+                    <a href="{% url 'vaciar_carrito' %}" class="btn btn-outline-danger w-100 mt-3"
+                       onclick="return confirm('¿Seguro que deseas vaciar el carrito?')">Vaciar carrito</a>
                 </div>
             </div>
         </div>
     </div>
-  </main>
+</main>
 <br><br><br>
-
-<script>
-    function cambiarCantidad(productoId, cambio) {
-        let cantidadInput = document.getElementById('cantidad_' + productoId);
-        let nuevaCantidad = parseInt(cantidadInput.value) + cambio;
-        if (nuevaCantidad >= 1) {
-            cantidadInput.value = nuevaCantidad;
-        }
-    }
-
-    function eliminarProducto(productoId) {
-        if (confirm("¿Seguro que deseas eliminar este producto?")) {
-            alert("Producto eliminado (esto es una simulación)");
-        }
-    }
-</script>
 {% endblock %}

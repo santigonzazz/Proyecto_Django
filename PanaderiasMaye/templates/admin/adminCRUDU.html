@@ -3,7 +3,6 @@
 {% block titulo %} Admin-Crudn {% endblock %}
 
 {% block body %}
-
 <main>
     <div class="container mt-5">
         <h1 class="title text-center">ADMIN CRUD USUARIOS</h1>
@@ -11,16 +10,16 @@
         <!-- Create Form -->
         <div class="row mb-4 form-center">
             <div class="col-md-6 offset-md-3">
-                <h1 class="title">Añadir nuevo Usuario</h1>
-                <form class="form-user" method="post" action="" onsubmit="return validarFormulario()">
+                <h2 class="title text-center">Añadir nuevo Usuario</h2>
+                <form class="form-user" method="post" action="{% url 'crear_usuario_admin' %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="name" class="form-label">Nombre:</label>
-                        <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-z ]{2,}" title="No se permiten numeros ni caracteres especiales">
+                        <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}" title="Solo letras, mínimo 2 caracteres.">
                     </div>
                     <div class="mb-3">
                         <label for="apellido" class="form-label">Apellido:</label>
-                        <input type="text" class="form-control" id="apellido" name="apellido" pattern="[A-Za-z ]{2,}" title="No se permiten numeros ni caracteres especiales" required>
+                        <input type="text" class="form-control" id="apellido" name="apellido" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}" title="Solo letras, mínimo 2 caracteres.">
                     </div>
                     <div class="mb-3">
                         <label for="rol" class="form-label">Rol:</label>
@@ -32,11 +31,11 @@
                     </div>
                     <div class="mb-3">
                         <label for="celular" class="form-label">Celular:</label>
-                        <input type="text" class="form-control" id="celular" name="celular" required pattern="[0-9]{10}" title="Se solicita tener 10 digitos como minimo">
+                        <input type="text" class="form-control" id="celular" name="celular" required pattern="^\d{10}$" title="Debe tener exactamente 10 dígitos.">
                     </div>
                     <div class="mb-3">
                         <label for="correo" class="form-label">Correo:</label>
-                        <input type="email" class="form-control" id="correo" name="email" required pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" placeholder="example@example.com">
+                        <input type="email" class="form-control" id="correo" name="email" required placeholder="example@example.com">
                     </div>
                     <div class="mb-3">
                         <label for="clave" class="form-label">Clave:</label>
@@ -50,25 +49,25 @@
                 </form>
             </div>
         </div>
-<br><br>
 
-{% if messages %}
-    <div class="alert alert-success" role="alert">
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-    </div>
-{% endif %}
-        <!-- Read Items -->
-        <table class="table">
+        {% if messages %}
+            <div class="alert alert-info mt-3">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Tabla de usuarios -->
+        <table class="table mt-4">
             <thead>
                 <tr class="Cabezal_Tabla">
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Apellido</th>
-                    <th scope="col">Rol</th>
-                    <th scope="col">Celular</th>
-                    <th scope="col">Correo</th>
-                    <th scope="col">Acciones</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Rol</th>
+                    <th>Celular</th>
+                    <th>Correo</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -80,94 +79,69 @@
                     <td>{{ usuario.celular }}</td>
                     <td>{{ usuario.email }}</td>
                     <td>
-                    <a href="#" class="btn btn-info" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#updateModal"
-                        onclick="cargarDatosUsuario('{{ usuario.id }}', '{{ usuario.nombre }}', '{{ usuario.apellido }}', '{{ usuario.rol }}', '{{ usuario.celular }}', '{{ usuario.email }}')">
-                        Editar
-                    </a>
-                    <a href="{% url 'eliminar_usuario' usuario.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar este usuario?')">
-                        Eliminar
-                    </a>  
-
+                        <a href="#" class="btn btn-info"
+                           data-bs-toggle="modal"
+                           data-bs-target="#updateModal"
+                           onclick="cargarDatosUsuario('{{ usuario.id }}', '{{ usuario.nombre }}', '{{ usuario.apellido }}', '{{ usuario.rol }}', '{{ usuario.celular }}', '{{ usuario.email }}')">Editar</a>
+                           <a href="{% url 'eliminar_usuario_admin' usuario.id %}" class="btn btn-danger"
+                           onclick="return confirm('¿Seguro que quieres eliminar este usuario?')">Eliminar</a>
                     </td>
                 </tr>
                 {% empty %}
-                <tr>
-                    <td colspan="7">No hay usuarios disponibles.</td>
-                </tr>
+                <tr><td colspan="6" class="text-center">No hay usuarios registrados.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
 
-    <!-- Update Modal -->
-    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="updateModalLabel">Actualizar Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
+        <!-- Modal de actualización -->
+        <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
                     <form id="updateUserForm" method="post">
                         {% csrf_token %}
-                        <input type="hidden" id="updateUserId" name="id">  <!-- ID oculto -->
-    
-                        <div class="mb-3">
-                            <label for="updateItemName" class="form-label">Nombre</label>
-                            <input type="text" class="form-control" id="updateItemName" name="nombre" pattern="[A-Za-z ]{2,}" required>
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateModalLabel">Actualizar Usuario</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                         </div>
-                        <div class="mb-3">
-                            <label for="updateItemApellido" class="form-label">Apellido</label>
-                            <input type="text" class="form-control" id="updateItemApellido" name="apellido" pattern="[A-Za-z ]{2,}" required>
+                        <div class="modal-body">
+                            <input type="hidden" id="updateUserId" name="id">
+                            <div class="mb-3">
+                                <label for="updateItemName" class="form-label">Nombre</label>
+                                <input type="text" class="form-control" id="updateItemName" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemApellido" class="form-label">Apellido</label>
+                                <input type="text" class="form-control" id="updateItemApellido" name="apellido" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemRol" class="form-label">Rol:</label>
+                                <select name="rol" id="updateItemRol" class="form-select" required>
+                                    <option value="">Seleccione</option>
+                                    <option value="2">Cliente</option>
+                                    <option value="1">Empleado</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="updateItemCelular" class="form-label">Celular</label>
+                                <input type="text" class="form-control" id="updateItemCelular" name="celular" required pattern="^\d{10}$">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="rol" class="form-label">Rol:</label>
-                            <select name="rol" class="form-select" required>
-                                <option value="" >Seleccione</option>
-                                <option value="2" {% if usuario.rol == 2 %}selected=""{% endif %}>Cliente</option>
-                                <option value="1" {% if usuario.rol == 1 %}selected=""{% endif %}>Empleado</option>
-                            </select>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Actualizar</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                         </div>
-                        <div class="mb-3">
-                            <label for="updateItemCelular" class="form-label">Celular</label>
-                            <input type="text" class="form-control" id="updateItemCelular" value="{{ request.session.auth.celular }}" name="celular" pattern="[0-9]{10}" title="Se solicita tener 10 digitos como minimo" required>
-                        </div>
-                        <button type="submit" class="btn-actualizar btn btn-primary">Actualizar Usuario</button>
                     </form>
                 </div>
             </div>
         </div>
+
     </div>
-    
-</main><br>
+</main>
+
 <script>
-    function validarFormulario() {
-        let clave = document.getElementById("clave").value;
-        let confirmarClave = document.getElementById("confirmar_clave").value;
-        let nombre = document.getElementById("name").value;
-        let apellido = document.getElementById("apellido").value;
 
-        // Validación de letras solamente para nombre y apellido
-        let soloLetras = /^[A-Za-záéíóúÁÉÍÓÚñÑ ]+$/;
 
-        if (!soloLetras.test(nombre)) {
-            alert("El campo nombre solo permite letras.");
-            return false;
-        }
-
-        if (!soloLetras.test(apellido)) {
-            alert("El campo apellido solo permite letras.");
-            return false;
-        }
-
-        if (clave !== confirmarClave) {
-            alert("Las contraseñas no coinciden.");
-            return false;
-        }
-
-        return true;
-    }
+    // Función para cargar los datos del usuario en el modal de actualización
 
     function cargarDatosUsuario(id, nombre, apellido, rol, celular, email) {
         document.getElementById("updateUserId").value = id;
@@ -175,12 +149,9 @@
         document.getElementById("updateItemApellido").value = apellido;
         document.getElementById("updateItemRol").value = rol;
         document.getElementById("updateItemCelular").value = celular;
-        document.getElementById("updateItemCorreo").value = email;
+        document.getElementById("updateUserForm").action = `/editar_usuario_admin/${id}/`;
 
-        // Asegurar que el formulario tenga la acción correcta
-        document.getElementById("updateUserForm").action = `/editar_usuario/${id}/`;
     }
 </script>
-
-
 {% endblock %}
+

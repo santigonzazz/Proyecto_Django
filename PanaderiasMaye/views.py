@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from .utils import *
+from django.contrib.auth.hashers import make_password
 # Create your views here.
 
 def index(request):
@@ -746,121 +747,125 @@ def eliminar_categoria(request, id_categoria):
         messages.error(request, f"Error: {e}")
     return redirect("crud_categoria")
 
-
 #Carrito:
-
 def agregar_carrito(request, producto_id):
     logueado = request.session.get("auth")
 
     if not logueado:
-        messages.error(request, "Inicia sesión para añadir al carrito.")
+        messages.error(request, "Inicia sesión para añadir productos al carrito.")
         return redirect("login")
-    
+
     producto = get_object_or_404(Producto, id=producto_id)
-    carrito = request.session.get('carrito', {})
+    carrito = request.session.get("carrito", {})
+    producto_id_str = str(producto.id)
 
-    if str(producto.id) in carrito:
-        carrito[str(producto.id)]['cantidad'] += 1
+    if producto_id_str in carrito:
+        if carrito[producto_id_str]["cantidad"] < producto.cantidad:
+            carrito[producto_id_str]["cantidad"] += 1
+        else:
+            messages.warning(request, f"No hay más unidades disponibles de {producto.nombre}.")
+            return redirect("ver_carrito_completo")
     else:
-        carrito[str(producto.id)] = {
-            'id': producto.id,
-            'foto': producto.foto.url,
-            'nombre': producto.nombre,
-            'precio': float(producto.precio),  # Asegurar que sea float
-            'cantidad': 1,
-            'total': 0
+        carrito[producto_id_str] = {
+            "id": producto.id,
+            "foto": producto.foto.url,
+            "nombre": producto.nombre,
+            "precio": float(producto.precio),
+            "cantidad": 1,
+            "stock": producto.cantidad, # stock de "cantidad"
+            "total": 0
         }
-    
-    # **Actualizar el total por producto**
-    carrito[str(producto.id)]['total'] = carrito[str(producto.id)]['cantidad'] * carrito[str(producto.id)]['precio']
 
-    request.session['carrito'] = carrito
+    carrito[producto_id_str]["total"] = round(
+        carrito[producto_id_str]["cantidad"] * carrito[producto_id_str]["precio"], 2
+    )
+
+    request.session["carrito"] = carrito
     messages.success(request, f"{producto.nombre} agregado correctamente al carrito.")
-    return redirect('ver_carrito')
-
-
-def ver_carrito(request):
-    logueado = request.session.get("auth")
-
-    if not logueado:
-        messages.error(request, "Inicia sesión para ver el carrito.")
-        return redirect("login")
-
-    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
-    total_general = 0
-
-    for key, item in carrito.items():
-        item['total'] = float(item['precio']) * item['cantidad']  # Asegurar conversión a float
-        total_general += item['total']
-
-    request.session['carrito'] = carrito  # Guardar cambios en la sesión
-
-    print(f"Total General Calculado: {total_general}")  # <-- Agrega esta línea para depuración
-
-    contexto = {
-        "carrito": carrito,
-        "total": total_general
-    }
-    return render(request, 'index.html', contexto)
-
-
-
-def eliminar_producto_carrito(request, producto_id):
-    logueado = request.session.get("auth")
-
-    if not logueado:
-        messages.error(request, "Inicia sesión para eliminar productos del carrito.")
-        return redirect("login")
-
-    carrito = request.session.get('carrito', {})
-
-    # Verifica si el producto está en el carrito
-    if str(producto_id) in carrito:
-        del carrito[str(producto_id)]  # Elimina el producto del carrito
-        messages.success(request, "Producto eliminado del carrito.")
-    else:
-        messages.error(request, "El producto no está en el carrito.")
-
-    request.session['carrito'] = carrito  # Guarda los cambios en la sesión
-    return redirect('ver_carrito_completo')  # Redirige a la vist
-
+    return redirect("ver_carrito_completo")
 
 
 def ver_carrito_completo(request):
-    logueado = request.session.get("auth")
 
+    logueado = request.session.get("auth")
     if not logueado:
         messages.error(request, "Inicia sesión para ver el carrito.")
         return redirect("login")
 
-    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
+    carrito = request.session.get('carrito', {}).copy()
     total_general = 0
 
-    for item in carrito.values():
-        item['total'] = float(item['cantidad']) * float(item['precio'])
-        total_general += item['total']
+    for key, item in carrito.items():
+        try:
+            cantidad = int(item.get("cantidad", 1))
+            precio = float(item.get("precio", 0))
+            total = round(cantidad * precio, 2)
 
-    request.session['carrito'] = carrito  # Guardar cambios en la sesión
+            item["cantidad"] = cantidad
+            item["precio"] = precio
+            item["total"] = total
 
-    print(f"Total General Calculado: {total_general}")  # <-- Agrega esta línea para depuración
+            total_general += total
+        except (ValueError, TypeError):
+            messages.warning(request, f"Error en el producto del carrito: {item.get('nombre', 'desconocido')}")
+            continue
+
+
+    request.session["carrito"] = carrito
 
     contexto = {
         "carrito": carrito,
-        "total": total_general
+        "total": round(total_general, 2)
     }
-    return render(request, 'carrito.html', contexto)
+    
+    return render(request, "carrito.html", contexto)
 
 def actualizar_cantidad(request, producto_id):
     if request.method == "POST":
-        nueva_cantidad = int(request.POST.get("cantidad", 1))
+        try:
+            cantidad_raw = request.POST.get("cantidad", "")
+            nueva_cantidad = int(cantidad_raw)
+
+            if nueva_cantidad < 1:
+                messages.warning(request, "La cantidad debe ser al menos 1.")
+                return redirect("ver_carrito_completo")
+
+        except ValueError:
+            messages.error(request, "Cantidad inválida. Debe ser un número entero.")
+            return redirect("ver_carrito_completo")
+
         carrito = request.session.get("carrito", {})
 
-        if str(producto_id) in carrito:
-            carrito[str(producto_id)]['cantidad'] = nueva_cantidad
-            carrito[str(producto_id)]['total'] = nueva_cantidad * float(carrito[str(producto_id)]['precio'])
+        if str(producto_id) not in carrito:
+            messages.error(request, "El producto no se encuentra en el carrito.")
+            return redirect("ver_carrito_completo")
+
+        precio = float(carrito[str(producto_id)]['precio'])
+        carrito[str(producto_id)]['cantidad'] = nueva_cantidad
+        carrito[str(producto_id)]['total'] = round(precio * nueva_cantidad, 2)
 
         request.session["carrito"] = carrito
+        messages.success(request, "Cantidad actualizada correctamente.")
         return redirect("ver_carrito_completo")
+
+    return redirect("ver_carrito_completo")
+
+def eliminar_producto_carrito(request, producto_id):
+    carrito = request.session.get("carrito", {})
+
+    if str(producto_id) in carrito:
+        del carrito[str(producto_id)]
+        request.session["carrito"] = carrito
+        messages.success(request, "Producto eliminado del carrito.")
+    else:
+        messages.warning(request, "El producto no se encuentra en el carrito.")
+
+    return redirect("ver_carrito_completo")
+
+def vaciar_carrito(request):
+    request.session["carrito"] = {}
+    messages.success(request, "Carrito vaciado correctamente.")
+    return redirect("ver_carrito_completo")
 
 #Facturas y PAGOS 
 
@@ -1056,3 +1061,135 @@ def confirmar_pago(request, carrito_id):
 def politica_privacidad(request):
     return render(request, 'politica_privacidad.html')
 
+# CRUD USUARIOS ADMIN
+
+
+def crear_usuario_admin(request):
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        rol = request.POST.get("rol", "")
+        celular = request.POST.get("celular", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        confirmar_password = request.POST.get("confirmar_password", "")
+
+        errores = []
+
+        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', nombre):
+            errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
+
+
+        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', apellido):
+            errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
+
+
+        if rol not in ["1", "2"]:
+            errores.append("Debe seleccionar un rol válido entre 1 o 2.")
+
+
+        if not re.match(r'^\d{10}$', celular):
+            errores.append("El número de celular debe tener exactamente 10 dígitos.")
+
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            errores.append("Correo electrónico inválido.")
+
+        if User.objects.filter(email=email).exists():
+            errores.append("El correo electrónico ya está registrado.")
+
+        if len(password) < 8:
+            errores.append("La contraseña debe tener al menos 8 caracteres.")
+        if password != confirmar_password:
+            errores.append("Las contraseñas no coinciden.")
+
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("adminCRUDU")
+
+
+        try:
+            nuevo_usuario = User(
+                nombre=nombre,
+                apellido=apellido,
+                rol=rol,
+                celular=celular,
+                email=email,
+                password=make_password(password),
+            )
+            nuevo_usuario.save()
+            messages.success(request, "Usuario creado correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al crear usuario: {e}")
+
+        return redirect("adminCRUDU")
+    else:
+        return render(request, "admin/adminCRUDU.html")
+    
+
+def editar_usuario_admin(request, id_usuario):
+    usuario = get_object_or_404(User, pk=id_usuario)
+
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        celular = request.POST.get("celular", "").strip()
+        rol = request.POST.get("rol", "").strip()
+
+        errores = []
+
+        # Validar nombre y apellido
+        patron_letras = r'^[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}$'
+        if not re.match(patron_letras, nombre):
+            errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
+        if not re.match(patron_letras, apellido):
+            errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
+
+        # Validar celular
+        if not re.match(r'^\d{10}$', celular):
+            errores.append("El número de celular debe tener exactamente 10 dígitos.")
+
+        # Validar rol
+        if rol not in ["1", "2"]:
+            errores.append("Debe seleccionar un rol válido.")
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("adminCRUDU")  # o a donde renderices la lista
+
+        # Si pasa validación, guardar cambios
+        usuario.nombre = nombre
+        usuario.apellido = apellido
+        usuario.celular = celular
+        usuario.rol = rol
+        usuario.save()
+
+        messages.success(request, "Usuario actualizado correctamente.")
+        return redirect("adminCRUDU")
+
+    # Si viene por GET
+    return redirect("adminCRUDU")
+
+
+
+def eliminar_usuario_admin(request, id_usuario):
+    try:
+        usuario = get_object_or_404(User, pk=id_usuario)
+
+        if str(usuario.rol) == "1":
+            messages.warning(request, "No puedes eliminar un administrador.")
+            return redirect("adminCRUDU")
+
+        usuario.delete()
+        messages.success(request, "Usuario eliminado correctamente.")
+    except IntegrityError:
+        messages.warning(request, "Error: No puedes eliminar este usuario porque está en uso en otra parte del sistema.")
+    except Exception as e:
+        messages.error(request, f"Error inesperado: {e}")
+
+    return redirect("adminCRUDU")
