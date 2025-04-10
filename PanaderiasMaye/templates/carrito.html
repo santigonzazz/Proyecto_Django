@@ -93,6 +93,8 @@
                     <h2 class="btn-carrito-pesos">$ {{ total }}</h2>
                     <a href="{% url 'procesar_pedido' %}" class="btn w-100 mt-3">Finalizar Compra</a>
 
+                    <a href="{% url 'reservar' %}" class="btn w-100 mt-3">Reservar</a>
+
                     <a href="{% url 'vaciar_carrito' %}" class="btn btn-outline-danger w-100 mt-3"
                        onclick="return confirm('¿Seguro que deseas vaciar el carrito?')">Vaciar carrito</a>
                 </div>

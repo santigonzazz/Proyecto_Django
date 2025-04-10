@@ -20,6 +20,7 @@ from django.contrib.auth.hashers import make_password
 import uuid
 # Create your views here.
 
+#principales-------------------------------------------------------------------------------------------------------------
 def index(request):
     cat_id = request.GET.get("cat")  
     carrito = request.session.get('carrito', {})
@@ -114,32 +115,8 @@ def logout(request):
         messages.info(request, "No se pudo cerrar sesión, intente de nuevo")
     return redirect("index")
     
-
-def cambiar_clave(request):
-    if request.method == "POST":
-        clave_actual = request.POST.get("clave_actual")
-        nueva = request.POST.get("nueva")
-        repite_nueva = request.POST.get("repite_nueva")
-        logueado = request.session.get("auth")
-
-        q = User.objects.get(pk=logueado["id"])
-        if verify_password(clave_actual, q.password):
-            if nueva == repite_nueva:
-                q.password = hash_password(nueva)       # utils.py
-                q.save()
-                messages.success(request, "Contraseña cambiada con éxito!!")
-            else:
-                messages.info(request, "Contraseñas nuevas no coinciden...")
-        else:
-            messages.warning(request, "Contraseña no concuerda...")
-
-        return redirect("cambiar_clave")
-    else:
-        return render(request, "cambiar_clave.html")
-
-    
-
-
+def about(request):
+    return render(request, 'about.html')
 
 def contactanos(request):
     return render(request, 'contactanos.html')
@@ -165,7 +142,7 @@ def validacion_contactanos(request):
                 errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
 
 
-
+#facturas--------------------------------------------------------------------------------------
 
 def facturas(request): 
     verificar = request.session.get("auth", False)
@@ -196,205 +173,33 @@ def facturas(request):
     else:
         messages.info(request, "Debe loguearse primero...")
         return redirect("login")
-    
 
-def about(request):
-    return render(request, 'about.html')
+#funciones de usuario-------------------------------------------------------------------------
 
+def cambiar_clave(request):
+    if request.method == "POST":
+        clave_actual = request.POST.get("clave_actual")
+        nueva = request.POST.get("nueva")
+        repite_nueva = request.POST.get("repite_nueva")
+        logueado = request.session.get("auth")
 
+        q = User.objects.get(pk=logueado["id"])
+        if verify_password(clave_actual, q.password):
+            if nueva == repite_nueva:
+                q.password = hash_password(nueva)       # utils.py
+                q.save()
+                messages.success(request, "Contraseña cambiada con éxito!!")
+            else:
+                messages.info(request, "Contraseñas nuevas no coinciden...")
+        else:
+            messages.warning(request, "Contraseña no concuerda...")
 
+        return redirect("cambiar_clave")
+    else:
+        return render(request, "cambiar_clave.html")
 
 def clave (request):
     return render(request, 'recuperarclave.html')
-
-def dashboardAdmin(request):
-     
-    verificar = request.session.get("auth", False)
-
-    if verificar:
-        if verificar["rol"] == 1:
-            cat_id = request.GET.get("cat")     
-            if cat_id:
-                try:
-                    categoria = Categoria.objects.get(id=cat_id)  
-                    productos = Producto.objects.filter(fk2_producto_categoria__categoria=categoria)  
-                except Categoria.DoesNotExist:
-                    categoria = None
-                    productos = []
-            else:
-                categoria = None
-                productos = Producto.objects.all() 
-
-            categorias = Categoria.objects.all() 
-            car = Carrito.objects.all()  
-            contexto = {
-                "productoInfo": productos,
-                "categorias": categorias,  
-                "carrito": car
-            } 
-            return render(request, "admin/admin-DashBoard.html", contexto)
-        else:
-            messages.info(request, "Usted no tiene permisos para éste módulo...")
-        return redirect( "index")
-    
-    else:
-        messages.info(request, "Debe loguearse primero...")
-        return redirect("login")
-
-    
-
-
-
-def crud_categorias(request): 
-    verificar = request.session.get("auth", False)
-
-    if verificar:
-        if verificar["rol"] == 1:
-            cate = Categoria.objects.all()
-            contexto = {
-                "categorias": cate
-            }
-            return render  (request, "admin/adminCRUDCategorias.html", contexto)
-        else:
-            messages.info(request, "Usted no tiene permisos para éste módulo...")
-        return redirect( "index")
-    
-    else:
-        messages.info(request, "Debe loguearse primero...")
-        return redirect("login")
-
-      
-
-def eliminar_categoria(request, id_categoria):
-    try:
-        cate = Categoria.objects.get(pk = id_categoria)
-        cate.delete()
-        messages.success(request, "Cita eliminada correctamente!")
-    except IntegrityError:
-        messages.warning(request, "Error: No puede eliminar el cita, está en uso.")
-    except Exception as e:
-        messages.error(request, f"Error: {e}")
-
-    return redirect("crud_categoria")
-
-
-def crud_productos(request):
-    verificar = request.session.get("auth", False)
-
-    if verificar:
-        if verificar["rol"] == 1:
-            p = Producto.objects.all()
-            c = Categoria.objects.all()
-            contexto = {
-                "productos": p,
-                "catProduct": c
-            }
-            return render (request,"admin/admin-CRUD-productos.html", contexto) 
-        else:
-            messages.info(request, "Usted no tiene permisos para éste módulo...")
-        return redirect( "index")
-    
-    else:
-        messages.info(request, "Debe loguearse primero...")
-        return redirect("login")
-    
-
-
-
-#CRUD USUARIOS 
-
-#CREAR USUARIO 
-def crear_usuario(request):
-    if request.method == 'POST':
-        nombre = request.POST.get("nombre", "").strip()
-        apellido = request.POST.get("apellido", "").strip()
-        celular = request.POST.get("celular", "").strip()
-        email = request.POST.get('email', "").strip()
-        password = request.POST.get('password')
-        confirmar_password = request.POST.get('confirmar_password')
-        direccion = request.POST.get('direccion', "").strip()  
-
-        errores = []
-        
-        if not nombre:
-            errores.append("El parametro Nombre debe tener un valor!! ")
-        else:
-            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
-                errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
-
-        if not apellido:
-            errores.append("El parametro Apellido debe tener un valor!!")
-        else:
-            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", apellido):
-                errores.append("Apellido Invalido. Solo se permiten letras y espacios... ")
-
-        if not celular:
-            errores.append("El parametro Celular debe tener un valor ")
-        else:
-            if len(celular) < 10 or len(celular) > 10:
-                errores.append("El celular solo es de 10 digitos... ")
-            elif not re.fullmatch(r"\d{10}", celular):
-                errores.append("Número de Celular invalido. Solo numeros!! ")
-
-        if not email:
-            errores.append("El parametro Correo debe tener un valor!! ")
-        else:
-                
-            try:
-                validate_email(email)
-                print(f"Correo  {email} ")
-
-            except ValidationError:
-                errores.append("Correo electrónico inválido.")
-
-        if not password:
-            errores.append("El parametro Contraseña debe tener un valor!! ")
-        else:
-            if len(password) < 6:
-                errores.append("La contraseña debe tener al menos 6 caracteres.")
-
-        if not confirmar_password:
-            errores.append("El parametro Confirmar Contraseña debe tener un valor!! ")
-        else:
-            if password != confirmar_password:
-                errores.append("Las contraseñas no coinciden.")
-
-
-        if errores:
-            for error in errores:
-                messages.error(request, error)
-            return redirect("register")
-
-
-        if password == confirmar_password:
-            try:
-                token = str(uuid.uuid4()).split('-')[0]
-                q = User(
-                    nombre=nombre,
-                    apellido=apellido,
-                    celular=celular,
-                    email=email,
-                    password=hash_password(password),  
-                    direccion=direccion,
-                    rol=2,
-                    token = token,
-                    verificado = False  
-                )
-                q.save()  
-
-                enviar_token(email, token)
-                request.session['correo_verificacion'] = email
-                messages.success(request, "Token enviado correctamente!")
-                return redirect("verificar_codigo")  
-            except Exception as e:
-                messages.error(request, f"Error: {e}")
-                return redirect("register")
-        else:
-            messages.error(request, "Las contraseñas no coinciden.")
-            return redirect("register")
-    else:
-        return render(request, "register.html")
-    
 
 def editar_perfil(request):
     if request.method == 'POST':
@@ -472,53 +277,75 @@ def editar_perfil(request):
         
         return render(request, "usuarios/user-Crud.html")
 
+#funciones del administrador-----------------------------------------------------------------------------------
 
-def correos1 (request): 
-    try:  
-        send_mail (
-            
-            "PanaderiasMaye",
-            "mensajes de prueba........ desde django",
-            settings.EMAIL_HOST_USER,
-            ["gonzacardona09@gmail.com"],
-            fail_silently = False,
-        )
+def dashboardAdmin(request):
+     
+    verificar = request.session.get("auth", False)
 
-        return HttpResponse(f"correo enviado")
-    except Exception as e: 
-        return HttpResponse(f"Error {e}")
+    if verificar:
+        if verificar["rol"] == 1:
+            cat_id = request.GET.get("cat")     
+            if cat_id:
+                try:
+                    categoria = Categoria.objects.get(id=cat_id)  
+                    productos = Producto.objects.filter(fk2_producto_categoria__categoria=categoria)  
+                except Categoria.DoesNotExist:
+                    categoria = None
+                    productos = []
+            else:
+                categoria = None
+                productos = Producto.objects.all() 
+
+            categorias = Categoria.objects.all() 
+            car = Carrito.objects.all()  
+            contexto = {
+                "productoInfo": productos,
+                "categorias": categorias,  
+                "carrito": car
+            } 
+            return render(request, "admin/admin-DashBoard.html", contexto)
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return redirect( "index")
     
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
 
+#categorias
 
+def crud_categorias(request): 
+    verificar = request.session.get("auth", False)
 
+    if verificar:
+        if verificar["rol"] == 1:
+            cate = Categoria.objects.all()
+            contexto = {
+                "categorias": cate
+            }
+            return render  (request, "admin/adminCRUDCategorias.html", contexto)
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return redirect( "index")
+    
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
 
+      
 
+def eliminar_categoria(request, id_categoria):
+    try:
+        cate = Categoria.objects.get(pk = id_categoria)
+        cate.delete()
+        messages.success(request, "Cita eliminada correctamente!")
+    except IntegrityError:
+        messages.warning(request, "Error: No puede eliminar el cita, está en uso.")
+    except Exception as e:
+        messages.error(request, f"Error: {e}")
 
-
-
-
-
-
-
-def correos2 (request): 
-    try:  
-        html_message="""hola mundo<strong style='color:blue;'>Django</strong> desde mi app
-        <br>
-        bienvenido 
-        """
-        send_mail (
-            
-            "PanaderiasMaye",
-            "",
-            settings.EMAIL_HOST_USER,
-            ["gonzacardona09@gmail.com"],
-            fail_silently = False,
-            html_message=html_message,
-        )
-
-        return HttpResponse(f"correo enviado")
-    except Exception as e: 
-        return HttpResponse(f"Error {e}")
+    return redirect("crud_categoria")
 
 def agregar_categoria(request):
     if request.method == "POST":
@@ -537,53 +364,52 @@ def agregar_categoria(request):
 
     return redirect("crud_categorias")
 
-def CrudUsuarios(request):
+def editar_categoria(request, categoria_id):
+    try:
+        cate = Categoria.objects.get(pk = categoria_id)
+        if request.method == 'POST':
+            # Obtener los datos del formulario
+            cate.nombre = request.POST.get("nombre")
+            cate.descripcion = request.POST.get("descripcion")
+            
+            # Guardar los cambios
+            cate.save()
+            messages.success(request, "Categoría actualizada correctamente.")
+            return redirect("crud_categoria")
+        else:
+            contexto = {
+                "categoria": cate
+            }
+            return render(request, "admin/editar_categoria.html", contexto)
+    except Categoria.DoesNotExist:
+        messages.error(request, "Categoría no encontrada.")
+        return redirect("crud_categoria")
+    
+def eliminar_categoria(request, id_categoria):
+    try:
+        c = Categoria.objects.get(pk = id_categoria)
+        c.delete()
+        messages.success(request, "Categoria eliminada correctamente.")
+    except IntegrityError:
+        messages.warning(request, "Error: No puede eliminar la categoria")
+    except Exception as e:
+        messages.error(request, f"Error: {e}")
+    return redirect("crud_categoria")
+
+#productos
+
+def crud_productos(request):
     verificar = request.session.get("auth", False)
 
     if verificar:
         if verificar["rol"] == 1:
-            if request.method == 'POST':
-                # Recoger los datos del formulario
-                nombre = request.POST.get("nombre")
-                apellido = request.POST.get("apellido")
-                rol = request.POST.get("rol")
-                celular = request.POST.get("celular")
-                email = request.POST.get('email')
-                password = request.POST.get('password')
-                confirmar_password = request.POST.get('confirmar_password')
-
-                # Validar si las contraseñas coinciden
-                if password == confirmar_password:
-                    try:
-                        # Encriptar la contraseña antes de guardarla
-                        from django.contrib.auth.hashers import make_password
-                        password = make_password(password)
-
-                        # Crear el nuevo usuario
-                        nuevo_usuario = User(
-                            nombre=nombre,
-                            apellido=apellido,
-                            celular=celular,
-                            email=email,
-                            password=password,  # Contraseña encriptada
-                            rol=rol  # Asignar un rol
-                        )
-                        nuevo_usuario.save()  # Guardar en la base de datos
-                        messages.success(request, "Usuario creado correctamente!")
-                        return redirect("adminCRUDU")  # Cambia por la vista a la que quieras redirigir
-                    except Exception as e:
-                        messages.error(request, f"Error: {e}")
-                        return redirect("admin_dashboard")  # Redirigir si hay error
-                else:
-                    messages.error(request, "Las contraseñas no coinciden.")
-                    return redirect("admin_dashboard")  # Redirigir si las contraseñas no coinciden
-            else:
-                # Si es un GET, obtener todos los usuarios
-                usuarios = User.objects.all()
-                contexto = {
-                    "usuarios": usuarios
-                }
-                return render(request, "admin/adminCRUDU.html", contexto)
+            p = Producto.objects.all()
+            c = Categoria.objects.all()
+            contexto = {
+                "productos": p,
+                "catProduct": c
+            }
+            return render (request,"admin/admin-CRUD-productos.html", contexto) 
         else:
             messages.info(request, "Usted no tiene permisos para éste módulo...")
         return redirect( "index")
@@ -591,46 +417,6 @@ def CrudUsuarios(request):
     else:
         messages.info(request, "Debe loguearse primero...")
         return redirect("login")
-    
-
-
-def editar_usuario(request, usuario_id):
-    try:
-        usuario = User.objects.get(id=usuario_id)
-        if request.method == 'POST':
-            # Obtener los datos del formulario
-            usuario.nombre = request.POST.get("nombre")
-            usuario.apellido = request.POST.get("apellido")
-            usuario.celular = request.POST.get("celular")
-            #usuario.email = request.POST.get('email')
-            password = request.POST.get('password')
-            
-        
-            
-            # Guardar los cambios
-            usuario.save()
-            messages.success(request, "Usuario actualizado correctamente.")
-            return redirect("adminCRUDU")
-        else:
-            contexto = {
-                "usuario": usuario
-            }
-            return render(request, "admin/editar_usuario.html", contexto)
-    except User.DoesNotExist:
-        messages.error(request, "Usuario no encontrado.")
-        return redirect("adminCRUDU")
-
-def eliminar_usuario(request, id_usuario):
-    try:
-        usuario = User.objects.get(pk=id_usuario)
-        usuario.delete()
-        messages.success(request, "Usuario eliminado correctamente.")
-    except IntegrityError:
-        messages.warning(request, "Error: No puede eliminar el usuario, está en uso.")
-    except Exception as e:
-        messages.error(request, f"Error: {e}")
-
-    return redirect("adminCRUDU")
 
 def eliminar_producto(request, id_producto):
     try:
@@ -724,39 +510,359 @@ def agregar_producto(request):
     else:
         return render(request, "admin-CRUD-productos.html")
     
-def editar_categoria(request, categoria_id):
+#usuarios
+
+def crear_usuario(request):
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        celular = request.POST.get("celular", "").strip()
+        email = request.POST.get('email', "").strip()
+        password = request.POST.get('password')
+        confirmar_password = request.POST.get('confirmar_password')
+        direccion = request.POST.get('direccion', "").strip()  
+
+        errores = []
+        
+        if not nombre:
+            errores.append("El parametro Nombre debe tener un valor!! ")
+        else:
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
+                errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
+
+        if not apellido:
+            errores.append("El parametro Apellido debe tener un valor!!")
+        else:
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", apellido):
+                errores.append("Apellido Invalido. Solo se permiten letras y espacios... ")
+
+        if not celular:
+            errores.append("El parametro Celular debe tener un valor ")
+        else:
+            if len(celular) < 10 or len(celular) > 10:
+                errores.append("El celular solo es de 10 digitos... ")
+            elif not re.fullmatch(r"\d{10}", celular):
+                errores.append("Número de Celular invalido. Solo numeros!! ")
+
+        if not email:
+            errores.append("El parametro Correo debe tener un valor!! ")
+        else:
+                
+            try:
+                validate_email(email)
+                print(f"Correo  {email} ")
+
+            except ValidationError:
+                errores.append("Correo electrónico inválido.")
+
+        if not password:
+            errores.append("El parametro Contraseña debe tener un valor!! ")
+        else:
+            if len(password) < 6:
+                errores.append("La contraseña debe tener al menos 6 caracteres.")
+
+        if not confirmar_password:
+            errores.append("El parametro Confirmar Contraseña debe tener un valor!! ")
+        else:
+            if password != confirmar_password:
+                errores.append("Las contraseñas no coinciden.")
+
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("register")
+
+
+        if password == confirmar_password:
+            try:
+                token = str(uuid.uuid4()).split('-')[0]
+                q = User(
+                    nombre=nombre,
+                    apellido=apellido,
+                    celular=celular,
+                    email=email,
+                    password=hash_password(password),  
+                    direccion=direccion,
+                    rol=2,
+                    token = token,
+                    verificado = False  
+                )
+                q.save()  
+
+                enviar_token(email, token)
+                request.session['correo_verificacion'] = email
+                messages.success(request, "Token enviado correctamente!")
+                return redirect("verificar_codigo")  
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+                return redirect("register")
+        else:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return redirect("register")
+    else:
+        return render(request, "register.html")
+
+def CrudUsuarios(request):
+    verificar = request.session.get("auth", False)
+
+    if verificar:
+        if verificar["rol"] == 1:
+            if request.method == 'POST':
+                # Recoger los datos del formulario
+                nombre = request.POST.get("nombre")
+                apellido = request.POST.get("apellido")
+                rol = request.POST.get("rol")
+                celular = request.POST.get("celular")
+                email = request.POST.get('email')
+                password = request.POST.get('password')
+                confirmar_password = request.POST.get('confirmar_password')
+
+                # Validar si las contraseñas coinciden
+                if password == confirmar_password:
+                    try:
+                        # Encriptar la contraseña antes de guardarla
+                        from django.contrib.auth.hashers import make_password
+                        password = make_password(password)
+
+                        # Crear el nuevo usuario
+                        nuevo_usuario = User(
+                            nombre=nombre,
+                            apellido=apellido,
+                            celular=celular,
+                            email=email,
+                            password=password,  # Contraseña encriptada
+                            rol=rol  # Asignar un rol
+                        )
+                        nuevo_usuario.save()  # Guardar en la base de datos
+                        messages.success(request, "Usuario creado correctamente!")
+                        return redirect("adminCRUDU")  # Cambia por la vista a la que quieras redirigir
+                    except Exception as e:
+                        messages.error(request, f"Error: {e}")
+                        return redirect("admin_dashboard")  # Redirigir si hay error
+                else:
+                    messages.error(request, "Las contraseñas no coinciden.")
+                    return redirect("admin_dashboard")  # Redirigir si las contraseñas no coinciden
+            else:
+                # Si es un GET, obtener todos los usuarios
+                usuarios = User.objects.all()
+                contexto = {
+                    "usuarios": usuarios
+                }
+                return render(request, "admin/adminCRUDU.html", contexto)
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+        return redirect( "index")
+    
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+
+def editar_usuario(request, usuario_id):
     try:
-        cate = Categoria.objects.get(pk = categoria_id)
+        usuario = User.objects.get(id=usuario_id)
         if request.method == 'POST':
             # Obtener los datos del formulario
-            cate.nombre = request.POST.get("nombre")
-            cate.descripcion = request.POST.get("descripcion")
+            usuario.nombre = request.POST.get("nombre")
+            usuario.apellido = request.POST.get("apellido")
+            usuario.celular = request.POST.get("celular")
+            #usuario.email = request.POST.get('email')
+            password = request.POST.get('password')
+            
+        
             
             # Guardar los cambios
-            cate.save()
-            messages.success(request, "Categoría actualizada correctamente.")
-            return redirect("crud_categoria")
+            usuario.save()
+            messages.success(request, "Usuario actualizado correctamente.")
+            return redirect("adminCRUDU")
         else:
             contexto = {
-                "categoria": cate
+                "usuario": usuario
             }
-            return render(request, "admin/editar_categoria.html", contexto)
-    except Categoria.DoesNotExist:
-        messages.error(request, "Categoría no encontrada.")
-        return redirect("crud_categoria")
-    
-def eliminar_categoria(request, id_categoria):
+            return render(request, "admin/editar_usuario.html", contexto)
+    except User.DoesNotExist:
+        messages.error(request, "Usuario no encontrado.")
+        return redirect("adminCRUDU")
+
+def eliminar_usuario(request, id_usuario):
     try:
-        c = Categoria.objects.get(pk = id_categoria)
-        c.delete()
-        messages.success(request, "Categoria eliminada correctamente.")
+        usuario = User.objects.get(pk=id_usuario)
+        usuario.delete()
+        messages.success(request, "Usuario eliminado correctamente.")
     except IntegrityError:
-        messages.warning(request, "Error: No puede eliminar la categoria")
+        messages.warning(request, "Error: No puede eliminar el usuario, está en uso.")
     except Exception as e:
         messages.error(request, f"Error: {e}")
-    return redirect("crud_categoria")
 
-#Carrito:
+    return redirect("adminCRUDU")
+
+def crear_usuario_admin(request):
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        rol = request.POST.get("rol", "")
+        celular = request.POST.get("celular", "").strip()
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "")
+        confirmar_password = request.POST.get("confirmar_password", "")
+
+        errores = []
+
+        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', nombre):
+            errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
+
+
+        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', apellido):
+            errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
+
+
+        if rol not in ["1", "2"]:
+            errores.append("Debe seleccionar un rol válido entre 1 o 2.")
+
+
+        if not re.match(r'^\d{10}$', celular):
+            errores.append("El número de celular debe tener exactamente 10 dígitos.")
+
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            errores.append("Correo electrónico inválido.")
+
+        if User.objects.filter(email=email).exists():
+            errores.append("El correo electrónico ya está registrado.")
+
+        if len(password) < 8:
+            errores.append("La contraseña debe tener al menos 8 caracteres.")
+        if password != confirmar_password:
+            errores.append("Las contraseñas no coinciden.")
+
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("adminCRUDU")
+
+
+        try:
+            nuevo_usuario = User(
+                nombre=nombre,
+                apellido=apellido,
+                rol=rol,
+                celular=celular,
+                email=email,
+                password=make_password(password),
+            )
+            nuevo_usuario.save()
+            messages.success(request, "Usuario creado correctamente.")
+        except Exception as e:
+            messages.error(request, f"Error al crear usuario: {e}")
+
+        return redirect("adminCRUDU")
+    else:
+        return render(request, "admin/adminCRUDU.html")
+    
+
+def editar_usuario_admin(request, id_usuario):
+    usuario = get_object_or_404(User, pk=id_usuario)
+
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        celular = request.POST.get("celular", "").strip()
+        rol = request.POST.get("rol", "").strip()
+
+        errores = []
+
+        # Validar nombre y apellido
+        patron_letras = r'^[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}$'
+        if not re.match(patron_letras, nombre):
+            errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
+        if not re.match(patron_letras, apellido):
+            errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
+
+        # Validar celular
+        if not re.match(r'^\d{10}$', celular):
+            errores.append("El número de celular debe tener exactamente 10 dígitos.")
+
+        # Validar rol
+        if rol not in ["1", "2"]:
+            errores.append("Debe seleccionar un rol válido.")
+
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("adminCRUDU")  # o a donde renderices la lista
+
+        # Si pasa validación, guardar cambios
+        usuario.nombre = nombre
+        usuario.apellido = apellido
+        usuario.celular = celular
+        usuario.rol = rol
+        usuario.save()
+
+        messages.success(request, "Usuario actualizado correctamente.")
+        return redirect("adminCRUDU")
+
+    # Si viene por GET
+    return redirect("adminCRUDU")
+
+def eliminar_usuario_admin(request, id_usuario):
+    try:
+        usuario = get_object_or_404(User, pk=id_usuario)
+
+        if str(usuario.rol) == "1":
+            messages.warning(request, "No puedes eliminar un administrador.")
+            return redirect("adminCRUDU")
+
+        usuario.delete()
+        messages.success(request, "Usuario eliminado correctamente.")
+    except IntegrityError:
+        messages.warning(request, "Error: No puedes eliminar este usuario porque está en uso en otra parte del sistema.")
+    except Exception as e:
+        messages.error(request, f"Error inesperado: {e}")
+
+    return redirect("adminCRUDU")
+
+#funciones del sistema------------------------------------------------------------------------------
+
+def correos1 (request): 
+    try:  
+        send_mail (
+            
+            "PanaderiasMaye",
+            "mensajes de prueba........ desde django",
+            settings.EMAIL_HOST_USER,
+            ["gonzacardona09@gmail.com"],
+            fail_silently = False,
+        )
+
+        return HttpResponse(f"correo enviado")
+    except Exception as e: 
+        return HttpResponse(f"Error {e}")
+
+def correos2 (request): 
+    try:  
+        html_message="""hola mundo<strong style='color:blue;'>Django</strong> desde mi app
+        <br>
+        bienvenido 
+        """
+        send_mail (
+            
+            "PanaderiasMaye",
+            "",
+            settings.EMAIL_HOST_USER,
+            ["gonzacardona09@gmail.com"],
+            fail_silently = False,
+            html_message=html_message,
+        )
+
+        return HttpResponse(f"correo enviado")
+    except Exception as e: 
+        return HttpResponse(f"Error {e}")
+
+#Carrito---------------------------------------------------------------------------------------------------------------
+
 def agregar_carrito(request, producto_id):
     logueado = request.session.get("auth")
 
@@ -960,7 +1066,37 @@ def procesar_pedido(request):
     request.session['carrito_id'] = nuevo_carrito.id
     messages.success(request, "Tu pedido ha sido procesado correctamente.")
     return redirect('formulario_pago')
-#FACTURAS
+
+def confirmar_pago(request, carrito_id):
+    logueado = request.session.get("auth")
+    carrito = get_object_or_404(Carrito, id=carrito_id, usuario=logueado["id"])
+
+    if carrito.estado == 2:
+        messages.info(request, "Este pedido ya ha sido pagado.")
+        return redirect("facturas_usuario")
+
+    # Descontar productos del inventario
+    for detalle in carrito.detalles.all():
+        producto = detalle.producto
+        if detalle.cantidad > producto.cantidad:
+            messages.error(request, f"No hay suficiente stock para {producto.nombre}.")
+            return redirect("formulario_pago")
+
+        producto.cantidad -= detalle.cantidad
+        producto.save()
+
+    carrito.estado = 2
+    carrito.save()
+
+    enviar_correo_confirmacion(carrito)
+
+    messages.success(request, "Factura enviada a tu correo, gracias por tu compra... ")
+    request.session['carrito'] = {}
+    del request.session['carrito_id']
+
+    return redirect('facturas_usuario')
+
+#FACTURAS-----------------------------------------------------------------------------------------------------------------
 
 def facturas_usuario(request):
     logueado = request.session.get("auth")
@@ -1037,171 +1173,8 @@ def enviar_correo_confirmacion(carrito):
         html_message=mensaje_html
     )
 
-
-def confirmar_pago(request, carrito_id):
-    logueado = request.session.get("auth")
-    carrito = get_object_or_404(Carrito, id=carrito_id, usuario=logueado["id"])
-
-    if carrito.estado == 2:
-        messages.info(request, "Este pedido ya ha sido pagado.")
-        return redirect("facturas_usuario")
-
-    # Descontar productos del inventario
-    for detalle in carrito.detalles.all():
-        producto = detalle.producto
-        if detalle.cantidad > producto.cantidad:
-            messages.error(request, f"No hay suficiente stock para {producto.nombre}.")
-            return redirect("formulario_pago")
-
-        producto.cantidad -= detalle.cantidad
-        producto.save()
-
-    carrito.estado = 2
-    carrito.save()
-
-    enviar_correo_confirmacion(carrito)
-
-    messages.success(request, "Factura enviada a tu correo, gracias por tu compra... ")
-    request.session['carrito'] = {}
-    del request.session['carrito_id']
-
-    return redirect('facturas_usuario')
-
 def politica_privacidad(request):
     return render(request, 'politica_privacidad.html')
-
-# CRUD USUARIOS ADMIN
-
-
-def crear_usuario_admin(request):
-    if request.method == 'POST':
-        nombre = request.POST.get("nombre", "").strip()
-        apellido = request.POST.get("apellido", "").strip()
-        rol = request.POST.get("rol", "")
-        celular = request.POST.get("celular", "").strip()
-        email = request.POST.get("email", "").strip()
-        password = request.POST.get("password", "")
-        confirmar_password = request.POST.get("confirmar_password", "")
-
-        errores = []
-
-        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', nombre):
-            errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
-
-
-        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', apellido):
-            errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
-
-
-        if rol not in ["1", "2"]:
-            errores.append("Debe seleccionar un rol válido entre 1 o 2.")
-
-
-        if not re.match(r'^\d{10}$', celular):
-            errores.append("El número de celular debe tener exactamente 10 dígitos.")
-
-
-        try:
-            validate_email(email)
-        except ValidationError:
-            errores.append("Correo electrónico inválido.")
-
-        if User.objects.filter(email=email).exists():
-            errores.append("El correo electrónico ya está registrado.")
-
-        if len(password) < 8:
-            errores.append("La contraseña debe tener al menos 8 caracteres.")
-        if password != confirmar_password:
-            errores.append("Las contraseñas no coinciden.")
-
-
-        if errores:
-            for error in errores:
-                messages.error(request, error)
-            return redirect("adminCRUDU")
-
-
-        try:
-            nuevo_usuario = User(
-                nombre=nombre,
-                apellido=apellido,
-                rol=rol,
-                celular=celular,
-                email=email,
-                password=make_password(password),
-            )
-            nuevo_usuario.save()
-            messages.success(request, "Usuario creado correctamente.")
-        except Exception as e:
-            messages.error(request, f"Error al crear usuario: {e}")
-
-        return redirect("adminCRUDU")
-    else:
-        return render(request, "admin/adminCRUDU.html")
-    
-
-def editar_usuario_admin(request, id_usuario):
-    usuario = get_object_or_404(User, pk=id_usuario)
-
-    if request.method == 'POST':
-        nombre = request.POST.get("nombre", "").strip()
-        apellido = request.POST.get("apellido", "").strip()
-        celular = request.POST.get("celular", "").strip()
-        rol = request.POST.get("rol", "").strip()
-
-        errores = []
-
-        # Validar nombre y apellido
-        patron_letras = r'^[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}$'
-        if not re.match(patron_letras, nombre):
-            errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
-        if not re.match(patron_letras, apellido):
-            errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
-
-        # Validar celular
-        if not re.match(r'^\d{10}$', celular):
-            errores.append("El número de celular debe tener exactamente 10 dígitos.")
-
-        # Validar rol
-        if rol not in ["1", "2"]:
-            errores.append("Debe seleccionar un rol válido.")
-
-        if errores:
-            for error in errores:
-                messages.error(request, error)
-            return redirect("adminCRUDU")  # o a donde renderices la lista
-
-        # Si pasa validación, guardar cambios
-        usuario.nombre = nombre
-        usuario.apellido = apellido
-        usuario.celular = celular
-        usuario.rol = rol
-        usuario.save()
-
-        messages.success(request, "Usuario actualizado correctamente.")
-        return redirect("adminCRUDU")
-
-    # Si viene por GET
-    return redirect("adminCRUDU")
-
-
-
-def eliminar_usuario_admin(request, id_usuario):
-    try:
-        usuario = get_object_or_404(User, pk=id_usuario)
-
-        if str(usuario.rol) == "1":
-            messages.warning(request, "No puedes eliminar un administrador.")
-            return redirect("adminCRUDU")
-
-        usuario.delete()
-        messages.success(request, "Usuario eliminado correctamente.")
-    except IntegrityError:
-        messages.warning(request, "Error: No puedes eliminar este usuario porque está en uso en otra parte del sistema.")
-    except Exception as e:
-        messages.error(request, f"Error inesperado: {e}")
-
-    return redirect("adminCRUDU")
 
 #Enviar TOKENS
 
@@ -1261,3 +1234,91 @@ def reenviar_token(request):
             messages.error(request, "No se encontró el usuario ")
     
     return redirect("verificar_codigo")
+
+#reservas-------------------------------------------------------------------------------------------------------
+
+def reservas(request):
+    logueado = request.session.get("auth")
+    carrito_sesion = request.session.get('carrito', {}).copy()
+    total_general = 0
+
+    for item in carrito_sesion.values():
+        item['total'] = float(item['cantidad']) * float(item['precio'])
+        total_general += item['total']
+
+    if request.method == "POST":
+        carrito_id = request.session.get('carrito_id')
+        if not carrito_id:
+            messages.error(request, "No se encontró la factura para pagar.")
+            return redirect('ver_carrito')
+
+        try:
+            metodo = request.POST.get('metodo_pago')
+            nombre_destinatario = request.POST.get('nombre_destinatario')
+            fecha_reserva = request.POST.get('fecha')
+
+            factura = Carrito.objects.get(id=carrito_id)
+            factura.estado = 2
+            factura.metodo_pago = metodo
+            factura.nombre_destinatario = nombre_destinatario
+            #factura.fecha_reserva = fecha_reserva  # Asegúrate que esté en formato correcto
+            factura.save()
+
+        except Carrito.DoesNotExist:
+            messages.error(request, "La factura no existe.")
+            return redirect('ver_carrito')
+
+        # Limpiar sesión
+        request.session['carrito'] = {}
+        del request.session['carrito_id']
+
+        messages.success(request, "¡Pago exitoso!")
+        return redirect('ver_carrito')
+
+    contexto = {
+        "carrito": carrito_sesion,
+        "total_general": total_general,
+        "carrito_id": request.session.get('carrito_id')
+    }
+
+    return render(request, 'reservas.html', contexto)
+
+def procesar_pedido_reserva(request):
+    logueado = request.session.get("auth")
+
+    if not logueado:
+        messages.error(request, "Debes loguearte primero para continuar... ")
+        return redirect("login")
+    
+    carrito_sesion = request.session.get('carrito', {})
+    if not carrito_sesion:
+        messages.error(request, "Tu carrito está vacío.")
+        return redirect('ver_carrito')
+
+    # Validación de stock
+    for producto_id, item in carrito_sesion.items():
+        producto = get_object_or_404(Producto, id=int(producto_id))
+        if item['cantidad'] > producto.cantidad:
+            messages.success(request, f"La cantidad del pedido para {producto.nombre} no puede superar la cantidad de productos disponibles.")
+            return redirect('ver_carrito_completo')
+
+    total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
+
+    nuevo_carrito = Carrito.objects.create(
+        usuario_id=logueado["id"],
+        fecha=timezone.now(),
+        cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),
+        estado=1
+    )
+
+    for producto_id, item in carrito_sesion.items():
+        Detalle_carrito.objects.create(
+            carrito=nuevo_carrito,
+            producto_id=int(producto_id),
+            cantidad=item['cantidad'],
+            total=item['cantidad'] * item['precio']
+        )
+
+    request.session['carrito_id'] = nuevo_carrito.id
+    messages.success(request, "Tu pedido ha sido procesado correctamente.")
+    return redirect('reservar')

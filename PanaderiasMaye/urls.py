@@ -42,10 +42,14 @@ urlpatterns = [
     path('carrito/eliminar/<int:producto_id>/', views.eliminar_producto_carrito, name='eliminar_producto_carrito'),
     path('carrito/vaciar/', views.vaciar_carrito, name='vaciar_carrito'),
 
+    #reservas
+    path("formulario-reserva/", views.reservas, name='reservar'),
+    path("procesar-pedido/", views.procesar_pedido, name='procesar_pedido'),
+
     #pagos
 
     path("formulario-pago/", views.formulario_pago, name='formulario_pago'),
-    path("procesar-pedido/", views.procesar_pedido, name='procesar_pedido'),
+    path("procesar-pedido-reserva/", views.procesar_pedido_reserva, name='procesar_pedido_reserva'),
 
 
     #Facturas
