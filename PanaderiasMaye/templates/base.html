@@ -102,14 +102,14 @@
             </tr>
         </thead>
         <tbody>
-            {% for item_id, item in carrito.items %}
+            {% for item in carrito %}
                 <tr>
-                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.producto.nombre }}</td>
                     <td>{{ item.cantidad }}</td>
-                    <td>${{ item.precio|floatformat:2 }}</td>
-                    <td>${{ item.total|floatformat:2 }}</td>
+                    <td>${{ item.producto.precio }}</td>
+                    <td>${{ item.total }}</td>
                     <td>
-                        <a href="{% url 'eliminar_producto' item_id %}">Eliminar</a>
+                        <a href="{% url 'eliminar_producto' item.producto.id %}">Eliminar</a>
                     </td>
                 </tr>
             {% endfor %}

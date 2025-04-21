@@ -18,19 +18,16 @@ from django.conf import settings
 from .utils import *
 from django.contrib.auth.hashers import make_password
 import uuid
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 #principales-------------------------------------------------------------------------------------------------------------
 def index(request):
-    cat_id = request.GET.get("cat")  
-    carrito = request.session.get('carrito', {})
+    cat_id = request.GET.get("cat")   
     total = 0
-    carrito = request.session.get('carrito', {}).copy()  # Hacer una copia
     total_general = 0
-
-    for item in carrito.values():
-        item['total'] = float(item['cantidad']) * float(item['precio'])
-        total_general += item['total']
+    carrito_actual = None
+    detalles = []
 
 
     if cat_id:
@@ -45,15 +42,27 @@ def index(request):
         productos = Producto.objects.all() 
 
     categorias = Categoria.objects.all() 
-    car = Carrito.objects.all()  
+    
+  
+    user = request.session.get("auth", {}).get("id")
+    if user:
+        try:
+            user_obj = User.objects.get(id=user)
+            carrito_actual = Carrito.objects.filter(usuario=user_obj).latest('fecha')
+            detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
+            for item in detalles:
+                item.total = item.cantidad * item.producto.precio
+                total_general += item.cantidad * item.producto.precio
+        except Carrito.DoesNotExist:
+            carrito_actual = None
+            detalles = []
+            total_general = 0
 
     contexto = {
         "productoInfo": productos,
         "categorias": categorias,  
-        "carrito": car,
-        'carrito': carrito,
+        "carrito": detalles,
         'total': total,
-        "carrito": carrito,
         "totalg": total_general
     }
     return render(request, 'index.html', contexto)
@@ -66,6 +75,14 @@ def login(request):
         passwd = request.POST.get("password")
         try:
             q = User.objects.get(email=usuario)
+            if not verify_password(passwd, q.password):
+                messages.error(request, "Contraseña o Correo invalidao.. ")
+                return redirect("login")
+            
+            if not q.verificado:
+                messages.error(request, "Debes verificar tu cuenta antes para acceder a la web... ")
+                return redirect("login")
+            
             if verify_password(passwd, q.password):
                 request.session["auth"] = {
                     "id": q.id,
@@ -75,12 +92,10 @@ def login(request):
                     "email": q.email,
                     "celular": q.celular,
                     "rol": q.rol,
+                    "verificado": q.verificado
                 }
             verificar = request.session.get("auth", False)
-            if not q.verificado:
-                messages.error(request, "Debes verificar tu cuenta antes!!")
-                return redirect("login")
-            
+
             if verificar :
                 if verificar["rol"] == 1:
                     return redirect("admin_dashboard")
@@ -862,7 +877,7 @@ def correos2 (request):
         return HttpResponse(f"Error {e}")
 
 #Carrito---------------------------------------------------------------------------------------------------------------
-
+ 
 def agregar_carrito(request, producto_id):
     logueado = request.session.get("auth")
 
@@ -871,33 +886,65 @@ def agregar_carrito(request, producto_id):
         return redirect("login")
 
     producto = get_object_or_404(Producto, id=producto_id)
-    carrito = request.session.get("carrito", {})
+    # carrito = request.session.get("carrito", {})
     producto_id_str = str(producto.id)
-
-    if producto_id_str in carrito:
-        if carrito[producto_id_str]["cantidad"] < producto.cantidad:
-            carrito[producto_id_str]["cantidad"] += 1
-        else:
-            messages.warning(request, f"No hay más unidades disponibles de {producto.nombre}.")
-            return redirect("ver_carrito_completo")
-    else:
-        carrito[producto_id_str] = {
-            "id": producto.id,
-            "foto": producto.foto.url,
-            "nombre": producto.nombre,
-            "precio": float(producto.precio),
-            "cantidad": 1,
-            "stock": producto.cantidad, # stock de "cantidad"
-            "total": 0
-        }
-
-    carrito[producto_id_str]["total"] = round(
-        carrito[producto_id_str]["cantidad"] * carrito[producto_id_str]["precio"], 2
+    usuario = get_object_or_404(User, id=logueado["id"])
+    try:
+        carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
+    except Carrito.DoesNotExist:
+        carrito = Carrito.objects.create(
+            usuario=usuario,
+            cantidad = 0,
+            estado=1,
+            servicio = 1,
+            metodo_pago = 4
+        )
+    
+    detalle, creado = Detalle_carrito.objects.get_or_create(
+        carrito = carrito,
+        producto = producto,
+        defaults={'cantidad': 1, 'total': producto.precio}
     )
 
-    request.session["carrito"] = carrito
-    messages.success(request, f"{producto.nombre} agregado correctamente al carrito.")
+    if not creado:
+        if detalle.cantidad < producto.cantidad:
+            detalle.cantidad += 1
+            detalle.total = detalle.cantidad * producto.precio
+            detalle.save()
+        else:
+            messages.error(request, f"No hay mas unidades disponibles de {producto.nombre}")
+            return redirect("ver_carrito_completo")
+        
+    carrito.cantidad = sum(dc.cantidad for dc in carrito.detalles.all())
+    carrito.save()
+
+    messages.success(request, f"{producto.nombre} agregado correctamente al carrito ")
     return redirect("index")
+    
+    # if producto_id_str in carrito:
+    #     if carrito[producto_id_str]["cantidad"] < producto.cantidad:
+    #         carrito[producto_id_str]["cantidad"] += 1
+    #     else:
+    #         messages.warning(request, f"No hay más unidades disponibles de {producto.nombre}.")
+    #         return redirect("ver_carrito_completo")
+    # else:
+    #     carrito[producto_id_str] = {
+    #         "id": producto.id,
+    #         "foto": producto.foto.url,
+    #         "nombre": producto.nombre,
+    #         "precio": float(producto.precio),
+    #         "cantidad": 1,
+    #         "stock": producto.cantidad, # stock de "cantidad"
+    #         "total": 0
+    #     }
+
+    # carrito[producto_id_str]["total"] = round(
+    #     carrito[producto_id_str]["cantidad"] * carrito[producto_id_str]["precio"], 2
+    # )
+
+    # request.session["carrito"] = carrito
+    # messages.success(request, f"{producto.nombre} agregado correctamente al carrito.")
+    # return redirect("index")
 
 
 def ver_carrito_completo(request):
@@ -907,121 +954,215 @@ def ver_carrito_completo(request):
         messages.error(request, "Inicia sesión para ver el carrito.")
         return redirect("login")
 
-    carrito = request.session.get('carrito', {}).copy()
-    total_general = 0
-
-    for key, item in carrito.items():
-        try:
-            cantidad = int(item.get("cantidad", 1))
-            precio = float(item.get("precio", 0))
-            total = round(cantidad * precio, 2)
-
-            item["cantidad"] = cantidad
-            item["precio"] = precio
-            item["total"] = total
-
-            total_general += total
-        except (ValueError, TypeError):
-            messages.warning(request, f"Error en el producto del carrito: {item.get('nombre', 'desconocido')}")
-            continue
-
-
-    request.session["carrito"] = carrito
+    usuario = get_object_or_404(User, id=logueado["id"])
+    try:
+        carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
+        detalles = carrito.detalles.all()
+        total_general = sum(dc.total for dc in detalles)
+    except Carrito.DoesNotExist:
+        carrito = None
+        detalles = []
+        total_general = 0
 
     contexto = {
-        "carrito": carrito,
+        #"carrito": carrito,
+        "detalles": detalles,
         "total": round(total_general, 2)
     }
-    
     return render(request, "carrito.html", contexto)
+
+    # for key, item in carrito.items():
+    #     try:
+    #         cantidad = int(item.get("cantidad", 1))
+    #         precio = float(item.get("precio", 0))
+    #         total = round(cantidad * precio, 2)
+
+    #         item["cantidad"] = cantidad
+    #         item["precio"] = precio
+    #         item["total"] = total
+
+    #         total_general += total
+    #     except (ValueError, TypeError):
+    #         messages.warning(request, f"Error en el producto del carrito: {item.get('nombre', 'desconocido')}")
+    #         continue
+
+
+    # request.session["carrito"] = carrito
+
+    # contexto = {
+    #     "carrito": carrito,
+    #     "total": round(total_general, 2)
+    # }
+    
+    # return render(request, "carrito.html", contexto)
 
 def actualizar_cantidad(request, producto_id):
     if request.method == "POST":
+        logueado = request.session.get("auth")
+        if not logueado:
+            return redirect("login")
+        
+        usuario = get_object_or_404(User, id=logueado["id"])
+        nueva_cantidad = int(request.POST.get("cantidad"))
+
+        if not nueva_cantidad:
+            messages.error(request, "No puedes dejar este campo vacio")
+            return redirect("ver_carrito_completo")
+
         try:
-            cantidad_raw = request.POST.get("cantidad", "")
-            nueva_cantidad = int(cantidad_raw)
-
-            if nueva_cantidad < 1:
-                messages.warning(request, "La cantidad debe ser al menos 1.")
-                return redirect("ver_carrito_completo")
-
-        except ValueError:
-            messages.error(request, "Cantidad inválida. Debe ser un número entero.")
+            carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
+        except Carrito.DoesNotExist:
+            messages.error(request, "NO tienes un carrito activo actualmente ")
             return redirect("ver_carrito_completo")
+        
+        detalle = get_object_or_404(Detalle_carrito, carrito=carrito, producto_id=producto_id)
 
-        carrito = request.session.get("carrito", {})
+        if nueva_cantidad < 1:
+            messages.error(request,"La cantidad debe ser al menos 1 ")
+        elif nueva_cantidad > detalle.producto.cantidad:
+            messages.error(request, "No hay suficiente stock disponible!!  ")
 
-        if str(producto_id) not in carrito:
-            messages.error(request, "El producto no se encuentra en el carrito.")
-            return redirect("ver_carrito_completo")
-
-        precio = float(carrito[str(producto_id)]['precio'])
-        carrito[str(producto_id)]['cantidad'] = nueva_cantidad
-        carrito[str(producto_id)]['total'] = round(precio * nueva_cantidad, 2)
-
-        request.session["carrito"] = carrito
-        messages.success(request, "Cantidad actualizada correctamente.")
-        return redirect("ver_carrito_completo")
+        else:
+            detalle.cantidad = nueva_cantidad
+            detalle.total = nueva_cantidad * detalle.producto.precio
+            detalle.save()
+            carrito.cantidad = sum(dc.cantidad for dc in carrito.detalles.all())
+            carrito.save()
+            messages.success(request, "Cantidad actualizada con exito!! ")
 
     return redirect("ver_carrito_completo")
+    #     try:
+    #         cantidad_raw = request.POST.get("cantidad", "")
+    #         nueva_cantidad = int(cantidad_raw)
+
+    #         if nueva_cantidad < 1:
+    #             messages.warning(request, "La cantidad debe ser al menos 1.")
+    #             return redirect("ver_carrito_completo")
+
+    #     except ValueError:
+    #         messages.error(request, "Cantidad inválida. Debe ser un número entero.")
+    #         return redirect("ver_carrito_completo")
+
+    #     carrito = request.session.get("carrito", {})
+
+    #     if str(producto_id) not in carrito:
+    #         messages.error(request, "El producto no se encuentra en el carrito.")
+    #         return redirect("ver_carrito_completo")
+
+    #     precio = float(carrito[str(producto_id)]['precio'])
+    #     carrito[str(producto_id)]['cantidad'] = nueva_cantidad
+    #     carrito[str(producto_id)]['total'] = round(precio * nueva_cantidad, 2)
+
+    #     request.session["carrito"] = carrito
+    #     messages.success(request, "Cantidad actualizada correctamente.")
+    #     return redirect("ver_carrito_completo")
+
+    # return redirect("ver_carrito_completo")
 
 def eliminar_producto_carrito(request, producto_id):
-    carrito = request.session.get("carrito", {})
+    logueado = request.session.get("auth")
+    if not logueado:
+        messages.error(request,"Debes estar logueado para elimniar productos del carrito ")
+        return redirect("login")
+    
+    usuario = get_object_or_404(User, id=logueado["id"])
 
-    if str(producto_id) in carrito:
-        del carrito[str(producto_id)]
-        request.session["carrito"] = carrito
-        messages.success(request, "Producto eliminado del carrito.")
-    else:
-        messages.warning(request, "El producto no se encuentra en el carrito.")
-
+    try:
+        carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
+        detalle = Detalle_carrito.objects.filter(carrito=carrito, producto_id=producto_id).first()
+        if detalle:
+            detalle.delete()
+            carrito.cantidad = sum(dc.cantidad for dc in carrito.detalles.all())
+            carrito.save()
+            messages.success(request, "Producto eliminado correctamente ")
+        else:
+            messages.error(request, "El producto no se encuentra el carrito.")
+    except Carrito.DoesNotExist:
+        messages.error(request, "NO hay un carrito activo actualmente ")
+    
     return redirect("ver_carrito_completo")
+
+    # if str(producto_id) in carrito:
+    #     del carrito[str(producto_id)]
+    #     request.session["carrito"] = carrito
+    #     messages.success(request, "Producto eliminado del carrito.")
+    # else:
+    #     messages.warning(request, "El producto no se encuentra en el carrito.")
+
+    # return redirect("ver_carrito_completo")
 
 def vaciar_carrito(request):
-    request.session["carrito"] = {}
-    messages.success(request, "Carrito vaciado correctamente.")
+
+    logueado = request.session.get("auth")
+    if not logueado:
+        return redirect("login")
+    
+    usuario = get_object_or_404(User, id=logueado["id"])
+
+    try:
+        carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
+        carrito.detalles.all().delete()
+        carrito.cantidad = 0
+        carrito.save()
+        messages.success(request, "Carrito vaciado correctamnete!! ")
+    except Carrito.DoesNotExist:
+        messages.error("NO tienes carrito para vaciar!!  ")
+
     return redirect("ver_carrito_completo")
+
+    # request.session["carrito"] = {}
+    # messages.success(request, "Carrito vaciado correctamente.")
+    # return redirect("ver_carrito_completo")
 
 #Facturas y PAGOS 
 
 def formulario_pago(request):
     logueado = request.session.get("auth")
-    carrito_sesion = request.session.get('carrito', {}).copy()
-    total_general = 0
+    if not logueado:
+        messages.error(request, "Debes iniciar sesión para usar el formulario de pago ")
+        return redirect("login")
+    
+    # carrito_sesion = request.session.get('carrito', {}).copy()
+    # total_general = 0
 
-    for item in carrito_sesion.values():
-        item['total'] = float(item['cantidad']) * float(item['precio'])
-        total_general += item['total']
+    # for item in carrito_sesion.values():
+    #     item['total'] = float(item['cantidad']) * float(item['precio'])
+    #     total_general += item['total']
 
-    if request.method == "POST":
-        carrito_id = request.session.get('carrito_id')
-        if not carrito_id:
-            messages.error(request, "No se encontró la factura para pagar.")
-            return redirect('ver_carrito')
+    # carrito_id = request.session.get('carrito_id')
+    # if not carrito_id:
+    #     messages.error(request, "No se encontró la factura para pagar.")
+    #     return redirect('ver_carrito')
+    
+    try:
+        carrito = Carrito.objects.filter(usuario_id=logueado["id"], estado=1).latest()
+    except Carrito.DoesNotExist:
+        messages.error(request, "NO se encontraron carritos por pagar!!")
+        return redirect("ver_carrito_completo")
+    
+    detalles = carrito.detalles.all()
+    total_general = sum(dc.total for dc in detalles)
 
+    if request.method == "POST":    
         try:
             metodo = request.POST.get('metodo_pago')
-            factura = Carrito.objects.get(id=carrito_id)
-            factura.estado = 2
-            factura.meotdo_pago = metodo
-            factura.save()
+            carrito.estado = 2
+            carrito.meotdo_pago = metodo
+            carrito.save()
+
         except Carrito.DoesNotExist:
             messages.error(request, "La factura no existe.")
-            return redirect('ver_carrito')
+            return redirect('ver_carrito_completo')
         
-        print("metodo pago", factura.meotdo_pago)
-
-        # Limpiar sesión
-        request.session['carrito'] = {}
-        del request.session['carrito_id']
+        print("metodo pago", carrito.meotdo_pago)
 
         messages.success(request, "¡Pago exitoso!")
-        return redirect('ver_carrito')
+        return redirect('facturas_usuarios')
     
     contexto = {
-        "carrito": carrito_sesion,
+        "carrito": carrito,
         "total_general": total_general,
-        "carrito_id": request.session.get('carrito_id')
+        "detalles": detalles
     }
 
     return render(request, 'usuarios/pago.html', contexto)
@@ -1034,41 +1175,47 @@ def procesar_pedido(request):
         messages.error(request, "Debes loguearte primero para continuar... ")
         return redirect("login")
     
-    carrito_sesion = request.session.get('carrito', {})
-    if not carrito_sesion:
-        messages.error(request, "Tu carrito está vacío.")
-        return redirect('ver_carrito')
+    usuario = get_object_or_404(User, id=logueado["id"])
+
+    try:
+        carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
+    except Carrito.DoesNotExist:
+        messages.error(request, "Tu carrito esta vacio. ")
+        return redirect("ver_carrito_completo")
 
     # Validación de stock
-    for producto_id, item in carrito_sesion.items():
-        producto = get_object_or_404(Producto, id=int(producto_id))
-        if item['cantidad'] > producto.cantidad:
-            messages.success(request, f"La cantidad del pedido para {producto.nombre} no puede superar la cantidad de productos disponibles.")
-            return redirect('ver_carrito_completo')
+    for detalle in carrito.detalles.all():
+        producto = detalle.producto
+        if detalle.cantidad > producto.cantidad:
+            messages.error(request, f"No hay suficiente stock para: {producto.nombre} ")
 
-    total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
+    # total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
 
-    nuevo_carrito = Carrito.objects.create(
-        usuario_id=logueado["id"],
-        fecha=timezone.now(),
-        cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),
-        estado=1
-    )
+    # nuevo_carrito = Carrito.objects.create(
+    #     usuario_id=logueado["id"],
+    #     fecha=timezone.now(),
+    #     cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),
+    #     estado=1
+    # )
 
-    for producto_id, item in carrito_sesion.items():
-        Detalle_carrito.objects.create(
-            carrito=nuevo_carrito,
-            producto_id=int(producto_id),
-            cantidad=item['cantidad'],
-            total=item['cantidad'] * item['precio']
-        )
+    # for producto_id, item in carrito_sesion.items():
+    #     Detalle_carrito.objects.create(
+    #         carrito=nuevo_carrito,
+    #         producto_id=int(producto_id),
+    #         cantidad=item['cantidad'],
+    #         total=item['cantidad'] * item['precio']
+    #     )
 
-    request.session['carrito_id'] = nuevo_carrito.id
+    # request.session['carrito_id'] = nuevo_carrito.id
     messages.success(request, "Tu pedido ha sido procesado correctamente.")
     return redirect('formulario_pago')
 
 def confirmar_pago(request, carrito_id):
     logueado = request.session.get("auth")
+    if not logueado:
+        messages.error(request,"Debes iniciar sesion primero ")
+        return redirect("login")
+    
     carrito = get_object_or_404(Carrito, id=carrito_id, usuario=logueado["id"])
 
     if carrito.estado == 2:
@@ -1091,9 +1238,6 @@ def confirmar_pago(request, carrito_id):
     enviar_correo_confirmacion(carrito)
 
     messages.success(request, "Factura enviada a tu correo, gracias por tu compra... ")
-    request.session['carrito'] = {}
-    del request.session['carrito_id']
-
     return redirect('facturas_usuario')
 
 #FACTURAS-----------------------------------------------------------------------------------------------------------------
@@ -1250,7 +1394,7 @@ def reservas(request):
         carrito_id = request.session.get('carrito_id')
         if not carrito_id:
             messages.error(request, "No se encontró la factura para pagar.")
-            return redirect('ver_carrito')
+            return redirect('ver_carrito_completo')
 
         try:
             metodo = request.POST.get('metodo_pago')

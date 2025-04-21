@@ -85,7 +85,7 @@
     </div>
     <div class="container mt-5">
         <h2 class="text-center">Formulario de Pago</h2>
-        <form action="{% url 'confirmar_pago' carrito_id %}" method="POST">
+        <form method="POST">
             {% csrf_token %}
             <!-- Listado de productos -->
             <div class="product-list">
@@ -102,13 +102,13 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for item_id, item in carrito.items %}
+                        {% for detalle in detalles %}
                             <tr>
-                                <td><img src="{{ item.foto }}" alt="Imagen" class="img-fluid" width="80" style="height: 50px;"></td>
-                                <td>{{ item.nombre }}</td>
-                                <td>{{ item.cantidad }}</td>
-                                <td>${{ item.precio|floatformat:2 }}</td>
-                                <td>${{ item.total|floatformat:2 }}</td>
+                                <td><img src="{{ detalle.producto.foto.url }}" alt="Imagen" class="img-fluid" width="80" style="height: 50px;"></td>
+                                <td>{{ detalle.producto.nombre }}</td>
+                                <td>{{ detalle.cantidad }}</td>
+                                <td>${{ detalle.producto.precio|floatformat:2 }}</td>
+                                <td>${{ detalle.total|floatformat:2 }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

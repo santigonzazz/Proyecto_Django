@@ -122,6 +122,9 @@ class Carrito(models.Model):
 
     def __str__(self):
         return f"{self.usuario} {self.cantidad}"
+    
+    class Meta:
+        get_latest_by = 'fecha'
 
 
 class Inventario(models.Model):
