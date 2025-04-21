@@ -26,19 +26,21 @@
 
         <div class="row no-gutters row-cols-1 row-cols-md-2 g-5">
             {% for i in productoInfo %}
-            <div class="col">
+              {% if i.disponibilidad == "SI" %}
+              <div class="col">
               
           
-              <div class="card">
-                <img src="{{ i.foto.url }}" class="card-img-top" alt="...">
-                <div class="card-body">
-                  <h5 class="card-title">{{ i.nombre }}</h5>
-                  <p class="precio">COP {{ i.precio }}</p>
-                  <a href="{% url 'agregar_carrito' i.id %}" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
+                <div class="card">
+                  <img src="{{ i.foto.url }}" class="card-img-top" alt="...">
+                  <div class="card-body">
+                    <h5 class="card-title">{{ i.nombre }}</h5>
+                    <p class="precio">COP {{ i.precio }}</p>
+                    <a href="{% url 'agregar_carrito' i.id %}" class="cart-a"><i class="cart fa-solid fa-cart-shopping" ></i></a>
                   
+                  </div>
                 </div>
               </div>
-            </div>
+              {% endif %}
             {% endfor %}  
             
           </div>

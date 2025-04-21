@@ -95,6 +95,7 @@
     <table>
         <thead>
             <tr>
+              {{ carrito }}
                 <th>Producto</th>
                 <th>Cantidad</th>
                 <th>Precio</th>
@@ -102,14 +103,14 @@
             </tr>
         </thead>
         <tbody>
-            {% for item in carrito %}
+            {% for item in detalles %}
                 <tr>
                     <td>{{ item.producto.nombre }}</td>
                     <td>{{ item.cantidad }}</td>
                     <td>${{ item.producto.precio }}</td>
                     <td>${{ item.total }}</td>
                     <td>
-                        <a href="{% url 'eliminar_producto' item.producto.id %}">Eliminar</a>
+                        <a href="{% url 'eliminar_producto' item.id %}">Eliminar</a>
                     </td>
                 </tr>
             {% endfor %}

@@ -7,7 +7,7 @@ import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-from xhtml2pdf import pisa
+#from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.template.loader import render_to_string
 
@@ -48,7 +48,7 @@ def index(request):
     if user:
         try:
             user_obj = User.objects.get(id=user)
-            carrito_actual = Carrito.objects.filter(usuario=user_obj).latest('fecha')
+            carrito_actual = Carrito.objects.filter(usuario=user_obj, estado=1).latest('fecha')
             detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
             for item in detalles:
                 item.total = item.cantidad * item.producto.precio
@@ -62,6 +62,7 @@ def index(request):
         "productoInfo": productos,
         "categorias": categorias,  
         "carrito": detalles,
+        "detalles": detalles,
         'total': total,
         "totalg": total_general
     }
@@ -889,6 +890,9 @@ def agregar_carrito(request, producto_id):
     # carrito = request.session.get("carrito", {})
     producto_id_str = str(producto.id)
     usuario = get_object_or_404(User, id=logueado["id"])
+    if producto.disponibilidad == "NO":
+        messages.error(request, f"El producto: {producto.nombre} no esta disponible")
+        return redirect("index")
     try:
         carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
     except Carrito.DoesNotExist:
@@ -958,7 +962,9 @@ def ver_carrito_completo(request):
     try:
         carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
         detalles = carrito.detalles.all()
-        total_general = sum(dc.total for dc in detalles)
+        total_general = sum( dc.total for dc in detalles if dc.disponibilidad == "SI")
+
+        
     except Carrito.DoesNotExist:
         carrito = None
         detalles = []
@@ -1157,7 +1163,7 @@ def formulario_pago(request):
         print("metodo pago", carrito.meotdo_pago)
 
         messages.success(request, "¡Pago exitoso!")
-        return redirect('facturas_usuarios')
+        return redirect('facturas_usuario')
     
     contexto = {
         "carrito": carrito,

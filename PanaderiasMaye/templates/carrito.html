@@ -59,6 +59,7 @@
                         </thead>
                         <tbody>
                             {% for item in detalles %}
+                            {% if item.producto.disponibilidad == "SI" %}
                             <tr>
                                 <td><img src="{{ item.producto.foto.url }}" alt="Imagen" class="img-fluid" width="80" style="height: 50px;"></td>
                                 <td>{{ item.producto.nombre }}</td>
@@ -80,6 +81,7 @@
                                     </a>
                                 </td>
                             </tr>
+                            {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>

@@ -46,9 +46,10 @@ class DetalleCarritoInline(admin.TabularInline):
 
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
-    list_display = ["id", "servicio", "usuario", "nombre_destinatario", "fecha_reserva"]
+    list_display = ["id", "servicio", "usuario", "nombre_destinatario", "fecha_reserva", "estado"]
     search_fields = ["servicio", "usuario"]
     list_filter = ["usuario"]
+    list_editable = ["estado"]
     inlines =[DetalleCarritoInline]
 
     def mostrar_productos(self, obj):
@@ -60,10 +61,13 @@ class CarritoAdmin(admin.ModelAdmin):
 
 @admin.register(Detalle_carrito)
 class DetalleCarritoAdmin(admin.ModelAdmin):
-    list_display = ["id", "cantidad", "total", "producto", "carrito"]
+    list_display = ["id", "cantidad", "total", "producto", "carrito", "id_carrito"]
     search_fields = ["producto__nombre"]
     list_filter = ["producto"]
     list_editable = ["cantidad", "total"]
+
+    def id_carrito(self, obj):
+        return f"{obj.carrito.id}"
 
 
 @admin.register(Inventario)

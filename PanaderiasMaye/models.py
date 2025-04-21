@@ -93,7 +93,7 @@ class Detalle_carrito(models.Model):
         verbose_name_plural = "Detalle Del Carrito"
 
     def __str__(self):
-        return f"{self.producto} {self.cantidad} {self.total}  "
+        return f"{self.carrito.id} {self.producto} {self.cantidad} {self.total}  "
 
 class Carrito(models.Model):
     
