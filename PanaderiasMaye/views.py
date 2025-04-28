@@ -2,6 +2,8 @@ from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.utils.dateparse import parse_date
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware
 from django.db.models import Sum
 import re
 from django.core.validators import validate_email
@@ -962,7 +964,7 @@ def ver_carrito_completo(request):
     try:
         carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
         detalles = carrito.detalles.all()
-        total_general = sum( dc.total for dc in detalles if dc.disponibilidad == "SI")
+        total_general = sum( dc.total for dc in detalles if dc.producto.disponibilidad == "SI")
 
         
     except Carrito.DoesNotExist:
@@ -1387,88 +1389,77 @@ def reenviar_token(request):
 
 #reservas-------------------------------------------------------------------------------------------------------
 
-def reservas(request):
+def formulario_pago_reserva(request):
+    metodo_pago = Metodo_pago.objects.all()
     logueado = request.session.get("auth")
-    carrito_sesion = request.session.get('carrito', {}).copy()
-    total_general = 0
-
-    for item in carrito_sesion.values():
-        item['total'] = float(item['cantidad']) * float(item['precio'])
-        total_general += item['total']
-
-    if request.method == "POST":
-        carrito_id = request.session.get('carrito_id')
-        if not carrito_id:
-            messages.error(request, "No se encontró la factura para pagar.")
-            return redirect('ver_carrito_completo')
-
-        try:
-            metodo = request.POST.get('metodo_pago')
-            nombre_destinatario = request.POST.get('nombre_destinatario')
-            fecha_reserva = request.POST.get('fecha')
-
-            factura = Carrito.objects.get(id=carrito_id)
-            factura.estado = 2
-            factura.metodo_pago = metodo
-            factura.nombre_destinatario = nombre_destinatario
-            #factura.fecha_reserva = fecha_reserva  # Asegúrate que esté en formato correcto
-            factura.save()
-
-        except Carrito.DoesNotExist:
-            messages.error(request, "La factura no existe.")
-            return redirect('ver_carrito')
-
-        # Limpiar sesión
-        request.session['carrito'] = {}
-        del request.session['carrito_id']
-
-        messages.success(request, "¡Pago exitoso!")
-        return redirect('ver_carrito')
-
-    contexto = {
-        "carrito": carrito_sesion,
-        "total_general": total_general,
-        "carrito_id": request.session.get('carrito_id')
-    }
-
-    return render(request, 'reservas.html', contexto)
-
-def procesar_pedido_reserva(request):
-    logueado = request.session.get("auth")
-
     if not logueado:
-        messages.error(request, "Debes loguearte primero para continuar... ")
+        messages.error(request, "Debes iniciar sesión para usar el formulario de pago ")
         return redirect("login")
     
-    carrito_sesion = request.session.get('carrito', {})
-    if not carrito_sesion:
-        messages.error(request, "Tu carrito está vacío.")
-        return redirect('ver_carrito')
+    try:
+        carrito = Carrito.objects.filter(usuario_id=logueado["id"], estado=1).latest('id')
+    except Carrito.DoesNotExist:
+        messages.error(request, "NO se encontraron carritos por pagar!!")
+        return redirect("ver_carrito_completo")
+    
+    detalles = carrito.detalles.all()
+    total_general = sum(dc.total for dc in detalles)
 
-    # Validación de stock
-    for producto_id, item in carrito_sesion.items():
-        producto = get_object_or_404(Producto, id=int(producto_id))
-        if item['cantidad'] > producto.cantidad:
-            messages.success(request, f"La cantidad del pedido para {producto.nombre} no puede superar la cantidad de productos disponibles.")
-            return redirect('ver_carrito_completo')
+    if request.method == "POST":    
+            
+        metodo = request.POST.get('metodo_pago')
+        nombre_destinatario = request.POST.get('nombre_destinatario')
+        fecha_reserva = request.POST.get('fecha-reserva')
 
-    total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
+        carrito.fecha_reserva = fecha_reserva
+        carrito.nombre_destinatario = nombre_destinatario
+        carrito.servicio = 2
+        carrito.estado = 1
+        carrito.meotdo_pago = metodo
 
-    nuevo_carrito = Carrito.objects.create(
-        usuario_id=logueado["id"],
-        fecha=timezone.now(),
-        cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),
-        estado=1
-    )
+        errores = []
 
-    for producto_id, item in carrito_sesion.items():
-        Detalle_carrito.objects.create(
-            carrito=nuevo_carrito,
-            producto_id=int(producto_id),
-            cantidad=item['cantidad'],
-            total=item['cantidad'] * item['precio']
-        )
+        if not fecha_reserva:
+            errores.append("El parametro de la fecha debe tener un valor!! ")
+        else:
+            fecha_obj = parse_datetime(fecha_reserva)
 
-    request.session['carrito_id'] = nuevo_carrito.id
-    messages.success(request, "Tu pedido ha sido procesado correctamente.")
-    return redirect('reservar')
+            if not fecha_obj:
+                errores.append("Asegurate de llenar la fecha correctamente")
+            else:
+                ahora = timezone.now()
+                if timezone.is_naive(fecha_obj):
+                    fecha_obj = make_aware(fecha_obj)
+
+                if fecha_obj < ahora + timezone.timedelta(hours=24):
+                    errores.append("La fecha de reserva debe ser al menos 24 horas después de la actual.")
+        
+        if not nombre_destinatario:
+            errores.append("El parametro Nombre debe tener un valor!! ")
+        else:
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre_destinatario):
+                errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
+
+        if not metodo or metodo == "":
+            errores.append("Debe seleccionar un metodo de pago para continuar!!! ")
+
+        carrito.save()
+
+        if errores:
+            for error in errores:
+                messages.warning(request, error)
+            return redirect("reservar")
+        
+
+
+        messages.success(request, "¡Pago exitoso!")
+        return redirect('facturas_usuario')
+    
+    contexto = {
+        "carrito": carrito,
+        "total_general": total_general,
+        "detalles": detalles,
+        "metodo_pago": metodo_pago
+    }
+
+    return render(request, 'usuarios/reservas.html', contexto)

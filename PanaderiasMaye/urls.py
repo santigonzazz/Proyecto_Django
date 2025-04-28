@@ -43,14 +43,12 @@ urlpatterns = [
     path('carrito/vaciar/', views.vaciar_carrito, name='vaciar_carrito'),
 
     #reservas
-    path("formulario-reserva/", views.reservas, name='reservar'),
-    path("procesar-pedido/", views.procesar_pedido, name='procesar_pedido'),
-
+    path("formulario-reserva/", views.formulario_pago_reserva, name='reservar'),
+    #path("procesar-pedido-reserva/", views.procesar_pedido_reserva, name='procesar_pedido_reserva'),
+    
     #pagos
-
     path("formulario-pago/", views.formulario_pago, name='formulario_pago'),
-    path("procesar-pedido-reserva/", views.procesar_pedido_reserva, name='procesar_pedido_reserva'),
-
+    path("procesar-pedido/", views.procesar_pedido, name='procesar_pedido'),
 
     #Facturas
     path('mis-facturas/', views.facturas_usuario, name='facturas_usuario'),
