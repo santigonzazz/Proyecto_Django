@@ -140,11 +140,10 @@
             <div class="mb-3">
                 <label for="medio_pago" class="form-label">Selecciona el medio de pago</label>
                 <select class="form-select" id="metodo_pago" name="metodo_pago" required>
-                    <option value="" disabled selected>Seleccione una opción</option>
-                    <option value="1">Nequi</option>
-                    <option value="2">Bancolombia</option>
-                    <option value="3">Tarjeta Credito</option>
-                    <option value="4">Pago en Efectivo</option>
+                    <option value="">Seleccione</option>
+                    {% for metodos in metodo_pago %}
+                        <option value="{{ metodos.id }}">{{ metodos.nombre }}</option>
+                    {% endfor %}
                 </select>
             </div>
     

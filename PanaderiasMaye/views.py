@@ -897,13 +897,14 @@ def agregar_carrito(request, producto_id):
         return redirect("index")
     try:
         carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
+        metodo_pago = Metodo_pago.objects.get(id=3)
     except Carrito.DoesNotExist:
         carrito = Carrito.objects.create(
             usuario=usuario,
             cantidad = 0,
             estado=1,
             servicio = 1,
-            metodo_pago = 4
+            metodo_pago = None
         )
     
     detalle, creado = Detalle_carrito.objects.get_or_create(
@@ -1130,18 +1131,6 @@ def formulario_pago(request):
         messages.error(request, "Debes iniciar sesión para usar el formulario de pago ")
         return redirect("login")
     
-    # carrito_sesion = request.session.get('carrito', {}).copy()
-    # total_general = 0
-
-    # for item in carrito_sesion.values():
-    #     item['total'] = float(item['cantidad']) * float(item['precio'])
-    #     total_general += item['total']
-
-    # carrito_id = request.session.get('carrito_id')
-    # if not carrito_id:
-    #     messages.error(request, "No se encontró la factura para pagar.")
-    #     return redirect('ver_carrito')
-    
     try:
         carrito = Carrito.objects.filter(usuario_id=logueado["id"], estado=1).latest()
     except Carrito.DoesNotExist:
@@ -1153,24 +1142,39 @@ def formulario_pago(request):
 
     if request.method == "POST":    
         try:
-            metodo = request.POST.get('metodo_pago')
+            metodo_id = request.POST.get('metodo_pago')  
+            metodo = Metodo_pago.objects.get(id=metodo_id) 
+            nombre_destinatario = request.POST.get('nombre_destinatario')
+            direccion = request.POST.get('direccion')
+            especificaciones_direccion = request.POST.get('especificaciones')
+
+            carrito.metodo_pago = metodo
             carrito.estado = 2
-            carrito.meotdo_pago = metodo
+            carrito.servicio = 1
+            carrito.nombre_destinatario = nombre_destinatario
+            carrito.direccion = direccion
+            carrito.especificaciones_direccion = especificaciones_direccion
+
+
+
             carrito.save()
 
         except Carrito.DoesNotExist:
             messages.error(request, "La factura no existe.")
             return redirect('ver_carrito_completo')
         
-        print("metodo pago", carrito.meotdo_pago)
+        print("metodo pago", carrito.metodo_pago)
 
         messages.success(request, "¡Pago exitoso!")
         return redirect('facturas_usuario')
     
+    metodo = Metodo_pago.objects.all()
+
     contexto = {
         "carrito": carrito,
         "total_general": total_general,
-        "detalles": detalles
+        "detalles": detalles,
+        "metodo_pago": metodo
     }
 
     return render(request, 'usuarios/pago.html', contexto)
@@ -1197,24 +1201,6 @@ def procesar_pedido(request):
         if detalle.cantidad > producto.cantidad:
             messages.error(request, f"No hay suficiente stock para: {producto.nombre} ")
 
-    # total_general = sum(item['cantidad'] * item['precio'] for item in carrito_sesion.values())
-
-    # nuevo_carrito = Carrito.objects.create(
-    #     usuario_id=logueado["id"],
-    #     fecha=timezone.now(),
-    #     cantidad=sum(item['cantidad'] for item in carrito_sesion.values()),
-    #     estado=1
-    # )
-
-    # for producto_id, item in carrito_sesion.items():
-    #     Detalle_carrito.objects.create(
-    #         carrito=nuevo_carrito,
-    #         producto_id=int(producto_id),
-    #         cantidad=item['cantidad'],
-    #         total=item['cantidad'] * item['precio']
-    #     )
-
-    # request.session['carrito_id'] = nuevo_carrito.id
     messages.success(request, "Tu pedido ha sido procesado correctamente.")
     return redirect('formulario_pago')
 
@@ -1415,7 +1401,7 @@ def formulario_pago_reserva(request):
         carrito.nombre_destinatario = nombre_destinatario
         carrito.servicio = 2
         carrito.estado = 1
-        carrito.meotdo_pago = metodo
+        carrito.metodo_pago = metodo
 
         errores = []
 

@@ -95,7 +95,6 @@
     <table>
         <thead>
             <tr>
-              {{ carrito }}
                 <th>Producto</th>
                 <th>Cantidad</th>
                 <th>Precio</th>
@@ -110,7 +109,7 @@
                     <td>${{ item.producto.precio }}</td>
                     <td>${{ item.total }}</td>
                     <td>
-                        <a href="{% url 'eliminar_producto' item.id %}">Eliminar</a>
+                        <a href="{% url 'eliminar_producto_carrito' item.producto.id %}"><i class="fa-solid fa-trash" style="color: red;"></i></a>
                     </td>
                 </tr>
             {% endfor %}

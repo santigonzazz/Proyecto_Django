@@ -103,21 +103,18 @@ class Carrito(models.Model):
     )
     ESTADOS = (
         (1, "Pendiente"),
+        (2, "reservado"),
         (2, "Pagado")
-    )
-    METODOS_PAGOS = (
-        (1, "Nequi"),
-        (2, "Bancolombia"),
-        (3, "Tarjeta de Crédito"),
-        (4, "Efectivo")
     )
     servicio= models.IntegerField(choices=SERVICIOS, default=1)
     usuario= models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name='fk5_carrito_usuario')
     fecha = models.DateTimeField(default=timezone.now)
     cantidad= models.IntegerField()
     estado = models.IntegerField(choices=ESTADOS, default=1)
-    metodo_pago = models.IntegerField(choices=METODOS_PAGOS, default=4)
+    metodo_pago = models.ForeignKey('Metodo_pago', on_delete=models.DO_NOTHING, related_name='fk6_carrito_metodo_pago', null=True)
     nombre_destinatario = models.CharField(max_length=150, null=True)
+    direccion = models.CharField(max_length=100, default=1)
+    especificaciones_direccion = models.TextField(null=True)
     fecha_reserva = models.DateTimeField(null=True)
 
     def __str__(self):

@@ -46,7 +46,7 @@ class DetalleCarritoInline(admin.TabularInline):
 
 @admin.register(Carrito)
 class CarritoAdmin(admin.ModelAdmin):
-    list_display = ["id", "servicio", "usuario", "nombre_destinatario", "fecha_reserva", "estado", "metodo_pago"]
+    list_display = ["id", "servicio", "usuario", "nombre_destinatario", "fecha_reserva", "estado", "metodo_pago", "direccion", "especificaciones_direccion"]
     search_fields = ["servicio", "usuario"]
     list_filter = ["usuario"]
     list_editable = ["estado"]
