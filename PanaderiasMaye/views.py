@@ -9,7 +9,7 @@ import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-#from xhtml2pdf import pisa
+from xhtml2pdf import pisa
 from django.template.loader import get_template
 from django.template.loader import render_to_string
 
@@ -1177,6 +1177,7 @@ def formulario_pago(request):
         "metodo_pago": metodo
     }
 
+    return redirect('confirmar_pago', carrito_id = carrito.id)
     return render(request, 'usuarios/pago.html', contexto)
 
 
@@ -1200,6 +1201,7 @@ def procesar_pedido(request):
         producto = detalle.producto
         if detalle.cantidad > producto.cantidad:
             messages.error(request, f"No hay suficiente stock para: {producto.nombre} ")
+            return redirect('ver_carrito_completo')
 
     messages.success(request, "Tu pedido ha sido procesado correctamente.")
     return redirect('formulario_pago')
@@ -1211,28 +1213,38 @@ def confirmar_pago(request, carrito_id):
         return redirect("login")
     
     carrito = get_object_or_404(Carrito, id=carrito_id, usuario=logueado["id"])
+    detalles = Detalle_carrito.objects.filter(carrito=carrito)
+    total_general = sum(detalle.producto.precio * detalle.cantidad for detalle in detalles)
+    metodos_pago = Metodo_pago.objects.all()
 
     if carrito.estado == 2:
         messages.info(request, "Este pedido ya ha sido pagado.")
         return redirect("facturas_usuario")
 
     # Descontar productos del inventario
-    for detalle in carrito.detalles.all():
-        producto = detalle.producto
-        if detalle.cantidad > producto.cantidad:
-            messages.error(request, f"No hay suficiente stock para {producto.nombre}.")
-            return redirect("formulario_pago")
+    if request.method  == 'POST':
+        for detalle in carrito.detalles.all():
+            producto = detalle.producto
+            if detalle.cantidad > producto.cantidad:
+                messages.error(request, f"No hay suficiente stock para {producto.nombre}.")
+                return redirect("formulario_pago")
 
-        producto.cantidad -= detalle.cantidad
-        producto.save()
+            producto.cantidad -= detalle.cantidad
+            producto.save()
 
-    carrito.estado = 2
-    carrito.save()
+        carrito.estado = 2
+        carrito.save()
 
-    enviar_correo_confirmacion(carrito)
-
-    messages.success(request, "Factura enviada a tu correo, gracias por tu compra... ")
-    return redirect('facturas_usuario')
+        enviar_correo_confirmacion(carrito)
+        messages.success(request, "Factura enviada a tu correo, gracias por tu compra... ")
+        return redirect("facturas_usuario")
+    contexto = {
+        "carrito": carrito,
+        "detalles": detalles,
+        "total_general": total_general,
+        "metodo_pago": metodos_pago
+    }
+    return render(request, "usuarios/pago.html", contexto)
 
 #FACTURAS-----------------------------------------------------------------------------------------------------------------
 

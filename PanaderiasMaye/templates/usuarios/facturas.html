@@ -10,6 +10,13 @@
 </style>
 <main >
 <div class="container py-5">   
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <p>{{ message }}</p>
+            </div>
+        {% endfor %}
+    {% endif %}
     <h2 class="mb-4 text-center fw-bold" style="color: #212529;">Mis Facturas</h2>
 
     <!-- Filtro de Fecha -->
