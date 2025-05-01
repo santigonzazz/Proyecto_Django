@@ -137,11 +137,10 @@ def about(request):
     return render(request, 'about.html')
 
 def contactanos(request):
-    return render(request, 'contactanos.html')
+    
+    tipo_opciones = Pqrs.TIPOS
 
-def validacion_contactanos(request):
     if request.method == 'POST':
-
         user_id = request.session.get("auth", {}).get("id")
         if not user_id:
             messages.error(request, "Debes iniciar sesión para editar tu perfil.")
@@ -152,12 +151,66 @@ def validacion_contactanos(request):
         nombre = request.POST.get("nombre", "").strip()
         email = request.POST.get("email", "").strip()
         mensaje = request.POST.get("mensaje", "").strip()
+        tipo = request.POST.get("tipo")
 
-        if not nombre:
-            errores.append("El parametro Nombre debe tener un valor!! ")
-        else:
-            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
-                errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
+        if not nombre or nombre == "":
+            errores.append("El campo nombre no puede estar vacío ")
+        if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
+                    errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
+        if not email:
+            errores.append("El parametro Correo debe tener un valor!! ")
+        else:      
+            try:
+                validate_email(email)
+                print(f"Correo  {email} ")
+            except ValidationError:
+                errores.append("Correo electrónico inválido.")
+        if not mensaje or mensaje == "":
+            errores.append("Debe tener un mensaje ")
+        elif len(mensaje) < 20:
+            errores.append("El mensaje debe tener minimo 20 caracteres!! ")
+        
+        if not tipo:
+            errores.append("Debes seleccionar el tipo del mensaje!! ")
+            
+
+        if errores:
+                for error in errores:
+                    messages.error(request, error)
+                return redirect("contactanos")
+        
+        q = Pqrs(
+            nombre = nombre,
+            correo = email,
+            mensaje = mensaje,
+            tipo=tipo
+        )
+        q.save()
+        
+        messages.success(request, "Gracias por compartir tu opinión con nosotros. Mensaje enviado con éxito!! ")
+        return redirect("contactanos")
+    else:
+        return render(request, 'contactanos.html', {"tipo_opciones": tipo_opciones})
+
+# def validacion_contactanos(request):
+#     if request.method == 'POST':
+
+#         user_id = request.session.get("auth", {}).get("id")
+#         if not user_id:
+#             messages.error(request, "Debes iniciar sesión para editar tu perfil.")
+#             return redirect("login")
+        
+#         errores = []
+
+#         nombre = request.POST.get("nombre", "").strip()
+#         email = request.POST.get("email", "").strip()
+#         mensaje = request.POST.get("mensaje", "").strip()
+
+#         if not nombre:
+#             errores.append("El parametro Nombre debe tener un valor!! ")
+#         else:
+#             if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
+#                 errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
 
 
 #facturas--------------------------------------------------------------------------------------

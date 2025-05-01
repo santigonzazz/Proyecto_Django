@@ -88,4 +88,11 @@ class Catalogo_inventarioAdmin(admin.ModelAdmin):
 class AdminProductoCategoria(admin.ModelAdmin):
     list_display = ["id", "producto", "categoria"]
 
+@admin.register(Pqrs)
+class AdminPqrs(admin.ModelAdmin):
+    list_display = ["id", "nombre", "correo", "tipo"]
+    search_fields = ["nombre", "correo", "tipo"]
+    list_filter = ["tipo"]
+    
+
 # Register your models here.

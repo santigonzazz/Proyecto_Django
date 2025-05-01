@@ -143,3 +143,18 @@ class Catalogo_inventario(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.precio} {self.marca}"
+
+class Pqrs(models.Model):
+    nombre = models.CharField(max_length=120)
+    correo = models.EmailField(max_length=224)
+    mensaje = models.TextField()
+    TIPOS = (
+        (1, "Petición"),
+        (2, "Queja"),
+        (3, "Reclamo"),
+        (4, "Sugerencia"),
+        (5, "Felicitación")
+    )
+    tipo = models.IntegerField(choices=TIPOS, default=1)
+    def __str__(self):
+        return f"{self.nombre} {self.correo} {self.tipo}"

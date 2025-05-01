@@ -1,35 +1,49 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block titulo %} Inicio {% endblock %}
+{% block titulo %} Contáctanos {% endblock %}
 {% block titulo-body %} Bienvenido a Panadería's Maye!!! {% endblock %}
 {% block body %} 
     <main>
         <div class="container mb-5"> 
             <center><h2>Contáctanos</h2></center>
             <center><p>Si tienes alguna pregunta o comentario, no dudes en enviarnos un mensaje. ¡Estamos aquí para ayudarte!</p></center>
-            <form>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                        <p>{{ message }}</p>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            <form method="post">
+                {% csrf_token %}
                 <div class="mb-3">
                     <label for="name" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="name" required 
-                           pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]+" 
-                           title="Solo se permiten letras y espacios">
+                    <input type="text" class="form-control" id="name"   
+                           title="Solo se permiten letras y espacios" name="nombre">
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Correo Electrónico</label>
-                    <input type="email" class="form-control" id="email" required 
-                           pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" 
-                           title="Introduce un correo electrónico válido">
+                    <input type="email" class="form-control" id="email"  
+                           name="email">
                 </div>
                 <div class="mb-3">
                     <label for="message" class="form-label">Mensaje</label>
-                    <textarea class="form-control" id="message" rows="5" required 
-                              minlength="10" 
+                    <textarea class="form-control" id="message" rows="5"  
                               placeholder="Escribe tu mensaje aquí..." 
                               title="El mensaje debe tener al menos 10 caracteres"
                               name="mensaje"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Enviar</button>
+                <div class="mb-3">
+                    <label for="tipo" class="form-label">Seleccione el tipo de mensaje</label>
+                    <select class="form-select" id="tipo" name="tipo" >
+                        <option value="">Seleccione</option>
+                        {% for tipo_id, tipo_nombre in tipo_opciones %}
+                            <option value="{{ tipo_id }}">{{ tipo_nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btn-conta">Enviar</button>
             </form>
         </div>
     </main>

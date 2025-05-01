@@ -434,6 +434,8 @@ footer .text-center p {
 
 .btn-container-crud-user {
     display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .btn-ed:hover {
@@ -584,4 +586,10 @@ footer .text-center p {
     display: flex;
     justify-content: space-between;
     width: 100%;
+}
+
+#btn-conta{
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
