@@ -87,7 +87,7 @@ class Detalle_carrito(models.Model):
     carrito = models.ForeignKey('Carrito', on_delete=models.CASCADE, related_name='detalles', null=True)
     cantidad= models.IntegerField()
     total= models.FloatField(validators=[MinValueValidator(0)])
-    producto= models.ForeignKey('Producto', on_delete=models.DO_NOTHING, related_name='fk4_detalle_carrito_producto')
+    producto= models.ForeignKey('Producto', on_delete=models.CASCADE, related_name='fk4_detalle_carrito_producto')
     class Meta:
         verbose_name = "Detalle Carrito"
         verbose_name_plural = "Detalle Del Carrito"

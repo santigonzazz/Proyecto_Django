@@ -20,12 +20,14 @@
                 <div class="mb-3">
                     <label for="name" class="form-label">Nombre</label>
                     <input type="text" class="form-control" id="name"   
-                           title="Solo se permiten letras y espacios" name="nombre">
+                           title="Solo se permiten letras y espacios" name="nombre"
+                           value="{{ request.session.auth.nombre }}">
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Correo Electrónico</label>
                     <input type="email" class="form-control" id="email"  
-                           name="email">
+                           name="email"
+                           value="{{ request.session.auth.email }}" readonly>
                 </div>
                 <div class="mb-3">
                     <label for="message" class="form-label">Mensaje</label>

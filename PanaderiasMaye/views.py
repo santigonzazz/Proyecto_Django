@@ -47,19 +47,31 @@ def index(request):
     
   
     user = request.session.get("auth", {}).get("id")
+    disponibilidad_carrito = []
     if user:
         try:
             user_obj = User.objects.get(id=user)
             carrito_actual = Carrito.objects.filter(usuario=user_obj, estado=1).latest('fecha')
             detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
+           
             for item in detalles:
-                item.total = item.cantidad * item.producto.precio
-                total_general += item.cantidad * item.producto.precio
+                    if item.producto.disponibilidad == "SI":
+                        item.total = item.cantidad * item.producto.precio
+                        total_general += item.cantidad * item.producto.precio
+                    else:
+                        disponibilidad_carrito.append(f"El producto: {item.producto.nombre} que agregaste no se encuentra disponibile actualmente!! Producto eliminado de tu carrito ")
+                
+                    
+
         except Carrito.DoesNotExist:
             carrito_actual = None
             detalles = []
             total_general = 0
-
+                    
+        # if disponibilidad_carrito:
+        #     for error in disponibilidad_carrito:
+        #         messages.error(request, error)
+            
     contexto = {
         "productoInfo": productos,
         "categorias": categorias,  
@@ -67,7 +79,7 @@ def index(request):
         "detalles": detalles,
         'total': total,
         "totalg": total_general
-    }
+    }   
     return render(request, 'index.html', contexto)
 
 
@@ -149,7 +161,8 @@ def contactanos(request):
         errores = []
 
         nombre = request.POST.get("nombre", "").strip()
-        email = request.POST.get("email", "").strip()
+        email_ingresado = request.POST.get("email", "").strip()
+        email = request.session.get("auth", {}).get("email")
         mensaje = request.POST.get("mensaje", "").strip()
         tipo = request.POST.get("tipo")
 
@@ -172,7 +185,9 @@ def contactanos(request):
         
         if not tipo:
             errores.append("Debes seleccionar el tipo del mensaje!! ")
-            
+        
+        if email != email_ingresado:
+            errores.append("No puedes cambiar tu correo si quieres enviar el mensaje!! ")
 
         if errores:
                 for error in errores:
@@ -190,6 +205,7 @@ def contactanos(request):
         messages.success(request, "Gracias por compartir tu opinión con nosotros. Mensaje enviado con éxito!! ")
         return redirect("contactanos")
     else:
+        user_id = request.session.get("auth", {}).get("id")
         return render(request, 'contactanos.html', {"tipo_opciones": tipo_opciones})
 
 # def validacion_contactanos(request):
@@ -1018,6 +1034,17 @@ def ver_carrito_completo(request):
     try:
         carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
         detalles = carrito.detalles.all()
+        carrito_encotrado = False
+        for item in detalles:
+            if item.producto.disponibilidad == "NO":
+                messages.error(request, f"El producto: {item.producto.nombre} que seleccionaste anteriormente no se encuentra disponible!!")                
+                #item.producto.delete()
+                if not carrito_encotrado:
+                    carrito_encotrado = True
+                    return redirect("index")
+                
+            else:
+                pass
         total_general = sum( dc.total for dc in detalles if dc.producto.disponibilidad == "SI")
 
         
@@ -1142,7 +1169,7 @@ def eliminar_producto_carrito(request, producto_id):
     except Carrito.DoesNotExist:
         messages.error(request, "NO hay un carrito activo actualmente ")
     
-    return redirect("ver_carrito_completo")
+    return redirect("index")
 
     # if str(producto_id) in carrito:
     #     del carrito[str(producto_id)]
@@ -1191,7 +1218,12 @@ def formulario_pago(request):
         return redirect("ver_carrito_completo")
     
     detalles = carrito.detalles.all()
-    total_general = sum(dc.total for dc in detalles)
+
+    for item in detalles:
+        if item.producto.disponibilidad == "NO":
+            messages.error(request, f"El producto: {item.producto.nombre} no esta disponible")
+        else:
+            total_general = sum(dc.total for dc in detalles if dc.producto.disponibilidad == "SI")
 
     if request.method == "POST":    
         try:
@@ -1267,7 +1299,7 @@ def confirmar_pago(request, carrito_id):
     
     carrito = get_object_or_404(Carrito, id=carrito_id, usuario=logueado["id"])
     detalles = Detalle_carrito.objects.filter(carrito=carrito)
-    total_general = sum(detalle.producto.precio * detalle.cantidad for detalle in detalles)
+    total_general = sum(detalle.producto.precio * detalle.cantidad for detalle in detalles if detalle.producto.disponibilidad == "SI")
     metodos_pago = Metodo_pago.objects.all()
 
     if carrito.estado == 2:

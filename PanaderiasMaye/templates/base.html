@@ -103,6 +103,7 @@
         </thead>
         <tbody>
             {% for item in detalles %}
+              {% if item.producto.disponibilidad == "SI" %}
                 <tr>
                     <td>{{ item.producto.nombre }}</td>
                     <td>{{ item.cantidad }}</td>
@@ -112,6 +113,7 @@
                         <a href="{% url 'eliminar_producto_carrito' item.producto.id %}"><i class="fa-solid fa-trash" style="color: red;"></i></a>
                     </td>
                 </tr>
+              {% endif %}
             {% endfor %}
         </tbody>
     </table>

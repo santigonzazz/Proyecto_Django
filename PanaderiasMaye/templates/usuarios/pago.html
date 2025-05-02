@@ -103,6 +103,7 @@
                     </thead>
                     <tbody>
                         {% for detalle in detalles %}
+                        {% if detalle.producto.disponibilidad == "SI" %}
                             <tr>
                                 <td><img src="{{ detalle.producto.foto.url }}" alt="Imagen" class="img-fluid" width="80" style="height: 50px;"></td>
                                 <td>{{ detalle.producto.nombre }}</td>
@@ -110,6 +111,7 @@
                                 <td>${{ detalle.producto.precio|floatformat:2 }}</td>
                                 <td>${{ detalle.total|floatformat:2 }}</td>
                             </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
