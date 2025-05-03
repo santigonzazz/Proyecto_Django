@@ -143,7 +143,7 @@
                                 </div>
                                 <div>
                                     <label for="celular" class="form-label">Stock:</label>
-                                    <input type="number" class="form-control" id="precio" name="precio" required min="0" pattern="[0-9]{10}" value="{{ producto.cantidad }}">
+                                    <input type="number" class="form-control" id="cantidad" name="cantidad" required min="0" pattern="[0-9]{10}" value="{{ producto.cantidad }}">
                                 </div> 
                                 <div class="mb-3">
                                     <label for="apellido" class="form-label">Descripción:</label>
@@ -154,14 +154,14 @@
                                     <div>
                                         <label for="celular" class="form-label">Precio:</label>
                                         <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
-                                        title="Se solicita tener 10 digitos como minimo" pattern="[A-Za-z ]{2,}" value="{{ producto.precio }}" required>
+                                        title="Se solicita tener 10 digitos como minimo" pattern="[A-Za-z ]{2,}" value="{{ producto.precio|floatformat }}" required>
                                    </div> 
                                     <div>
                                         <label for="rol" class="form-label">Disponibilidad:</label>
                                         <select name="disponibilidad" class="form-select" value="{{ producto.precio }}" required>
                                             <option value="">Seleccione</option>
-                                            <option value="SI">Disponible</option>
-                                            <option value="NO">No Disponible</option>
+                                            <option value="SI" {% if producto.disponibilidad == "SI" %} selected {% endif %}>Disponible</option>
+                                            <option value="NO" {% if producto.disponibilidad == "NO" %} selected {% endif %}>No Disponible</option>
                                         </select>
                                     </div>       
                                 </div>

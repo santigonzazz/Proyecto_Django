@@ -104,7 +104,7 @@ class Carrito(models.Model):
     ESTADOS = (
         (1, "Pendiente"),
         (2, "reservado"),
-        (2, "Pagado")
+        (3, "Pagado")
     )
     servicio= models.IntegerField(choices=SERVICIOS, default=1)
     usuario= models.ForeignKey('User', on_delete=models.DO_NOTHING, related_name='fk5_carrito_usuario')

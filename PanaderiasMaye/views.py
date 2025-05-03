@@ -526,7 +526,7 @@ def editar_producto(request, producto_id):
             # Obtener los datos del formulario
             p.nombre = request.POST.get("nombre", p.nombre)
             p.precio = request.POST.get("precio", p.precio)
-            p.stock = request.POST.get("stock")
+            p.cantidad = request.POST.get("cantidad")
             p.descripcion = request.POST.get("descripcion", p.descripcion)
             p.disponibilidad = request.POST.get("disponibilidad", p.disponibilidad)
             foto_nueva = request.FILES.get("foto")
@@ -1208,58 +1208,71 @@ def vaciar_carrito(request):
 def formulario_pago(request):
     logueado = request.session.get("auth")
     if not logueado:
-        messages.error(request, "Debes iniciar sesión para usar el formulario de pago ")
+        messages.error(request, "Debes iniciar sesión para usar el formulario de pago.")
         return redirect("login")
     
     try:
         carrito = Carrito.objects.filter(usuario_id=logueado["id"], estado=1).latest()
     except Carrito.DoesNotExist:
-        messages.error(request, "NO se encontraron carritos por pagar!!")
+        messages.error(request, "No se encontraron carritos por pagar.")
         return redirect("ver_carrito_completo")
     
     detalles = carrito.detalles.all()
+    total_general = sum(dc.total for dc in detalles if dc.producto.disponibilidad == "SI")
 
     for item in detalles:
         if item.producto.disponibilidad == "NO":
-            messages.error(request, f"El producto: {item.producto.nombre} no esta disponible")
+            messages.error(request, f"El producto '{item.producto.nombre}' no está disponible.")
+
+    if request.method == "POST":
+        errores = []
+
+        metodo_id = request.POST.get('metodo_pago')
+        metodo_instancia = None
+
+        if not metodo_id or not metodo_id.isdigit(): #funcion que revisa que hayan datos del 0 al 9 y que no hayan datos vacios
+            errores.append("Debe seleccionar un método de pago válido.")
         else:
-            total_general = sum(dc.total for dc in detalles if dc.producto.disponibilidad == "SI")
+            try:
+                metodo_instancia = Metodo_pago.objects.get(pk=int(metodo_id))
+                carrito.metodo_pago = metodo_instancia
+            except Metodo_pago.DoesNotExist:
+                errores.append("El método de pago seleccionado no existe.")
 
-    if request.method == "POST":    
-        try:
-            metodo_id = request.POST.get('metodo_pago')  
-            metodo = Metodo_pago.objects.get(id=metodo_id) 
-            nombre_destinatario = request.POST.get('nombre_destinatario')
-            direccion = request.POST.get('direccion')
-            especificaciones_direccion = request.POST.get('especificaciones')
+        nombre_destinatario = request.POST.get('nombre_destinatario')
+        direccion = request.POST.get('direccion')
+        especificaciones_direccion = request.POST.get('especificaciones')
 
-            carrito.metodo_pago = metodo
-            carrito.estado = 2
-            carrito.servicio = 1
-            carrito.nombre_destinatario = nombre_destinatario
-            carrito.direccion = direccion
-            carrito.especificaciones_direccion = especificaciones_direccion
+        if not nombre_destinatario:
+            errores.append("El parámetro 'Nombre' debe tener un valor.")
+        elif not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre_destinatario):
+            errores.append("Nombre inválido. Solo se permiten letras y espacios.")
 
+        if not direccion:
+            errores.append("El parámetro 'Dirección' debe tener un valor.")
 
+        if errores:
+            for error in errores:
+                messages.warning(request, error)
+            return redirect("formulario_pago")
 
-            carrito.save()
-
-        except Carrito.DoesNotExist:
-            messages.error(request, "La factura no existe.")
-            return redirect('ver_carrito_completo')
-        
-        print("metodo pago", carrito.metodo_pago)
+        carrito.nombre_destinatario = nombre_destinatario
+        carrito.direccion = direccion
+        carrito.especificaciones_direccion = especificaciones_direccion
+        carrito.servicio = 1
+        carrito.estado = 1 if metodo_instancia and metodo_instancia.id == 2 else 3
+        carrito.save()
 
         messages.success(request, "¡Pago exitoso!")
-        return redirect('facturas_usuario')
-    
-    metodo = Metodo_pago.objects.all()
+        return redirect("facturas_usuario")
+
+    metodos_pago = Metodo_pago.objects.all()
 
     contexto = {
         "carrito": carrito,
         "total_general": total_general,
         "detalles": detalles,
-        "metodo_pago": metodo
+        "metodo_pago": metodos_pago
     }
 
     return redirect('confirmar_pago', carrito_id = carrito.id)
@@ -1318,6 +1331,7 @@ def confirmar_pago(request, carrito_id):
             producto.save()
 
         carrito.estado = 2
+
         carrito.save()
 
         enviar_correo_confirmacion(carrito)
@@ -1494,11 +1508,22 @@ def formulario_pago_reserva(request):
         nombre_destinatario = request.POST.get('nombre_destinatario')
         fecha_reserva = request.POST.get('fecha-reserva')
 
+        if metodo:
+            try:
+                metodo_instancia = Metodo_pago.objects.get(pk=metodo)
+                carrito.metodo_pago = metodo_instancia
+            except Metodo_pago.DoesNotExist:
+                errores.append("El método de pago seleccionado no existe.")
+        else:
+            errores.append("Debe seleccionar un metodo de pago para continuar!!! ")
+
         carrito.fecha_reserva = fecha_reserva
         carrito.nombre_destinatario = nombre_destinatario
         carrito.servicio = 2
-        carrito.estado = 1
-        carrito.metodo_pago = metodo
+        if metodo_instancia.id != 2:
+            carrito.estado = 1
+        else:
+            carrito.estado = 2
 
         errores = []
 
@@ -1523,17 +1548,12 @@ def formulario_pago_reserva(request):
             if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre_destinatario):
                 errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
 
-        if not metodo or metodo == "":
-            errores.append("Debe seleccionar un metodo de pago para continuar!!! ")
-
-        carrito.save()
-
         if errores:
             for error in errores:
                 messages.warning(request, error)
             return redirect("reservar")
         
-
+        carrito.save()
 
         messages.success(request, "¡Pago exitoso!")
         return redirect('facturas_usuario')

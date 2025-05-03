@@ -22,7 +22,6 @@ nav {
     padding: 10px;
 }
 
-
 .nav-link {
     color: black;
 }
@@ -592,4 +591,10 @@ footer .text-center p {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+td{
+    text-align: center;
+}
+th{
+    text-align: center;
 }

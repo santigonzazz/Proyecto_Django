@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block titulo %} Crud-DashBoard {% endblock %}
-    
+{% block titulo-body %} Admin Dashboard {% endblock %}    
 {% block body %}
-    <main>
+    <main style="min-height: 400px; display: flex; align-items: flex-start;">
+        
         <div class="container">
-            <h1 class="title text-center my-4">Admin Dashboard</h1>
-
 
                         <div class="crud-buttoons">
                             <a href="{% url 'adminCRUDU' %}" class="btn-cambios btn btn-primary btn-crudu">Editar
