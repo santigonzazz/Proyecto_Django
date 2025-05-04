@@ -8,6 +8,8 @@ from django.db.models import Sum
 import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+import traceback
+from datetime import timedelta
 
 from xhtml2pdf import pisa
 from django.template.loader import get_template
@@ -271,30 +273,30 @@ def facturas(request):
 
 #funciones de usuario-------------------------------------------------------------------------
 
-def cambiar_clave(request):
-    if request.method == "POST":
-        clave_actual = request.POST.get("clave_actual")
-        nueva = request.POST.get("nueva")
-        repite_nueva = request.POST.get("repite_nueva")
-        logueado = request.session.get("auth")
+# def cambiar_clave(request):
+#     if request.method == "POST":
+#         clave_actual = request.POST.get("clave_actual")
+#         nueva = request.POST.get("nueva")
+#         repite_nueva = request.POST.get("repite_nueva")
+#         logueado = request.session.get("auth")
 
-        q = User.objects.get(pk=logueado["id"])
-        if verify_password(clave_actual, q.password):
-            if nueva == repite_nueva:
-                q.password = hash_password(nueva)       # utils.py
-                q.save()
-                messages.success(request, "Contraseña cambiada con éxito!!")
-            else:
-                messages.info(request, "Contraseñas nuevas no coinciden...")
-        else:
-            messages.warning(request, "Contraseña no concuerda...")
+#         q = User.objects.get(pk=logueado["id"])
+#         if verify_password(clave_actual, q.password):
+#             if nueva == repite_nueva:
+#                 q.password = hash_password(nueva)       # utils.py
+#                 q.save()
+#                 messages.success(request, "Contraseña cambiada con éxito!!")
+#             else:
+#                 messages.info(request, "Contraseñas nuevas no coinciden...")
+#         else:
+#             messages.warning(request, "Contraseña no concuerda...")
 
-        return redirect("cambiar_clave")
-    else:
-        return render(request, "cambiar_clave.html")
+#         return redirect("cambiar_clave")
+#     else:
+#         return render(request, "cambiar_clave.html")
 
-def clave (request):
-    return render(request, 'recuperarclave.html')
+# def clave (request):
+#     return render(request, 'recuperarclave.html')
 
 def editar_perfil(request):
     if request.method == 'POST':
@@ -408,7 +410,7 @@ def dashboardAdmin(request):
         messages.info(request, "Debe loguearse primero...")
         return redirect("login")
 
-#categorias
+#CRUD categorias-----------------------------------------------------------------------------------
 
 def crud_categorias(request): 
     verificar = request.session.get("auth", False)
@@ -428,70 +430,89 @@ def crud_categorias(request):
         messages.info(request, "Debe loguearse primero...")
         return redirect("login")
 
-      
-
-def eliminar_categoria(request, id_categoria):
-    try:
-        cate = Categoria.objects.get(pk = id_categoria)
-        cate.delete()
-        messages.success(request, "Cita eliminada correctamente!")
-    except IntegrityError:
-        messages.warning(request, "Error: No puede eliminar el cita, está en uso.")
-    except Exception as e:
-        messages.error(request, f"Error: {e}")
-
-    return redirect("crud_categoria")
-
 def agregar_categoria(request):
     if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        descripcion = request.POST.get("descripcion")
+        nombre = request.POST.get("nombre", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+
+        if not nombre or not descripcion:
+            messages.error(request, "Todos los campos son obligatorios.")
+            return redirect("crud_categoria")
+        
+        if len(nombre) < 2:
+            messages.error(request, "El nombre debe tener al menos 2 caracteres.")
+            return redirect("crud_categoria")
+
+        if not nombre.replace(" ", "").isalpha():
+            messages.error(request, "El nombre solo puede contener letras y espacios.")
+            return redirect("crud_categoria")
 
         try:
             nueva_categoria = Categoria(nombre=nombre, descripcion=descripcion)
             nueva_categoria.save()
             messages.success(request, "Categoría añadida correctamente!")
-            return redirect("crud_categoria")
         except Exception as e:
             messages.error(request, f"Error al añadir categoría: {e}")
 
-      # Redirige a la página de listado de categorías
-
-    return redirect("crud_categorias")
+    return redirect("crud_categoria")
 
 def editar_categoria(request, categoria_id):
     try:
-        cate = Categoria.objects.get(pk = categoria_id)
+        cate = Categoria.objects.get(pk=categoria_id)
         if request.method == 'POST':
-            # Obtener los datos del formulario
-            cate.nombre = request.POST.get("nombre")
-            cate.descripcion = request.POST.get("descripcion")
-            
-            # Guardar los cambios
+            nombre = request.POST.get("nombre", "").strip()
+            descripcion = request.POST.get("descripcion", "").strip()
+
+            if not nombre or not descripcion:
+                messages.error(request, "Todos los campos son obligatorios.")
+                return redirect("crud_categoria")
+
+            if len(nombre) < 2:
+                messages.error(request, "El nombre debe tener al menos 2 caracteres.")
+                return redirect("crud_categoria")
+
+            if not nombre.replace(" ", "").isalpha():
+                messages.error(request, "El nombre solo puede contener letras y espacios.")
+                return redirect("crud_categoria")
+
+            cate.nombre = nombre
+            cate.descripcion = descripcion
             cate.save()
             messages.success(request, "Categoría actualizada correctamente.")
-            return redirect("crud_categoria")
-        else:
-            contexto = {
-                "categoria": cate
-            }
-            return render(request, "admin/editar_categoria.html", contexto)
+        return redirect("crud_categoria")
     except Categoria.DoesNotExist:
         messages.error(request, "Categoría no encontrada.")
         return redirect("crud_categoria")
-    
+    except Exception as e:
+        messages.error(request, f"Error al actualizar categoría: {e}")
+        return redirect("crud_categoria")
+
 def eliminar_categoria(request, id_categoria):
     try:
-        c = Categoria.objects.get(pk = id_categoria)
-        c.delete()
-        messages.success(request, "Categoria eliminada correctamente.")
+        categoria = Categoria.objects.get(pk=id_categoria)
+
+        # verificar productos relacionados:
+        if hasattr(categoria, 'producto_set') and categoria.producto_set.exists():
+            messages.warning(request, "No se puede eliminar la categoría porque tiene productos asociados.")
+            return redirect("crud_categoria")
+
+        categoria.delete()
+        messages.success(request, "Categoría eliminada correctamente.")
+    except Categoria.DoesNotExist:
+        messages.error(request, "La categoría no existe o ya fue eliminada.")
+    except ProtectedError:
+        messages.warning(request, "No se puede eliminar esta categoría porque está protegida por relaciones.")
     except IntegrityError:
-        messages.warning(request, "Error: No puede eliminar la categoria")
+        messages.warning(request, "No se puede eliminar esta categoría debido a restricciones de la base de datos.")
     except Exception as e:
-        messages.error(request, f"Error: {e}")
+        messages.error(request, f"Error inesperado: {e}")
+    
     return redirect("crud_categoria")
 
-#productos
+
+
+
+#CRUD productos-----------------------------------------------------------------------------------
 
 def crud_productos(request):
     verificar = request.session.get("auth", False)
@@ -527,83 +548,208 @@ def eliminar_producto(request, id_producto):
 
 
 def editar_producto(request, producto_id):
-    try:
-        p = Producto.objects.get(pk=producto_id)
+    p = get_object_or_404(Producto, pk=producto_id)
+    categorias_existentes = Categoria.objects.all()
 
-        if request.method == 'POST':
-            # Obtener los datos del formulario
-            p.nombre = request.POST.get("nombre", p.nombre)
-            p.precio = request.POST.get("precio", p.precio)
-            p.cantidad = request.POST.get("cantidad")
-            p.descripcion = request.POST.get("descripcion", p.descripcion)
-            p.disponibilidad = request.POST.get("disponibilidad", p.disponibilidad)
-            foto_nueva = request.FILES.get("foto")
-            if foto_nueva:
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre", "").strip()
+        precio_str = request.POST.get("precio", "").strip()
+        stock_str = request.POST.get("stock", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+        disponibilidad_str = request.POST.get("disponibilidad")
+        nuevas_categorias_ids = request.POST.getlist("categorias")
+        foto_nueva = request.FILES.get("foto")
+        errores = {}
+
+        # Validaciones Backend
+        if not nombre:
+            errores["nombre"] = "El nombre es obligatorio."
+        elif len(nombre) < 2:
+            errores["nombre"] = "El nombre debe tener al menos 2 caracteres."
+        elif not all(char.isalpha() or char.isspace() or char in 'ñÑ' for char in nombre):
+            errores["nombre"] = "El nombre solo puede contener letras y espacios."
+
+        if not precio_str:
+            errores["precio"] = "El precio es obligatorio."
+        else:
+            try:
+                precio = float(precio_str)
+                if precio < 0:
+                    errores["precio"] = "El precio no puede ser negativo."
+            except ValueError:
+                errores["precio"] = "El precio debe ser un número válido."
+            else:
+                p.precio = precio
+
+        if stock_str == "":
+            errores["stock"] = "El stock es obligatorio."
+        else:
+            try:
+                stock = int(stock_str)
+                if stock < 0:
+                    errores["stock"] = "El stock no puede ser negativo."
+            except ValueError:
+                errores["stock"] = "El stock debe ser un número entero válido."
+            else:
+                p.stock = stock
+
+        if not descripcion:
+            errores["descripcion"] = "La descripción es obligatoria."
+
+        p.disponibilidad = disponibilidad_str == 'on' # Convertir a booleano explícitamente
+
+        if foto_nueva:
+            if not foto_nueva.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+                errores["foto"] = "Solo se permiten archivos JPG y PNG."
+            # Aquí podrías añadir validaciones adicionales para el tamaño del archivo si es necesario
+            else:
                 p.foto = foto_nueva
 
+        if not nuevas_categorias_ids:
+            errores["categorias"] = "Debe seleccionar al menos una categoría."
+        else:
+            nuevas_categorias = []
+            for cat_id in nuevas_categorias_ids:
+                try:
+                    categoria = Categoria.objects.get(id=cat_id)
+                    nuevas_categorias.append(categoria)
+                except Categoria.DoesNotExist:
+                    errores["categorias"] = f"La categoría con ID {cat_id} no existe."
+
+        if errores:
+            contexto = {
+                "producto": p,
+                "catProduct": categorias_existentes,
+                "categorias_producto": p.fk2_producto_categoria.all(),
+                "errores": errores,
+            }
+            return render(request, "admin/admin-CRUD-productos.html", contexto)
+        else:
+            p.nombre = nombre
             p.save()
 
-            # 🔁 Actualizar las categorías
-            nuevas_categorias = request.POST.getlist("categorias")
-            ProductoCategoria.objects.filter(producto=p).delete()  # Elimina las relaciones actuales
-            for cat_id in nuevas_categorias:
-                categoria = Categoria.objects.get(id=cat_id)
+            # Actualizar las categorías
+            ProductoCategoria.objects.filter(producto=p).delete()
+            for categoria in nuevas_categorias:
                 ProductoCategoria.objects.create(producto=p, categoria=categoria)
 
             messages.success(request, "Producto actualizado correctamente.")
             return redirect("crud_productos")
 
-        else:
-            contexto = {
-                "producto": p,
-                "catProduct": Categoria.objects.all(),  # 👈 necesario si vas a renderizar categorías
-                "categorias_producto": p.fk2_producto_categoria.all()
-            }
-            return render(request, "admin/editar_producto.html", contexto)
-
-    except Producto.DoesNotExist:
-        messages.error(request, "Producto no encontrado.")
-        return redirect("crud_productos")
-    
+    else:
+        contexto = {
+            "producto": p,
+            "catProduct": categorias_existentes,
+            "categorias_producto": p.fk2_producto_categoria.all()
+        }
+        return render(request, "admin/admin-CRUD-productos.html", contexto) 
 
 
 def agregar_producto(request):
+    categorias_existentes = Categoria.objects.all()
+
     if request.method == 'POST':
-        print(request.POST)
-        print(request.FILES)
+        nombre = request.POST.get("nombre", "").strip()
+        cantidad_str = request.POST.get("cantidad", "").strip()
+        descripcion = request.POST.get("descripcion", "").strip()
+        precio_str = request.POST.get("precio", "").strip()
+        disponibilidad_str = request.POST.get("disponibilidad")
+        nuevas_categorias_ids = request.POST.getlist("categorias")
+        foto = request.FILES.get("foto")
+        errores = {}
 
-        nombre = request.POST.get("nombre")
-        descripcion = request.POST.get("descripcion")
-        precio = request.POST.get("precio")
-        disponibilidad = request.POST.get("disponibilidad")
-        foto = request.FILES.get("foto")  # Se obtiene la imagen del formulario
-        categoria_ids = request.POST.getlist("categorias")  # Se obtiene una lista de los IDs de categorías seleccionadas
+        # Validaciones Backend
+        if not nombre:
+            errores["nombre"] = "El nombre es obligatorio."
+        elif len(nombre) < 2:
+            errores["nombre"] = "El nombre debe tener al menos 2 caracteres."
+        elif not all(char.isalpha() or char.isspace() or char in 'ñÑ' for char in nombre):
+            errores["nombre"] = "El nombre solo puede contener letras y espacios."
 
-        if not nombre or not descripcion or not precio or not disponibilidad or not foto or not categoria_ids:
-            messages.error(request, "Todos los campos son obligatorios")
-            return redirect("crud_productos")
+        if not cantidad_str:
+            errores["cantidad"] = "La cantidad es obligatoria."
+        else:
+            try:
+                cantidad = int(cantidad_str)
+                if cantidad < 1:
+                    errores["cantidad"] = "La cantidad debe ser mayor o igual a 1."
+            except ValueError:
+                errores["cantidad"] = "La cantidad debe ser un número entero válido."
+            else:
+                cantidad = cantidad # Usar la cantidad convertida
 
-        try:
-            # Crear el producto usando el modelo Producto
-            producto = Producto(
+        if not descripcion:
+            errores["descripcion"] = "La descripción es obligatoria."
+
+        if not precio_str:
+            errores["precio"] = "El precio es obligatorio."
+        else:
+            try:
+                precio = float(precio_str)
+                if precio < 0:
+                    errores["precio"] = "El precio no puede ser negativo."
+            except ValueError:
+                errores["precio"] = "El precio debe ser un número válido."
+            else:
+                precio = precio # Usar el precio convertido
+
+        if not disponibilidad_str or disponibilidad_str not in ["SI", "NO"]:
+            errores["disponibilidad"] = "La disponibilidad es obligatoria."
+        else:
+            disponibilidad = disponibilidad_str == "SI"
+
+        if not nuevas_categorias_ids:
+            errores["categorias"] = "Debe seleccionar al menos una categoría."
+        else:
+            nuevas_categorias = []
+            for cat_id in nuevas_categorias_ids:
+                try:
+                    categoria = Categoria.objects.get(id=cat_id)
+                    nuevas_categorias.append(categoria)
+                except Categoria.DoesNotExist:
+                    errores["categorias"] = f"La categoría con ID {cat_id} no existe." # Mensaje más específico
+
+        if not foto:
+            errores["foto"] = "La foto es obligatoria."
+        elif not foto.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+            errores["foto"] = "Solo se permiten archivos JPG y PNG."
+        # Aquí podrías añadir validaciones adicionales para el tamaño del archivo si es necesario
+
+        if errores:
+            contexto = {
+                "catProduct": categorias_existentes,
+                "errores": errores,
+                "nombre": nombre,
+                "cantidad": cantidad_str,
+                "descripcion": descripcion,
+                "precio": precio_str,
+                "disponibilidad_seleccionada": disponibilidad_str,
+                "categorias_seleccionadas": nuevas_categorias_ids,
+            }
+            return render(request, "admin/admin-CRUD-productos.html", contexto)
+        else:
+            # Crear el nuevo producto
+            nuevo_producto = Producto.objects.create(
                 nombre=nombre,
+                cantidad=cantidad,
                 descripcion=descripcion,
                 precio=precio,
                 disponibilidad=disponibilidad,
-                foto=foto if foto else "productos/pan9.jpeg"  # Se asigna la imagen si se sube
+                foto=foto
             )
-            producto.save()  # Guardar el producto en la base de datos
-            for categoria_id in categoria_ids:
-                categoria = Categoria.objects.get(id=categoria_id)
-                ProductoCategoria.objects.create(producto=producto, categoria=categoria)
 
-            messages.success(request, "¡Producto creado correctamente!")
-            return redirect("crud_productos")  
-        except Exception as e:
-            messages.error(request, f"Error al crear el producto: {e}")
-            return redirect("crud_productos")
+            # Asignar las categorías
+            for categoria in nuevas_categorias:
+                ProductoCategoria.objects.create(producto=nuevo_producto, categoria=categoria)
+
+            messages.success(request, "Producto añadido correctamente.")
+            return redirect("crud_productos") # Asegúrate de que esta URL exista
+
     else:
-        return render(request, "admin-CRUD-productos.html")
+        contexto = {
+            "catProduct": categorias_existentes
+        }
+        return render(request, "admin/admin-CRUD-productos.html", contexto)
     
 #usuarios
 
@@ -1042,17 +1188,19 @@ def ver_carrito_completo(request):
     try:
         carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
         detalles = carrito.detalles.all()
-        carrito_encotrado = False
+        productos_no_disponibles = []
         for item in detalles:
             if item.producto.disponibilidad == "NO":
-                messages.error(request, f"El producto: {item.producto.nombre} que seleccionaste anteriormente no se encuentra disponible!!")                
-                #item.producto.delete()
-                if not carrito_encotrado:
-                    carrito_encotrado = True
-                    return redirect("index")
-                
-            else:
-                pass
+                productos_no_disponibles.append(item.producto.nombre)
+                item.delete()
+
+        if productos_no_disponibles:
+            for nombre in productos_no_disponibles:
+                messages.error(request,f"El producto {nombre} que seleccionaste anteriormente no se encuentra disponible actualmente")
+            carrito.cantidad = sum(dc.cantidad for dc in carrito.detalles.all())
+            carrito.save()
+            return redirect("ver_carrito_completo")
+        
         total_general = sum( dc.total for dc in detalles if dc.producto.disponibilidad == "SI")
 
         
@@ -1226,11 +1374,20 @@ def formulario_pago(request):
         return redirect("ver_carrito_completo")
     
     detalles = carrito.detalles.all()
+    productos_no_disponibles = []
     total_general = sum(dc.total for dc in detalles if dc.producto.disponibilidad == "SI")
 
     for item in detalles:
         if item.producto.disponibilidad == "NO":
-            messages.error(request, f"El producto '{item.producto.nombre}' no está disponible.")
+            productos_no_disponibles.append(item.producto.nombre)
+            item.delete()
+    
+    if productos_no_disponibles:
+        for nombre in productos_no_disponibles:
+            messages.error(request, f"El producto: {nombre} que seleccionaste anteriormente, no se encuentra disponible actualmente!! ")
+        carrito.cantidad = sum(dc.cantidad for dc in carrito.detalles.all())
+    
+    total_general = sum(dc.total for dc in carrito.detalles.all())
 
     if request.method == "POST":
         errores = []
@@ -1238,7 +1395,7 @@ def formulario_pago(request):
         metodo_id = request.POST.get('metodo_pago')
         metodo_instancia = None
 
-        if not metodo_id or not metodo_id.isdigit(): #funcion que revisa que hayan datos del 0 al 9 y que no hayan datos vacios
+        if not metodo_id or not metodo_id.isdigit(): 
             errores.append("Debe seleccionar un método de pago válido.")
         else:
             try:
@@ -1268,8 +1425,10 @@ def formulario_pago(request):
         carrito.direccion = direccion
         carrito.especificaciones_direccion = especificaciones_direccion
         carrito.servicio = 1
-        carrito.estado = 1 if metodo_instancia and metodo_instancia.id == 2 else 3
+        carrito.estado = 3 
         carrito.save()
+
+        enviar_correo_confirmacion(carrito)
 
         messages.success(request, "¡Pago exitoso!")
         return redirect("facturas_usuario")
@@ -1284,7 +1443,6 @@ def formulario_pago(request):
     }
 
     return redirect('confirmar_pago', carrito_id = carrito.id)
-    return render(request, 'usuarios/pago.html', contexto)
 
 
 def procesar_pedido(request):
@@ -1323,7 +1481,7 @@ def confirmar_pago(request, carrito_id):
     total_general = sum(detalle.producto.precio * detalle.cantidad for detalle in detalles if detalle.producto.disponibilidad == "SI")
     metodos_pago = Metodo_pago.objects.all()
 
-    if carrito.estado == 2:
+    if carrito.estado == 3:
         messages.info(request, "Este pedido ya ha sido pagado.")
         return redirect("facturas_usuario")
 
@@ -1338,7 +1496,7 @@ def confirmar_pago(request, carrito_id):
             producto.cantidad -= detalle.cantidad
             producto.save()
 
-        carrito.estado = 2
+        carrito.estado = 3
 
         carrito.save()
 
@@ -1392,10 +1550,15 @@ def facturas_usuario(request):
 
 def exportar_factura_pdf(request, factura_id):
     # Asegúrate que el campo se llama 'usuario', cámbialo si es necesario
+    logueado = request.session.get("auth")
     carrito = Carrito.objects.get(id=factura_id)
     detalles = Detalle_carrito.objects.filter(carrito=carrito)
     total = detalles.aggregate(total=Sum('total'))['total'] or 0
 
+    if carrito.usuario_id != logueado["id"]:
+        messages.error(request,"No tienes acceso a esta factura!! ")
+        return redirect("index")
+    
     template_path = 'factura_pdf.html'
     context = {
         'factura': carrito,
@@ -1416,19 +1579,24 @@ def enviar_correo_confirmacion(carrito):
     asunto = f"Confirmación de pago - Pedido #{carrito.id}"
     destinatario = carrito.usuario.email
 
-    mensaje_html = render_to_string('correo_confirmacion.html', {
-        'carrito': carrito,
-        'detalles': carrito.detalles.all(),
-        'total': sum(detalle.total for detalle in carrito.detalles.all()),
-    })
+    try:
+        mensaje_html = render_to_string('correo_confirmacion.html', {
+            'carrito': carrito,
+            'detalles': carrito.detalles.all(),
+            'total': sum(detalle.producto.precio * detalle.cantidad for detalle in carrito.detalles.all()),
+        })
 
-    send_mail(
-        asunto,
-        '',  # mensaje en texto plano (opcional)
-        settings.EMAIL_HOST_USER,
-        [destinatario],
-        html_message=mensaje_html
-    )
+        send_mail(
+            asunto,
+            '',
+            settings.EMAIL_HOST_USER,
+            [destinatario],
+            html_message=mensaje_html
+        )
+        print("Correo enviado correctamente")
+    except Exception as e:
+        print("Error al enviar el correo:")
+        print(traceback.format_exc())
 
 def politica_privacidad(request):
     return render(request, 'politica_privacidad.html')
@@ -1609,3 +1777,97 @@ def reservas_pendientes(request):
     }
 
     return render(request, "usuarios/reservas_pendientes.html", contexto)
+
+#Recupeara contraseña 
+
+def solicitar_recuperacion(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        if not email:
+            messages.error(request, "Debes ingresar un correo")
+            return redirect('solicitar_recuperacion')
+        try:
+            usuario = User.objects.get(email=email)
+            token = str(uuid.uuid4()).split('-')[0]
+            usuario.token = token
+            usuario.save()
+
+            request.session['correo_recuperacion'] = email
+            request.session['intentos_recuperacion'] = 0
+
+            asunto = "Recuperación de contraseña"
+            mensaje = f"Tu código para recuperar la contraseña es: {token}"
+            remitente = settings.EMAIL_HOST_USER
+            destinatarios = [email]
+            send_mail(asunto, mensaje, remitente, destinatarios)
+
+            messages.success(request, "Código de recuperación enviado a tu correo.")
+            return redirect("verificar_token_recuperacion")
+        except User.DoesNotExist:
+            messages.error(request, "No existe una cuenta con ese correo.")
+    return render(request, "recuperar_clave.html")
+
+def verificar_token_recuperacion(request):
+    email = request.session.get("correo_recuperacion")
+    if not email:
+        messages.error(request, "Debes ingresar un correo ")
+        return redirect("solicitar_recuperacion")
+
+    if request.method == "POST":
+        codigo = request.POST.get("codigo")
+        intentos = request.session.get("intentos_recuperacion", 0)
+
+        try:
+            usuario = User.objects.get(email=email)
+            if usuario.token == codigo:
+                request.session['verificado_token_password'] = True
+                messages.success(request, "Código verificado. Ahora puedes establecer una nueva contraseña.")
+                return redirect("establecer_nueva_password")
+            else:
+                intentos += 1
+                request.session['intentos_recuperacion'] = intentos
+                if intentos >= 3:
+                    messages.error(request, "Demasiados intentos. Solicita un nuevo código.")
+                    return redirect("solicitar_recuperacion")
+                messages.warning(request, f"Código incorrecto. Intentos: {intentos}/3")
+        except User.DoesNotExist:
+            messages.error(request, "Usuario no encontrado.")
+            return redirect("solicitar_recuperacion")
+
+    return render(request, "verificar_token_clave.html")
+
+def establecer_nueva_password(request):
+    email = request.session.get("correo_recuperacion")
+    verificado = request.session.get("verificado_token_password", False)
+
+    if not (email and verificado):
+        messages.error(request, "Acceso no autorizado.")
+        return redirect("solicitar_recuperacion")
+
+    if request.method == "POST":
+        nueva_pass = request.POST.get("password")
+        confirmar = request.POST.get("confirmar")
+
+        if not nueva_pass:
+            messages.error(request, "Debes ingresar una nueva contraseña")
+        if not confirmar:
+            messages.error(request,"Debes ingresar Confirmar Contraseña")    
+        elif nueva_pass != confirmar:
+            messages.error(request, "Las contraseñas no coinciden.")
+        elif len(nueva_pass) < 6:
+            messages.warning(request, "La contraseña debe tener al menos 6 caracteres.")
+        else:
+            usuario = User.objects.get(email=email)
+            usuario.password = hash_password(nueva_pass)
+            usuario.token = None
+            usuario.save()
+
+            # Limpiar sesiones
+            request.session.pop("correo_recuperacion", None)
+            request.session.pop("verificado_token_password", None)
+            request.session.pop("intentos_recuperacion", None)
+
+            messages.success(request, "Contraseña actualizada correctamente.")
+            return redirect("login")
+
+    return render(request, "nueva_clave.html")

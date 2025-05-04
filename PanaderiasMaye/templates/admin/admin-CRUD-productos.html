@@ -3,209 +3,270 @@
 {% block titulo %} Crud Productos {% endblock %}
 {% block body %}
 
+<!-- Estilos de DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 <div class="container mt-5">
     <h1 class="text-center">ADMIN CRUD PRODUCTOS</h1>
 
+    <!-- Formulario para agregar producto -->
     <div class="row mb-4 form-center">
         <div class="col-md-6 offset-md-3">
-            <h1 class="title">Añadir nuevo Producto</h1>
-            <form class="form-user" method="post" action="{% url 'agregar_producto' %}"
-                onsubmit="return validarFormulario()" enctype="multipart/form-data">
+            <h2 class="title">Añadir nuevo Producto</h2>
+            <form class="form-user" method="post" action="{% url 'agregar_producto' %}" onsubmit="return validarFormulario()" enctype="multipart/form-data">
                 {% csrf_token %}
+                {% if errores %}
+                    <div class="alert alert-danger">
+                        Por favor, corrige los siguientes errores:
+                        <ul>
+                            {% for campo, error in errores.items %}
+                                <li><strong>{{ campo|capfirst }}:</strong> {{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            
                 <div class="mb-3">
-                    <label for="name" class="form-label">Nombre:</label>
-                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-zñÑ\s]{2,}">
+                    <label for="nombre" class="form-label">Nombre:</label>
+                    <input type="text" class="form-control {% if errores.nombre %}is-invalid{% endif %}" id="nombre" name="nombre" value="{{ nombre|default:'' }}" required pattern="[A-Za-zñÑ\s]{2,}">
+                    {% if errores.nombre %}
+                        <div class="invalid-feedback">{{ errores.nombre }}</div>
+                    {% endif %}
                 </div>
-                <div>
-                    <label for="celular" class="form-label">Cantidad:</label>
-                    <input type="number" class="form-control" id="precio" name="precio" required min="0" pattern="[0-9]{10}">
-               </div> 
                 <div class="mb-3">
-                    <label for="apellido" class="form-label">Descripción:</label>
-                    <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+                    <label for="cantidad" class="form-label">Cantidad:</label>
+                    <input type="number" class="form-control {% if errores.cantidad %}is-invalid{% endif %}" id="cantidad" name="cantidad" value="{{ cantidad|default:'' }}" required min="1">
+                    {% if errores.cantidad %}
+                        <div class="invalid-feedback">{{ errores.cantidad }}</div>
+                    {% endif %}
                 </div>
-                <div class="mb-3 form-acomodado">
-                    
-                    <div>
-                        <label for="celular" class="form-label">Precio:</label>
-                        <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
-                        title="Se solicita tener 10 digitos como minimo">
-                   </div> 
-                    <div>
-                        <label for="rol" class="form-label">Disponibilidad:</label>
-                        <select name="disponibilidad" class="form-select" required>
+                <div class="mb-3">
+                    <label for="descripcion" class="form-label">Descripción:</label>
+                    <input type="text" class="form-control {% if errores.descripcion %}is-invalid{% endif %}" id="descripcion" name="descripcion" value="{{ descripcion|default:'' }}" required>
+                    {% if errores.descripcion %}
+                        <div class="invalid-feedback">{{ errores.descripcion }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3 form-acomodado d-flex justify-content-between">
+                    <div class="me-2 w-50">
+                        <label for="precio" class="form-label">Precio:</label>
+                        <input type="number" class="form-control {% if errores.precio %}is-invalid{% endif %}" id="precio" name="precio" value="{{ precio|default:'' }}" required min="0" step="0.01">
+                        {% if errores.precio %}
+                            <div class="invalid-feedback">{{ errores.precio }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="w-50">
+                        <label for="disponibilidad" class="form-label">Disponibilidad:</label>
+                        <select name="disponibilidad" class="form-select {% if errores.disponibilidad %}is-invalid{% endif %}" required>
                             <option value="">Seleccione</option>
-                            <option value="SI">Disponible</option>
-                            <option value="NO">No Disponible</option>
+                            <option value="SI" {% if disponibilidad_seleccionada == 'SI' %}selected{% endif %}>Disponible</option>
+                            <option value="NO" {% if disponibilidad_seleccionada == 'NO' %}selected{% endif %}>No Disponible</option>
                         </select>
-                    </div>       
-                </div>
-                <div class="mb-3">
-                    <label for="rol" class="form-label">Categorías:</label>
-                    <div>
-                        {% for i in catProduct %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}" min="1">
-                                <label class="form-check-label" for="categoria{{ i.id }}">
-                                    {{ i.nombre }}
-                                </label>
-                            </div>
-                        {% endfor %}
+                        {% if errores.disponibilidad %}
+                            <div class="invalid-feedback">{{ errores.disponibilidad }}</div>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="img" class="form-label">Seleccione la imagen (jpg, png)</label>
-                    <input type="file" class="form-control" name="foto" accept="image/*" required min="1">
+                    <label class="form-label">Categorías:</label>
+                    {% if errores.categorias %}
+                        <div class="alert alert-danger">{{ errores.categorias }}</div>
+                    {% endif %}
+                    {% for i in catProduct %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="cat{{ i.id }}" {% if i.id|stringformat:'s' in categorias_seleccionadas %}checked{% endif %}>
+                            <label class="form-check-label" for="cat{{ i.id }}">{{ i.nombre }}</label>
+                        </div>
+                    {% endfor %}
                 </div>
-                
-                <button type="submit" class="btn-create btn btn-primary">Crear Producto</button>
+                <div class="mb-3">
+                    <label for="foto" class="form-label">Seleccione la imagen (jpg, png)</label>
+                    <input type="file" class="form-control {% if errores.foto %}is-invalid{% endif %}" name="foto" accept="image/*" required>
+                    {% if errores.foto %}
+                        <div class="invalid-feedback">{{ errores.foto }}</div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Crear Producto</button>
             </form>
         </div>
     </div>
+
     <br><br>
+
+    <!-- Mensajes de éxito o error -->
     {% if messages %}
-    <div class="alert alert-success" role="alert">
-        {% for message in messages %}
-        <p>{{ message }}</p>
-        {% endfor %}
-    </div>
+        <div class="alert alert-success">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
     {% endif %}
-    <!-- Tabla de Productos -->
-    <table class="table">
+
+    <!-- Tabla de productos con DataTables -->
+    <table id="tabla_productos" class="table table-striped">
         <thead>
             <tr class="Cabezal_Tabla">
                 <th>Imagen</th>
-                <th>id</th>
+                <th>ID</th>
                 <th>Nombre</th>
                 <th>Stock</th>
                 <th>Precio</th>
                 <th>Disponibilidad</th>
-                <th>Categoria</th>
+                <th>Categoría</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for producto in productos %}
             <tr>
-
                 <td>
                     {% if producto.foto %}
-                    <img src="{{ producto.foto.url }}" style="width: 50px; height: 50px;">
+                        <img src="{{ producto.foto.url }}" style="width: 50px; height: 50px;">
                     {% else %}
-                    Sin imagen
+                        Sin imagen
                     {% endif %}
                 </td>
                 <td>{{ producto.id }}</td>
                 <td>{{ producto.nombre }}</td>
                 <td>{{ producto.cantidad }}</td>
                 <td>${{ producto.precio }}</td>
+                <td>{{ producto.disponibilidad|yesno:"Disponible,No Disponible" }}</td>
                 <td>
                     {% for relacion in producto.fk2_producto_categoria.all %}
-                        {{ relacion.categoria.nombre }}<br> <!-- Mostrar todas las categorías asociadas -->
+                        {{ relacion.categoria.nombre }}<br>
                     {% endfor %}
                 </td>
                 <td>
-                    {% if producto.disponibilidad == "SI" %}
-                        Disponible
-                    {% else %}
-                        No Disponible
-                    {% endif %}
-                </td>
-                <td>
-                    <button class="btn btn-warning" data-bs-toggle="modal"
-                        data-bs-target="#updateModal{{ producto.id }}">
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateModal{{ producto.id }}">
                         Editar
                     </button>
                     <a href="{% url 'eliminar_producto' producto.id %}" class="btn btn-danger"
-                        onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
+                       onclick="return confirm('¿Seguro que quieres eliminar este producto?')">
                         Eliminar
                     </a>
-
                 </td>
+            </tr>
 
-                <!-- Modal de Edición -->
-                <div class="modal fade" id="updateModal{{ producto.id }}" tabindex="-1"
-                    aria-labelledby="updateModalLabel{{ producto.id }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
+            <!-- Modal de edición -->
+            <div class="modal fade" id="updateModal{{ producto.id }}" tabindex="-1" aria-labelledby="modalLabel{{ producto.id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="post" action="{% url 'editar_producto' producto.id %}" enctype="multipart/form-data">
+                            {% csrf_token %}
                             <div class="modal-header">
-                                <h5 class="modal-title" id="updateModalLabel{{ producto.id }}">Editar Producto</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                                <h5 class="modal-title" id="modalLabel{{ producto.id }}">Editar Producto</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
-                            <form class="form-user" method="post" action="{% url 'editar_producto' producto.id %}"
-                                onsubmit="return validarFormulario()" enctype="multipart/form-data">
-                                {% csrf_token %}
                                 <div class="mb-3">
-                                    <label for="name" class="form-label">Nombre:</label>
-                                    <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-zñÑ\s]{2,}" value="{{ producto.nombre }}">
+                                    <label for="nombre{{ producto.id }}" class="form-label">Nombre:</label>
+                                    <input type="text" class="form-control" name="nombre" required value="{{ producto.nombre }}">
                                 </div>
-                                <div>
-                                    <label for="celular" class="form-label">Stock:</label>
-                                    <input type="number" class="form-control" id="cantidad" name="cantidad" required min="0" pattern="[0-9]{10}" value="{{ producto.cantidad }}">
-                                </div> 
                                 <div class="mb-3">
-                                    <label for="apellido" class="form-label">Descripción:</label>
-                                    <input type="text" class="form-control" id="descripcion" name="descripcion" value="{{ producto.descripcion }}" required>
+                                    <label for="cantidad{{ producto.id }}" class="form-label">Cantidad:</label>
+                                    <input type="number" class="form-control" name="stock" required min="1" value="{{ producto.cantidad }}">
                                 </div>
-                                <div class="mb-3 form-acomodado">
-                                    
-                                    <div>
-                                        <label for="celular" class="form-label">Precio:</label>
-                                        <input type="number" class="form-control" id="precio" name="precio" required min="0" step="0.01"
-                                        title="Se solicita tener 10 digitos como minimo" pattern="[A-Za-z ]{2,}" value="{{ producto.precio|floatformat }}" required>
-                                   </div> 
-                                    <div>
-                                        <label for="rol" class="form-label">Disponibilidad:</label>
-                                        <select name="disponibilidad" class="form-select" value="{{ producto.precio }}" required>
-                                            <option value="">Seleccione</option>
-                                            <option value="SI" {% if producto.disponibilidad == "SI" %} selected {% endif %}>Disponible</option>
-                                            <option value="NO" {% if producto.disponibilidad == "NO" %} selected {% endif %}>No Disponible</option>
+                                <div class="mb-3">
+                                    <label for="descripcion{{ producto.id }}" class="form-label">Descripción:</label>
+                                    <input type="text" class="form-control" name="descripcion" required value="{{ producto.descripcion }}">
+                                </div>
+                                <div class="mb-3 d-flex justify-content-between">
+                                    <div class="me-2 w-50">
+                                        <label class="form-label">Precio:</label>
+                                        <input type="number" class="form-control" name="precio" min="0" step="0.01" value="{{ producto.precio }}">
+                                    </div>
+                                    <div class="w-50">
+                                        <label class="form-label">Disponibilidad:</label>
+                                        <select name="disponibilidad" class="form-select">
+                                            <option value="on" {% if producto.disponibilidad %}selected{% endif %}>Disponible</option>
+                                            <option value="" {% if not producto.disponibilidad %}selected{% endif %}>No Disponible</option>
                                         </select>
-                                    </div>       
-                                </div>
-                                <div class="mb-3">
-                                    <label for="rol" class="form-label">Categorías:</label>
-                                    <div>
-                                        {% for i in catProduct %}
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="checkbox" name="categorias" value="{{ i.id }}" id="categoria{{ i.id }}"
-                                                    {% for cat in producto.fk2_producto_categoria.all %}
-                                                        {% if cat.categoria.id == i.id %}
-                                                            checked
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                >
-                                                <label class="form-check-label" for="categoria{{ i.id }}">
-                                                    {{ i.nombre }}
-                                                </label>
-                                            </div>
-                                        {% endfor %}
                                     </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="img" class="form-label">Seleccione la imagen (jpg, png)</label>
-                                    <input type="file" class="form-control" name="foto" accept="image/*">
+                                    <label class="form-label">Categorías:</label>
+                                    {% for i in catProduct %}
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="categorias"
+                                                   value="{{ i.id }}" id="editcat{{ producto.id }}_{{ i.id }}"
+                                                   {% for cat in producto.fk2_producto_categoria.all %}
+                                                       {% if cat.categoria.id == i.id %}checked{% endif %}
+                                                   {% endfor %}>
+                                            <label class="form-check-label" for="editcat{{ producto.id }}_{{ i.id }}">
+                                                {{ i.nombre }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                                
-                                <button type="submit" class="btn btn-primary">Actualizar Producto</button>
-                            </form>
-                                
+                                <div class="mb-3">
+                                    <label class="form-label">Actualizar Imagen:</label>
+                                    <input type="file" class="form-control" name="foto" accept="image/*">
+                                    {% if producto.foto %}
+                                        <small class="form-text text-muted">Imagen actual: {{ producto.foto.name }}</small>
+                                    {% endif %}
+                                </div>
                             </div>
-                        </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Actualizar</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="6" class="text-center">No hay productos disponibles.</td>
-            </tr>
+            </div>
             {% endfor %}
         </tbody>
     </table>
-
 </div>
+
+<!-- Estilos y scripts de DataTables con Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Scripts para exportar -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<!-- Librerías necesarias para exportar a Excel y PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- Inicialización de DataTables con botones en español -->
+<script>
+    $(document).ready(function () {
+        $('#tabla_productos').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: 'Copiar'
+                },
+                {
+                    extend: 'excel',
+                    text: 'Exportar Excel'
+                },
+                {
+                    extend: 'pdf',
+                    text: 'Exportar PDF'
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir'
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+    });
+</script>
 
 {% endblock %}

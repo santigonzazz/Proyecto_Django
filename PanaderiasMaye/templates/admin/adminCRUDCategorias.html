@@ -1,22 +1,31 @@
-
 {% extends 'base.html' %}
 {% load static %}
 {% block titulo %}Crud-Categorias{% endblock %}
-    
+
 {% block body %}
 <main>
     <div class="container mt-5">
-        <h1 class="title text-center">ADMIN CRUD CATEGORÍAS</h1>
+        <h1 class="text-center">ADMIN CRUD CATEGORÍAS</h1>
+
+        <!-- Mensajes -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
 
         <!-- Formulario para añadir nueva categoría -->
         <div class="row mb-4">
             <div class="col-md-6 offset-md-3">
-                <center><h2 class="title">Añadir nueva Categoría</h2></center>
+                <h2 class="text-center">Añadir nueva Categoría</h2>
                 <form method="post" action="{% url 'agregar_categoria' %}">
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre Categoría:</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required pattern="[A-Za-z ]{2,}">
+                        <input type="text" class="form-control" id="nombre" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,}" title="Solo letras y espacios, mínimo 2 caracteres.">
                     </div>
                     <div class="mb-3">
                         <label for="descripcion" class="form-label">Descripción:</label>
@@ -27,30 +36,12 @@
             </div>
         </div>
 
-        <!-- Barra de búsqueda -->
-        <h2 class="title">Buscar Categoría</h2>
-        <div class="search-bar"> 
-            <div class="input-group">
-                <input type="text" class="form-control" placeholder="Buscar Categoría">
-                <button class="btn btn-outline-secondary">
-                    <i class="fas fa-search"></i>
-                </button>
-            </div>
-        </div>
-        <br>
-        <!-- Tabla de Categorías -->
-        <h2 class="title">Categorías</h2>
-        {% if messages %}
-        <div class="alert alert-success" role="alert">
-        {% for message in messages %}
-            <p>{{ message }}</p>
-        {% endfor %}
-        </div>
-        {% endif %}
-        <table class="table">
-            <thead>
-                <tr class="Cabezal_Tabla">
-                    <th scope="col">id</th>
+        <!-- Tabla de Categorías con DataTables -->
+        <h2 class="mt-4">Categorías</h2>
+        <table id="tabla-categorias" class="table table-hover table-bordered">
+            <thead class="table-dark text-center">
+                <tr>
+                    <th scope="col">#</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Descripción</th>
                     <th scope="col">Acciones</th>
@@ -59,16 +50,12 @@
             <tbody>
                 {% for categoria in categorias %}
                 <tr>
-                    <th scope="row">{{ forloop.counter }}</th>
+                    <th scope="row" class="text-center">{{ forloop.counter }}</th>
                     <td>{{ categoria.nombre }}</td>
                     <td>{{ categoria.descripcion }}</td>
-                    <td>
-
-                        <a href="#" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#updateModal{{ categoria.id }}">Editar</a>
-
-
-                        <a href="{% url 'eliminar_categoria' categoria.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar esta categoria?')">Eliminar</a>
-
+                    <td class="text-center">
+                        <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#updateModal{{ categoria.id }}">Editar</a>
+                        <a href="{% url 'eliminar_categoria' categoria.id %}" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que quieres eliminar esta categoría?')">Eliminar</a>
                     </td>
                 </tr>
 
@@ -76,26 +63,28 @@
                 <div class="modal fade" id="updateModal{{ categoria.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ categoria.id }}" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="updateModalLabel{{ categoria.id }}">Actualizar Categoría</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form method="POST" action="{% url 'editar_categoria' categoria.id %}">
-                                    {% csrf_token %}
+                            <form method="POST" action="{% url 'editar_categoria' categoria.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="updateModalLabel{{ categoria.id }}">Actualizar Categoría</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                </div>
+                                <div class="modal-body">
                                     <input type="hidden" name="categoria_id" value="{{ categoria.id }}">
                                     <div class="mb-3">
                                         <label class="form-label">Nuevo Nombre Categoría</label>
-                                        <input type="text" class="form-control" name="nombre" value="{{ categoria.nombre }}" required pattern="[A-Za-z]{2,}">
+                                        <input type="text" class="form-control" name="nombre" value="{{ categoria.nombre }}" required pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ ]{2,}" title="Solo letras y espacios, mínimo 2 caracteres.">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label">Descripción</label>
                                         <input type="text" class="form-control" name="descripcion" value="{{ categoria.descripcion }}" required>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">Actualizar Categoría</button>
-                                </form>
-                                
-                            </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -103,10 +92,56 @@
             </tbody>
         </table>
     </div>
-
-
 </main>
 
+<!-- Estilos y scripts de DataTables con Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
 
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Scripts para exportar -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<!-- Librerías necesarias para exportar a Excel y PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- Inicialización de DataTables con botones en español -->
+<script>
+    $(document).ready(function () {
+        $('#tabla-categorias').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: 'Copiar'
+                },
+                {
+                    extend: 'excel',
+                    text: 'Exportar Excel'
+                },
+                {
+                    extend: 'pdf',
+                    text: 'Exportar PDF'
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir'
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+    });
+</script>
 
 {% endblock %}

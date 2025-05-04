@@ -7,7 +7,7 @@ urlpatterns = [
     path("contactanos/", views.contactanos, name="contactanos"),
     path("about/", views.about, name="about"),
     path("login/", views.login, name="login"),
-    path("recuperar_clave/", views.clave, name="recuperar_clave"),
+    #path("recuperar_clave/", views.clave, name="recuperar_clave"),
     path("adminCRUDCategorias/",views.crud_categorias, name="crud_categoria"),
     path("admin-dashboard/", views.dashboardAdmin, name="admin_dashboard"),
     path("adminCRUDU/", views.CrudUsuarios, name="adminCRUDU"),
@@ -19,7 +19,7 @@ urlpatterns = [
     path("eliminar-categoria/<int:id_categoria>/", views.eliminar_categoria, name="eliminar-categoria"),
     path("correo1/", views.correos1, name="correo"),
     path("correo2/", views.correos2, name="correo2"),
-    path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
+    #path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
     path("agregar_categoria/", views.agregar_categoria, name="agregar_categoria"),  
 
     path("editar_producto/<int:producto_id>/", views.editar_producto, name="editar_producto"),
@@ -59,12 +59,15 @@ urlpatterns = [
     path('confirmar-pago/<int:carrito_id>/', views.confirmar_pago, name='confirmar_pago'),
     path('privacidad/', views.politica_privacidad, name='politica_privacidad'),
 
-    path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
+    #path("cambiar_clave/", views.cambiar_clave, name="cambiar_clave"),
 
     # Tokens:
 
     path("verificar-codigo/", views.verificar_codigo, name="verificar_codigo" ),
-    path("reenviar-token/", views.reenviar_token, name="reenviar_token" )
+    path("reenviar-token/", views.reenviar_token, name="reenviar_token" ),
     
-
+    #Recuperar clave
+    path("recuperar/", views.solicitar_recuperacion, name="solicitar_recuperacion"),
+    path("verificar-codigo-recuperacion/", views.verificar_token_recuperacion, name="verificar_token_recuperacion"),
+    path("nueva-password/", views.establecer_nueva_password, name="establecer_nueva_password"),
 ]

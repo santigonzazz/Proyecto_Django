@@ -13,7 +13,7 @@
     <h2>Factura N° {{ factura.id }}</h2>
     <p><strong>Fecha:</strong> {{ factura.fecha|date:"Y-m-d H:i" }}</p>
     <p><strong>Servicio:</strong> {{ factura.get_servicio_display }}</p>
-    <p><strong>Estado:</strong> {% if factura.estado == 2 %}Pagado{% else %}Pendiente{% endif %}</p>
+    <p><strong>Estado:</strong> {% if factura.estado == 3 %}Pagado{% else %}Pendiente{% endif %}</p>
 
     <h3>Productos Comprados</h3>
     <table>

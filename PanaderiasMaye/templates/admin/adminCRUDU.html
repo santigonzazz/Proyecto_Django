@@ -2,6 +2,9 @@
 {% load static %}
 {% block titulo %} Admin-Crudn {% endblock %}
 
+<!-- Estilos de DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
 {% block body %}
 <main>
     <div class="container mt-5">
@@ -49,6 +52,8 @@
                 </form>
             </div>
         </div>
+        <br>
+        <br>
 
         {% if messages %}
             <div class="alert alert-info mt-3">
@@ -59,7 +64,7 @@
         {% endif %}
 
         <!-- Tabla de usuarios -->
-        <table class="table mt-4">
+        <table id="tabla_usuarios" class="table mt-4">
             <thead>
                 <tr class="Cabezal_Tabla">
                     <th>Nombre</th>
@@ -152,6 +157,56 @@
         document.getElementById("updateUserForm").action = `/editar_usuario_admin/${id}/`;
 
     }
+</script>
+
+<!-- Estilos y scripts de DataTables con Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Scripts para exportar -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<!-- Librerías necesarias para exportar a Excel y PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- Inicialización de DataTables con botones en español -->
+<script>
+    $(document).ready(function () {
+        $('#tabla_usuarios').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: 'Copiar'
+                },
+                {
+                    extend: 'excel',
+                    text: 'Exportar Excel'
+                },
+                {
+                    extend: 'pdf',
+                    text: 'Exportar PDF'
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir'
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+    });
 </script>
 {% endblock %}
 
