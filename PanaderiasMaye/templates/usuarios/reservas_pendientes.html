@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block titulo %}Facturas {% endblock %}
+{% block titulo %}Mis Reservas {% endblock %}
 
 {% block body %}
 <style>
@@ -17,7 +17,7 @@
             </div>
         {% endfor %}
     {% endif %}
-    <h2 class="mb-4 text-center fw-bold" style="color: #212529;">Mis Facturas</h2>
+    <h2 class="mb-4 text-center fw-bold" style="color: #212529;">Mis Reservas</h2>
 
     <!-- Filtro de Fecha -->
     <form method="GET" class="row g-3 align-items-center mb-5 bg-light p-3 rounded shadow-sm">
@@ -33,17 +33,21 @@
     </form>
 
     {% for item in facturas_con_totales %}
-        {% if item.factura.estado == 3 %}
+        {% if item.factura.estado == 2 or item.factura.estado == 1 %}
             {% with factura=item.factura total=item.total %}
             <div class="card mb-4 shadow-sm border-0 card-factura">
                 <div class="card-header p-3 m-4" style="background-color: #f8d775; color: #212529;">
                     <strong>Factura ID: {{ factura.id }}</strong>
                 </div>
                 <div class="card-body bg-light m-4">
-                    <p><strong>Fecha:</strong> {{ factura.fecha|date:"Y-m-d H:i" }}</p>
+                    <p><strong>Fecha de entrega:</strong> {{ factura.fecha_reserva|date:"Y-m-d H:i" }}</p>
                     <p><strong>Método de Servicio:</strong> {{ factura.metodo_pago.nombre }}</p>
                     <p><strong>Estado:</strong> 
-                            <span class="badge bg-dark text-white">Pagado</span>
+                        {% if factura.estado == 1 %}
+                            <span class="badge bg-dark text-white">Reserva pendiente</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Reserva por pagar</span>
+                        {% endif %}
                     </p>
 
                     <h5 class="mt-4 mb-3 fw-bold">Productos Comprados:</h5>

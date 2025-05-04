@@ -44,6 +44,7 @@ urlpatterns = [
 
     #reservas
     path("formulario-reserva/", views.formulario_pago_reserva, name='reservar'),
+    path("mis_reservas", views.reservas_pendientes, name='reservas_pendientes'),
     #path("procesar-pedido-reserva/", views.procesar_pedido_reserva, name='procesar_pedido_reserva'),
     
     #pagos

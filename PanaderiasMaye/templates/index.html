@@ -14,15 +14,23 @@
     <main>
         
         <div class="search-bar">
+          <form action="">
             <div class="input-group">
-                <input type="text" class="form-control" placeholder="Buscar Producto" aria-label="Search" aria-describedby="search-addon">
-                <button class="btn btn-outline-secondary" type="button" id="search-addon">
+                <input type="text" class="form-control" placeholder="Buscar Producto" aria-label="Search" aria-describedby="search-addon" name="busqueda_producto" value="{{ producto_filtro }}">
+                <button class="btn btn-outline-secondary" type="submit" id="search-addon">
                         <i class="fas fa-search"></i>
                     </button>
             </div>
+          </form>
         </div>
         <br>
         <h2 class="title">Mas vendidos de la semana</h2><!--lista de productos-->
+
+        {% if sin_resultados %}
+          <div class="alert alert-warning text-center mt-3">
+            No se encontraron productos con ese nombre.
+          </div>
+        {% endif %}
 
         <div class="row no-gutters row-cols-1 row-cols-md-2 g-5">
             {% for i in productoInfo %}

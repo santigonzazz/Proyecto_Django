@@ -68,6 +68,7 @@
                             {% endif %}
                             <a href="{% url 'editar-perfil' %}">Settings</a>
                             <a href="{% url 'facturas_usuario' %}">Facturas</a>
+                            <a href="{% url 'reservas_pendientes' %}">Mis reservas</a>
                             {% if request.session.auth.rol == 1 %}
                               <a href="{% url 'admin_dashboard' %}">Dashboard</a>
                             {% endif %}

@@ -30,7 +30,7 @@ def index(request):
     total_general = 0
     carrito_actual = None
     detalles = []
-
+    producto_filtro = request.GET.get("busqueda_producto", "")
 
     if cat_id:
         try:
@@ -45,6 +45,12 @@ def index(request):
 
     categorias = Categoria.objects.all() 
     
+    if producto_filtro:
+        productos = productos.filter(nombre__icontains=producto_filtro) #search bar
+
+    sin_resultados = False
+    if producto_filtro and not productos.exists(): # revisa si no hay resultados en la busqueda
+        sin_resultados = True
   
     user = request.session.get("auth", {}).get("id")
     disponibilidad_carrito = []
@@ -78,7 +84,9 @@ def index(request):
         "carrito": detalles,
         "detalles": detalles,
         'total': total,
-        "totalg": total_general
+        "totalg": total_general,
+        "producto_filtro": producto_filtro,
+        "sin_resultados": sin_resultados,
     }   
     return render(request, 'index.html', contexto)
 
@@ -1357,7 +1365,7 @@ def facturas_usuario(request):
     usuario_id = logueado["id"]
     fecha_filtro = request.GET.get("fecha", "")
 
-    facturas = Carrito.objects.filter(usuario_id=usuario_id, estado=2).order_by("-fecha")
+    facturas = Carrito.objects.filter(usuario_id=usuario_id).order_by("-fecha")
 
     if fecha_filtro:
         try:
@@ -1508,24 +1516,24 @@ def formulario_pago_reserva(request):
         nombre_destinatario = request.POST.get('nombre_destinatario')
         fecha_reserva = request.POST.get('fecha-reserva')
 
-        if metodo:
+        errores = []
+        metodo_instancia = None
+
+        if not metodo or not metodo.isdigit():
+            errores.append("Debe seleccionar un metodo de pago para continuar!!! ")
+        else:
             try:
                 metodo_instancia = Metodo_pago.objects.get(pk=metodo)
                 carrito.metodo_pago = metodo_instancia
             except Metodo_pago.DoesNotExist:
                 errores.append("El método de pago seleccionado no existe.")
-        else:
-            errores.append("Debe seleccionar un metodo de pago para continuar!!! ")
+
+        if metodo_instancia:
+            carrito.servicio = 2
+            carrito.estado = 1 if metodo_instancia.id != 2 else 2
 
         carrito.fecha_reserva = fecha_reserva
         carrito.nombre_destinatario = nombre_destinatario
-        carrito.servicio = 2
-        if metodo_instancia.id != 2:
-            carrito.estado = 1
-        else:
-            carrito.estado = 2
-
-        errores = []
 
         if not fecha_reserva:
             errores.append("El parametro de la fecha debe tener un valor!! ")
@@ -1556,7 +1564,7 @@ def formulario_pago_reserva(request):
         carrito.save()
 
         messages.success(request, "¡Pago exitoso!")
-        return redirect('facturas_usuario')
+        return redirect('reservas_pendientes')
     
     contexto = {
         "carrito": carrito,
@@ -1566,3 +1574,38 @@ def formulario_pago_reserva(request):
     }
 
     return render(request, 'usuarios/reservas.html', contexto)
+
+def reservas_pendientes(request):
+    logueado = request.session.get("auth")
+    
+    if not logueado:
+        messages.error(request, "Debes iniciar sesión para ver tus facturas.")
+        return redirect("login")
+
+    usuario_id = logueado["id"]
+    fecha_filtro = request.GET.get("fecha", "")
+
+    facturas = Carrito.objects.filter(usuario_id=usuario_id).order_by("-fecha")
+
+    if fecha_filtro:
+        try:
+            fecha_filtrada = parse_date(fecha_filtro)
+            facturas = facturas.filter(fecha__date=fecha_filtrada)
+        except:
+            messages.warning(request, "Fecha inválida.")
+
+    # Crea una lista de facturas con sus totales
+    facturas_con_totales = []
+    for factura in facturas:
+        total = factura.detalles.aggregate(total=Sum('total'))["total"] or 0
+        facturas_con_totales.append({
+            "factura": factura,
+            "total": total
+        })
+
+    contexto = {
+        "facturas_con_totales": facturas_con_totales,
+        "fecha_filtro": fecha_filtro
+    }
+
+    return render(request, "usuarios/reservas_pendientes.html", contexto)
