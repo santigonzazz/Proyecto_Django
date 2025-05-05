@@ -75,10 +75,6 @@ def index(request):
             carrito_actual = None
             detalles = []
             total_general = 0
-                    
-        # if disponibilidad_carrito:
-        #     for error in disponibilidad_carrito:
-        #         messages.error(request, error)
             
     contexto = {
         "productoInfo": productos,
@@ -176,6 +172,13 @@ def contactanos(request):
         mensaje = request.POST.get("mensaje", "").strip()
         tipo = request.POST.get("tipo")
 
+        try:
+            tipo=int(tipo)
+        except (ValueError, TypeError):
+            errores.append("Tipo de mensaje inválido.")
+        else:
+            valores_validos = [op[0] for op in Pqrs.TIPOS]
+
         if not nombre or nombre == "":
             errores.append("El campo nombre no puede estar vacío ")
         if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
@@ -193,7 +196,7 @@ def contactanos(request):
         elif len(mensaje) < 20:
             errores.append("El mensaje debe tener minimo 20 caracteres!! ")
         
-        if not tipo:
+        if not tipo or tipo not in valores_validos:
             errores.append("Debes seleccionar el tipo del mensaje!! ")
         
         if email != email_ingresado:
@@ -217,27 +220,6 @@ def contactanos(request):
     else:
         user_id = request.session.get("auth", {}).get("id")
         return render(request, 'contactanos.html', {"tipo_opciones": tipo_opciones})
-
-# def validacion_contactanos(request):
-#     if request.method == 'POST':
-
-#         user_id = request.session.get("auth", {}).get("id")
-#         if not user_id:
-#             messages.error(request, "Debes iniciar sesión para editar tu perfil.")
-#             return redirect("login")
-        
-#         errores = []
-
-#         nombre = request.POST.get("nombre", "").strip()
-#         email = request.POST.get("email", "").strip()
-#         mensaje = request.POST.get("mensaje", "").strip()
-
-#         if not nombre:
-#             errores.append("El parametro Nombre debe tener un valor!! ")
-#         else:
-#             if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
-#                 errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
-
 
 #facturas--------------------------------------------------------------------------------------
 
@@ -272,31 +254,6 @@ def facturas(request):
         return redirect("login")
 
 #funciones de usuario-------------------------------------------------------------------------
-
-# def cambiar_clave(request):
-#     if request.method == "POST":
-#         clave_actual = request.POST.get("clave_actual")
-#         nueva = request.POST.get("nueva")
-#         repite_nueva = request.POST.get("repite_nueva")
-#         logueado = request.session.get("auth")
-
-#         q = User.objects.get(pk=logueado["id"])
-#         if verify_password(clave_actual, q.password):
-#             if nueva == repite_nueva:
-#                 q.password = hash_password(nueva)       # utils.py
-#                 q.save()
-#                 messages.success(request, "Contraseña cambiada con éxito!!")
-#             else:
-#                 messages.info(request, "Contraseñas nuevas no coinciden...")
-#         else:
-#             messages.warning(request, "Contraseña no concuerda...")
-
-#         return redirect("cambiar_clave")
-#     else:
-#         return render(request, "cambiar_clave.html")
-
-# def clave (request):
-#     return render(request, 'recuperarclave.html')
 
 def editar_perfil(request):
     if request.method == 'POST':
@@ -548,101 +505,115 @@ def eliminar_producto(request, id_producto):
 
 
 def editar_producto(request, producto_id):
-    p = get_object_or_404(Producto, pk=producto_id)
-    categorias_existentes = Categoria.objects.all()
+    verificar = request.session.get("auth", False)
+    if verificar:
+        if verificar["rol"] == 1:
+            p = get_object_or_404(Producto, pk=producto_id)
+            categorias_existentes = Categoria.objects.all()
 
-    if request.method == 'POST':
-        nombre = request.POST.get("nombre", "").strip()
-        precio_str = request.POST.get("precio", "").strip()
-        stock_str = request.POST.get("stock", "").strip()
-        descripcion = request.POST.get("descripcion", "").strip()
-        disponibilidad_str = request.POST.get("disponibilidad")
-        nuevas_categorias_ids = request.POST.getlist("categorias")
-        foto_nueva = request.FILES.get("foto")
-        errores = {}
+            if request.method == 'POST':
+                nombre = request.POST.get("nombre", "").strip()
+                precio_str = request.POST.get("precio", "").strip()
+                stock_str = request.POST.get("stock", "").strip()
+                descripcion = request.POST.get("descripcion", "").strip()
+                disponibilidad_str = request.POST.get("disponibilidad")
+                nuevas_categorias_ids = request.POST.getlist("categorias")
+                foto_nueva = request.FILES.get("foto")
+                errores = {}
 
-        # Validaciones Backend
-        if not nombre:
-            errores["nombre"] = "El nombre es obligatorio."
-        elif len(nombre) < 2:
-            errores["nombre"] = "El nombre debe tener al menos 2 caracteres."
-        elif not all(char.isalpha() or char.isspace() or char in 'ñÑ' for char in nombre):
-            errores["nombre"] = "El nombre solo puede contener letras y espacios."
+                # Validaciones Backend
+                if not nombre:
+                    errores["nombre"] = "El nombre es obligatorio."
+                elif len(nombre) < 2:
+                    errores["nombre"] = "El nombre debe tener al menos 2 caracteres."
+                elif not all(char.isalpha() or char.isspace() or char in 'ñÑ' for char in nombre):
+                    errores["nombre"] = "El nombre solo puede contener letras y espacios."
 
-        if not precio_str:
-            errores["precio"] = "El precio es obligatorio."
-        else:
-            try:
-                precio = float(precio_str)
-                if precio < 0:
-                    errores["precio"] = "El precio no puede ser negativo."
-            except ValueError:
-                errores["precio"] = "El precio debe ser un número válido."
+                if not precio_str:
+                    errores["precio"] = "El precio es obligatorio."
+                else:
+                    try:
+                        precio = float(precio_str)
+                        if precio < 0:
+                            errores["precio"] = "El precio no puede ser negativo."
+                    except ValueError:
+                        errores["precio"] = "El precio debe ser un número válido."
+                    else:
+                        p.precio = precio
+
+                if stock_str == "":
+                    errores["stock"] = "El stock es obligatorio."
+                else:
+                    try:
+                        stock = int(stock_str)
+                        if stock < 0:
+                            errores["stock"] = "El stock no puede ser negativo."
+                    except ValueError:
+                        errores["stock"] = "El stock debe ser un número entero válido."
+                    else:
+                        p.cantidad = stock
+
+                if not descripcion:
+                    errores["descripcion"] = "La descripción es obligatoria."
+
+                if foto_nueva:
+                    if not foto_nueva.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+                        errores["foto"] = "Solo se permiten archivos JPG y PNG."
+                    # Aquí podrías añadir validaciones adicionales para el tamaño del archivo si es necesario
+                    else:
+                        p.foto = foto_nueva
+                
+                if disponibilidad_str not in ["SI", "NO"]:
+                    errores["disponibilidad"] = "Debe seleccionar una opción válida."
+
+                if not nuevas_categorias_ids:
+                    errores["categorias"] = "Debe seleccionar al menos una categoría."
+                else:
+                    nuevas_categorias = []
+                    for cat_id in nuevas_categorias_ids:
+                        try:
+                            categoria = Categoria.objects.get(id=cat_id)
+                            nuevas_categorias.append(categoria)
+                        except Categoria.DoesNotExist:
+                            errores["categorias"] = f"La categoría con ID {cat_id} no existe."
+
+                if errores:
+                    contexto = {
+                        "producto": p,
+                        "catProduct": categorias_existentes,
+                        "categorias_producto": p.fk2_producto_categoria.all(),
+                        "errores": errores,
+                    }
+                    return render(request, "admin/admin-CRUD-productos.html", contexto)
+                else:
+                    p.nombre=nombre
+                    p.precio=precio
+                    p.cantidad=stock
+                    p.descripcion=descripcion
+                    p.disponibilidad=disponibilidad_str
+                    p.save()
+
+                    # Actualizar las categorías
+                    ProductoCategoria.objects.filter(producto=p).delete()
+                    for categoria in nuevas_categorias:
+                        ProductoCategoria.objects.create(producto=p, categoria=categoria)
+
+                    messages.success(request, "Producto actualizado correctamente.")
+                    return redirect("crud_productos")
+
             else:
-                p.precio = precio
-
-        if stock_str == "":
-            errores["stock"] = "El stock es obligatorio."
+                contexto = {
+                    "producto": p,
+                    "catProduct": categorias_existentes,
+                    "categorias_producto": p.fk2_producto_categoria.all()
+                }
+                return render(request, "admin/admin-CRUD-productos.html", contexto) 
         else:
-            try:
-                stock = int(stock_str)
-                if stock < 0:
-                    errores["stock"] = "El stock no puede ser negativo."
-            except ValueError:
-                errores["stock"] = "El stock debe ser un número entero válido."
-            else:
-                p.stock = stock
-
-        if not descripcion:
-            errores["descripcion"] = "La descripción es obligatoria."
-
-        p.disponibilidad = disponibilidad_str == 'on' # Convertir a booleano explícitamente
-
-        if foto_nueva:
-            if not foto_nueva.name.lower().endswith(('.jpg', '.jpeg', '.png')):
-                errores["foto"] = "Solo se permiten archivos JPG y PNG."
-            # Aquí podrías añadir validaciones adicionales para el tamaño del archivo si es necesario
-            else:
-                p.foto = foto_nueva
-
-        if not nuevas_categorias_ids:
-            errores["categorias"] = "Debe seleccionar al menos una categoría."
-        else:
-            nuevas_categorias = []
-            for cat_id in nuevas_categorias_ids:
-                try:
-                    categoria = Categoria.objects.get(id=cat_id)
-                    nuevas_categorias.append(categoria)
-                except Categoria.DoesNotExist:
-                    errores["categorias"] = f"La categoría con ID {cat_id} no existe."
-
-        if errores:
-            contexto = {
-                "producto": p,
-                "catProduct": categorias_existentes,
-                "categorias_producto": p.fk2_producto_categoria.all(),
-                "errores": errores,
-            }
-            return render(request, "admin/admin-CRUD-productos.html", contexto)
-        else:
-            p.nombre = nombre
-            p.save()
-
-            # Actualizar las categorías
-            ProductoCategoria.objects.filter(producto=p).delete()
-            for categoria in nuevas_categorias:
-                ProductoCategoria.objects.create(producto=p, categoria=categoria)
-
-            messages.success(request, "Producto actualizado correctamente.")
-            return redirect("crud_productos")
-
+                    messages.info(request, "Usted no tiene permisos para éste módulo...")
+                    return redirect("index")
     else:
-        contexto = {
-            "producto": p,
-            "catProduct": categorias_existentes,
-            "categorias_producto": p.fk2_producto_categoria.all()
-        }
-        return render(request, "admin/admin-CRUD-productos.html", contexto) 
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
 
 
 def agregar_producto(request):
@@ -695,8 +666,6 @@ def agregar_producto(request):
 
         if not disponibilidad_str or disponibilidad_str not in ["SI", "NO"]:
             errores["disponibilidad"] = "La disponibilidad es obligatoria."
-        else:
-            disponibilidad = disponibilidad_str == "SI"
 
         if not nuevas_categorias_ids:
             errores["categorias"] = "Debe seleccionar al menos una categoría."
@@ -734,7 +703,7 @@ def agregar_producto(request):
                 cantidad=cantidad,
                 descripcion=descripcion,
                 precio=precio,
-                disponibilidad=disponibilidad,
+                disponibilidad=disponibilidad_str,
                 foto=foto
             )
 
@@ -938,70 +907,79 @@ def eliminar_usuario(request, id_usuario):
     return redirect("adminCRUDU")
 
 def crear_usuario_admin(request):
-    if request.method == 'POST':
-        nombre = request.POST.get("nombre", "").strip()
-        apellido = request.POST.get("apellido", "").strip()
-        rol = request.POST.get("rol", "")
-        celular = request.POST.get("celular", "").strip()
-        email = request.POST.get("email", "").strip()
-        password = request.POST.get("password", "")
-        confirmar_password = request.POST.get("confirmar_password", "")
+    verificar = request.session.get("auth", False)
+    if verificar:
+        if verificar["rol"] == 1:
+            if request.method == 'POST':
+                nombre = request.POST.get("nombre", "").strip()
+                apellido = request.POST.get("apellido", "").strip()
+                rol = request.POST.get("rol", "")
+                celular = request.POST.get("celular", "").strip()
+                email = request.POST.get("email", "").strip()
+                password = request.POST.get("password", "")
+                confirmar_password = request.POST.get("confirmar_password", "")
 
-        errores = []
+                errores = []
 
-        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', nombre):
-            errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
-
-
-        if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', apellido):
-            errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
-
-
-        if rol not in ["1", "2"]:
-            errores.append("Debe seleccionar un rol válido entre 1 o 2.")
+                if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', nombre):
+                    errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
 
 
-        if not re.match(r'^\d{10}$', celular):
-            errores.append("El número de celular debe tener exactamente 10 dígitos.")
+                if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', apellido):
+                    errores.append("El apellido solo puede contener letras y debe tener al menos 2 caracteres.")
 
 
-        try:
-            validate_email(email)
-        except ValidationError:
-            errores.append("Correo electrónico inválido.")
-
-        if User.objects.filter(email=email).exists():
-            errores.append("El correo electrónico ya está registrado.")
-
-        if len(password) < 8:
-            errores.append("La contraseña debe tener al menos 8 caracteres.")
-        if password != confirmar_password:
-            errores.append("Las contraseñas no coinciden.")
+                if rol not in ["1", "2"]:
+                    errores.append("Debe seleccionar un rol válido entre 1 o 2.")
 
 
-        if errores:
-            for error in errores:
-                messages.error(request, error)
-            return redirect("adminCRUDU")
+                if not re.match(r'^\d{10}$', celular):
+                    errores.append("El número de celular debe tener exactamente 10 dígitos.")
 
 
-        try:
-            nuevo_usuario = User(
-                nombre=nombre,
-                apellido=apellido,
-                rol=rol,
-                celular=celular,
-                email=email,
-                password=make_password(password),
-            )
-            nuevo_usuario.save()
-            messages.success(request, "Usuario creado correctamente.")
-        except Exception as e:
-            messages.error(request, f"Error al crear usuario: {e}")
+                try:
+                    validate_email(email)
+                except ValidationError:
+                    errores.append("Correo electrónico inválido.")
 
-        return redirect("adminCRUDU")
+                if User.objects.filter(email=email).exists():
+                    errores.append("El correo electrónico ya está registrado.")
+
+                if len(password) < 8:
+                    errores.append("La contraseña debe tener al menos 8 caracteres.")
+                if password != confirmar_password:
+                    errores.append("Las contraseñas no coinciden.")
+
+
+                if errores:
+                    for error in errores:
+                        messages.error(request, error)
+                    return redirect("adminCRUDU")
+
+
+                try:
+                    nuevo_usuario = User(
+                        nombre=nombre,
+                        apellido=apellido,
+                        rol=rol,
+                        celular=celular,
+                        email=email,
+                        password=make_password(password),
+                    )
+                    nuevo_usuario.save()
+                    messages.success(request, "Usuario creado correctamente.")
+                except Exception as e:
+                    messages.error(request, f"Error al crear usuario: {e}")
+
+                return redirect("adminCRUDU")
+            else:
+                return render(request, "admin/adminCRUDU.html")
+        else:
+                messages.info(request, "Usted no tiene permisos para éste módulo...")
+                return redirect( "index")
     else:
-        return render(request, "admin/adminCRUDU.html")
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
     
 
 def editar_usuario_admin(request, id_usuario):
@@ -1065,7 +1043,154 @@ def eliminar_usuario_admin(request, id_usuario):
 
     return redirect("adminCRUDU")
 
-#funciones del sistema------------------------------------------------------------------------------
+#metodos de pago
+
+def metodo_pago(request):
+    metodo = Metodo_pago.objects.all()
+    verificar = request.session.get("auth", False)
+
+    if verificar:
+        if verificar["rol"] == 1:
+            contexto = {
+                "metodo_pago": metodo
+            }
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+            return redirect( "index")
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+    return render(request, "admin/admin-metodo-pago.html", contexto)
+
+def crear_metodo_pago(request):
+    verificar = request.session.get("auth", False)
+    if verificar:
+        if verificar["rol"] == 1:
+            if request.method == 'POST':
+                nombre = request.POST.get("nombre", "").strip()
+                disponibilidad = request.POST.get("disponibilidad", "")
+
+                errores = []
+
+                if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', nombre):
+                    errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
+
+                if not disponibilidad:
+                    errores.append("Debe seleccionar la disponibilidad del producto")
+
+                if errores:
+                    for error in errores:
+                        messages.error(request, error)
+                    return redirect("adminCRUDU")
+
+                try:
+                    nuevo_usuario = Metodo_pago(
+                        nombre=nombre,
+                        disponibilidad=disponibilidad
+                    )
+                    nuevo_usuario.save()
+                    messages.success(request, "Usuario creado correctamente.")
+                except Exception as e:
+                    messages.error(request, f"Error al crear usuario: {e}")
+
+                return redirect("metodo_pago")
+            else:
+                return render(request, "admin/admin-metodo-pago.html")
+        else:
+                messages.info(request, "Usted no tiene permisos para éste módulo...")
+                return redirect("index")
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+    
+def eliminar_metodo_pago(request, id_metodo_pago):
+    try:
+        metodo_pago = get_object_or_404(Metodo_pago, pk=id_metodo_pago)
+
+        metodo_pago.delete()
+        messages.success(request, "Metodo de pago eliminado correctamente.")
+    except Exception as e:
+        messages.error(request, f"Error inesperado: {e}")
+
+    return redirect("metodo_pago")
+
+def editar_metodo_pago(request, id_metodo_pago):
+    verificar = request.session.get("auth", False)
+    if verificar:
+        if verificar["rol"] == 1:
+            mp = get_object_or_404(Metodo_pago, pk=id_metodo_pago)
+
+            if request.method == 'POST':
+                nombre = request.POST.get("nombre", "").strip()
+                disponibilidad = request.POST.get("disponibilidad", "")
+
+                errores = []
+
+                if not re.match(r'^[A-Za-záéíóúÁÉÍÓÚñÑ ]{2,}$', nombre):
+                    errores.append("El nombre solo puede contener letras y debe tener al menos 2 caracteres.")
+
+                if errores:
+                    for error in errores:
+                        messages.error(request, error)
+                    return redirect("metodo_pago")
+                else:
+
+                    mp.nombre = nombre
+                    mp.disponibilidad = disponibilidad
+                    mp.save()
+
+                    messages.success(request, "Metodo pago actualizado correctamente.")
+                    return redirect("metodo_pago")
+
+            else:
+                return redirect('metodo_pago') 
+        else:
+                    messages.info(request, "Usted no tiene permisos para éste módulo...")
+                    return redirect("index")
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+    
+def reservas_admin(request):
+    reserva = Detalle_carrito.objects.filter(carrito__servicio=2).exclude(carrito__estado=3)
+    verificar = request.session.get("auth", False)
+
+    if verificar:
+        if verificar["rol"] == 1:
+            contexto = {
+                "reserva": reserva
+            }
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+            return redirect( "index")
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+    return render(request, "admin/admin-reservas.html", contexto)
+
+def reserva_pagada(request, id_carrito):
+    verificar = request.session.get("auth", False)
+    try:
+        carrito = get_object_or_404(Carrito, id=id_carrito)
+    except Carrito.DoesNotExist:
+        messages.warning(request, "No se encontró la reserva.")
+        return redirect("reservas_admin")
+
+    if verificar:
+        if verificar["rol"] == 1:
+            carrito.estado = 3
+            carrito.save()
+
+            messages.success(request, "Reserva marcada como finalizada correctamente.")
+            return redirect("reservas_admin")
+        else:
+            messages.info(request, "Usted no tiene permisos para éste módulo...")
+            return redirect( "index")
+    else:
+        messages.info(request, "Debe loguearse primero...")
+        return redirect("login")
+
+#funciones del sistema------------------------------------------------------------------------------------
 
 def correos1 (request): 
     try:  
@@ -1150,32 +1275,6 @@ def agregar_carrito(request, producto_id):
 
     messages.success(request, f"{producto.nombre} agregado correctamente al carrito ")
     return redirect("index")
-    
-    # if producto_id_str in carrito:
-    #     if carrito[producto_id_str]["cantidad"] < producto.cantidad:
-    #         carrito[producto_id_str]["cantidad"] += 1
-    #     else:
-    #         messages.warning(request, f"No hay más unidades disponibles de {producto.nombre}.")
-    #         return redirect("ver_carrito_completo")
-    # else:
-    #     carrito[producto_id_str] = {
-    #         "id": producto.id,
-    #         "foto": producto.foto.url,
-    #         "nombre": producto.nombre,
-    #         "precio": float(producto.precio),
-    #         "cantidad": 1,
-    #         "stock": producto.cantidad, # stock de "cantidad"
-    #         "total": 0
-    #     }
-
-    # carrito[producto_id_str]["total"] = round(
-    #     carrito[producto_id_str]["cantidad"] * carrito[producto_id_str]["precio"], 2
-    # )
-
-    # request.session["carrito"] = carrito
-    # messages.success(request, f"{producto.nombre} agregado correctamente al carrito.")
-    # return redirect("index")
-
 
 def ver_carrito_completo(request):
 
@@ -1216,31 +1315,6 @@ def ver_carrito_completo(request):
     }
     return render(request, "carrito.html", contexto)
 
-    # for key, item in carrito.items():
-    #     try:
-    #         cantidad = int(item.get("cantidad", 1))
-    #         precio = float(item.get("precio", 0))
-    #         total = round(cantidad * precio, 2)
-
-    #         item["cantidad"] = cantidad
-    #         item["precio"] = precio
-    #         item["total"] = total
-
-    #         total_general += total
-    #     except (ValueError, TypeError):
-    #         messages.warning(request, f"Error en el producto del carrito: {item.get('nombre', 'desconocido')}")
-    #         continue
-
-
-    # request.session["carrito"] = carrito
-
-    # contexto = {
-    #     "carrito": carrito,
-    #     "total": round(total_general, 2)
-    # }
-    
-    # return render(request, "carrito.html", contexto)
-
 def actualizar_cantidad(request, producto_id):
     if request.method == "POST":
         logueado = request.session.get("auth")
@@ -1276,33 +1350,6 @@ def actualizar_cantidad(request, producto_id):
             messages.success(request, "Cantidad actualizada con exito!! ")
 
     return redirect("ver_carrito_completo")
-    #     try:
-    #         cantidad_raw = request.POST.get("cantidad", "")
-    #         nueva_cantidad = int(cantidad_raw)
-
-    #         if nueva_cantidad < 1:
-    #             messages.warning(request, "La cantidad debe ser al menos 1.")
-    #             return redirect("ver_carrito_completo")
-
-    #     except ValueError:
-    #         messages.error(request, "Cantidad inválida. Debe ser un número entero.")
-    #         return redirect("ver_carrito_completo")
-
-    #     carrito = request.session.get("carrito", {})
-
-    #     if str(producto_id) not in carrito:
-    #         messages.error(request, "El producto no se encuentra en el carrito.")
-    #         return redirect("ver_carrito_completo")
-
-    #     precio = float(carrito[str(producto_id)]['precio'])
-    #     carrito[str(producto_id)]['cantidad'] = nueva_cantidad
-    #     carrito[str(producto_id)]['total'] = round(precio * nueva_cantidad, 2)
-
-    #     request.session["carrito"] = carrito
-    #     messages.success(request, "Cantidad actualizada correctamente.")
-    #     return redirect("ver_carrito_completo")
-
-    # return redirect("ver_carrito_completo")
 
 def eliminar_producto_carrito(request, producto_id):
     logueado = request.session.get("auth")
@@ -1327,15 +1374,6 @@ def eliminar_producto_carrito(request, producto_id):
     
     return redirect("index")
 
-    # if str(producto_id) in carrito:
-    #     del carrito[str(producto_id)]
-    #     request.session["carrito"] = carrito
-    #     messages.success(request, "Producto eliminado del carrito.")
-    # else:
-    #     messages.warning(request, "El producto no se encuentra en el carrito.")
-
-    # return redirect("ver_carrito_completo")
-
 def vaciar_carrito(request):
 
     logueado = request.session.get("auth")
@@ -1354,10 +1392,6 @@ def vaciar_carrito(request):
         messages.error("NO tienes carrito para vaciar!!  ")
 
     return redirect("ver_carrito_completo")
-
-    # request.session["carrito"] = {}
-    # messages.success(request, "Carrito vaciado correctamente.")
-    # return redirect("ver_carrito_completo")
 
 #Facturas y PAGOS 
 

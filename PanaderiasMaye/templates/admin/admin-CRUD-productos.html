@@ -59,8 +59,8 @@
                         <label for="disponibilidad" class="form-label">Disponibilidad:</label>
                         <select name="disponibilidad" class="form-select {% if errores.disponibilidad %}is-invalid{% endif %}" required>
                             <option value="">Seleccione</option>
-                            <option value="SI" {% if disponibilidad_seleccionada == 'SI' %}selected{% endif %}>Disponible</option>
-                            <option value="NO" {% if disponibilidad_seleccionada == 'NO' %}selected{% endif %}>No Disponible</option>
+                            <option value="SI">Disponible</option>
+                            <option value="NO">No Disponible</option>
                         </select>
                         {% if errores.disponibilidad %}
                             <div class="invalid-feedback">{{ errores.disponibilidad }}</div>
@@ -173,13 +173,13 @@
                                 <div class="mb-3 d-flex justify-content-between">
                                     <div class="me-2 w-50">
                                         <label class="form-label">Precio:</label>
-                                        <input type="number" class="form-control" name="precio" min="0" step="0.01" value="{{ producto.precio }}">
+                                        <input type="number" class="form-control" name="precio" min="0" step="0.01" value="{{ producto.precio|floatformat }}">
                                     </div>
                                     <div class="w-50">
                                         <label class="form-label">Disponibilidad:</label>
                                         <select name="disponibilidad" class="form-select">
-                                            <option value="on" {% if producto.disponibilidad %}selected{% endif %}>Disponible</option>
-                                            <option value="" {% if not producto.disponibilidad %}selected{% endif %}>No Disponible</option>
+                                            <option value="SI" {% if producto.disponibilidad == "SI" %}selected{% endif %}>Disponible</option>
+                                            <option value="NO" {% if producto.disponibilidad == "NO" %}selected{% endif %}>No Disponible</option>
                                         </select>
                                     </div>
                                 </div>

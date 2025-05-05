@@ -35,6 +35,14 @@ urlpatterns = [
     path('crear_usuario_admin/', views.crear_usuario_admin, name='crear_usuario_admin'),
     path('editar_usuario_admin/<int:id_usuario>/', views.editar_usuario_admin, name='editar_usuario_admin'),
 
+    path('metodo_pago/', views.metodo_pago, name="metodo_pago"),
+    path('crear_metodo_pago/', views.crear_metodo_pago, name='crear_metodo_pago'),
+    path('eliminar_metodo_pago/<int:id_metodo_pago>', views.eliminar_metodo_pago, name='eliminar_metodo_pago'),
+    path('editar_metodo_pago/<int:id_metodo_pago>', views.editar_metodo_pago, name='editar_metodo_pago'),
+
+    path('reservas_admin/', views.reservas_admin, name="reservas_admin"),
+    path('reserva_pagada/<int:id_carrito>', views.reserva_pagada, name="reserva_pagada"),
+
     #carrito
     path("carrito/<int:producto_id>/", views.agregar_carrito, name="agregar_carrito"),
     path('carrito/', views.ver_carrito_completo, name='ver_carrito_completo'),

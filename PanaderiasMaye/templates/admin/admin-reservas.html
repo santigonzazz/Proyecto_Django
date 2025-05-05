@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %} Crud-Reservas {% endblock %}
+    
+{% block body %}
+<main>
+    {% if messages %}
+        <div class="alert alert-info mt-3">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="container mt-5">
+        <h1 class="title text-center">ADMINISTRADOR DE RESERVAS</h1>
+
+        <table id="tabla_metodos_pago" class="table table-striped">
+            <thead>
+                <tr class="Cabezal_Tabla">
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Destinatario</th>
+                    <th>Productos</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                    <th>Fecha reservada</th>
+                    <th>Estado</th>
+                    <td>Acción</td>
+                </tr>kffd
+            </thead>
+            <tbody>
+                {% for res in reserva %}
+                <tr>
+                    <td>{{ res.carrito.id }}</td>
+                    <td>{{ res.carrito.usuario }}</td>
+                    <td>{{ res.carrito.nombre_destinatario }}</td>
+                    <td>{{ res.producto.nombre }}</td>
+                    <td>{{ res.cantidad }}</td>
+                    <td>{{ res.total }}</td>
+                    <td>{{ res.carrito.fecha_reserva }}</td>
+                    {% if res.carrito.estado == 1 %}
+                        <td>Por entregar</td>
+                    {% else %}
+                        <td>Por pagar</td>
+                    {% endif %}
+                    <td>
+                        <a href="{% url 'reserva_pagada' res.carrito.id %}" class="btn btn-info">Marcar como finalizada</a>
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<!-- Estilos y scripts de DataTables con Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- Inicialización del DataTable -->
+<script>
+    $(document).ready(function () {
+        $('#tabla_metodos_pago').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: 'Copiar'
+                },
+                {
+                    extend: 'excel',
+                    text: 'Exportar Excel'
+                },
+                {
+                    extend: 'pdf',
+                    text: 'Exportar PDF'
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir'
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+    });
+</script>
+{% endblock %}

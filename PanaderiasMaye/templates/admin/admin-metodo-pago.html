@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block titulo %} Crud-Metodo-Pagos {% endblock %}
+    
+{% block body %}
+<main>
+    {% if messages %}
+        <div class="alert alert-info mt-3">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="container mt-5">
+        <h1 class="title text-center">ADMIN CRUD MÉTODOS DE PAGO</h1>
+
+        <!-- Formulario de creación -->
+        <div class="row mb-4 form-center">
+            <div class="col-md-6 offset-md-3">
+                <h2 class="title text-center">Añadir nuevo Método de Pago</h2>
+                <form class="form-user" method="post" action="{% url 'crear_metodo_pago' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="name" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}" title="Solo letras, mínimo 2 caracteres.">
+                    </div>
+                    <div class="mb-3">
+                        <label for="disponibilidad" class="form-label">Disponibilidad:</label>
+                        <select name="disponibilidad" class="form-select" required>
+                            <option value="">Seleccione</option>
+                            <option value="SI">Disponible</option>
+                            <option value="NO">No disponible</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Añadir método de pago</button>
+                </form>
+            </div>
+        </div>
+        <br>
+        <!-- Tabla con métodos de pago -->
+        <table id="tabla_metodos_pago" class="table table-striped">
+            <thead>
+                <tr class="Cabezal_Tabla">
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                    <th>Disponibilidad</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for met_pag in metodo_pago %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ met_pag.nombre }}</td>
+                    <td>{{ met_pag.disponibilidad }}</td>
+                    <td>
+                        <a href="#" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#updateModal{{ met_pag.id }}">Editar</a>
+                        <a href="{% url 'eliminar_metodo_pago' met_pag.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres eliminar este método?')">Eliminar</a>
+                    </td>
+                </tr>
+
+                <!-- Modal de edición -->
+                <div class="modal fade" id="updateModal{{ met_pag.id }}" tabindex="-1" aria-labelledby="modalLabel{{ met_pag.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form method="post" action="{% url 'editar_metodo_pago' met_pag.id %}">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalLabel{{ met_pag.id }}">Editar método de pago</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Nombre:</label>
+                                        <input type="text" class="form-control" name="nombre" required pattern="[A-Za-zÁÉÍÓÚáéíóúñÑ ]{2,}" value="{{ met_pag.nombre }}">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="disponibilidad" class="form-label">Disponibilidad:</label>
+                                        <select name="disponibilidad" class="form-select" required>
+                                            <option value="">Seleccione</option>
+                                            <option value="SI" {% if met_pag.disponibilidad == "SI" %}selected{% endif %}>Disponible</option>
+                                            <option value="NO" {% if met_pag.disponibilidad == "NO" %}selected{% endif %}>No disponible</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-success">Actualizar</button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<!-- Estilos y scripts de DataTables con Buttons -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- Inicialización del DataTable -->
+<script>
+    $(document).ready(function () {
+        $('#tabla_metodos_pago').DataTable({
+            dom: 'Bfrtip',
+            buttons: [
+                {
+                    extend: 'copy',
+                    text: 'Copiar'
+                },
+                {
+                    extend: 'excel',
+                    text: 'Exportar Excel'
+                },
+                {
+                    extend: 'pdf',
+                    text: 'Exportar PDF'
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir'
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+            }
+        });
+    });
+</script>
+{% endblock %}

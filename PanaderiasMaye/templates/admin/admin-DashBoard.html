@@ -7,22 +7,25 @@
         
         <div class="container">
 
-                        <div class="crud-buttoons">
-                            <a href="{% url 'adminCRUDU' %}" class="btn-cambios btn btn-primary btn-crudu">Editar
+                <div class="row no-gutters row-cols-1 row-cols-md-2 g-3" style="justify-content: space-around;">
+                            <a href="{% url 'adminCRUDU' %}" class="btn-cambios btn btn-primary btn-crudu">Gestion de
                                 Usuarios</a>
 
-
                             
-                            <a href="{% url 'crud_categoria' %}" class="btn-cambios btn btn-primary btn-crudc">Editar
+                            <a href="{% url 'crud_categoria' %}" class="btn-cambios btn btn-primary btn-crudc">Gestion de
                                 Categorías</a>
 
 
-
-                            <a href="{% url 'crud_productos' %}" class="btn-cambios btn btn-primary btn-crudp">Editar Productos</a>
-
+                            <a href="{% url 'crud_productos' %}" class="btn-cambios btn btn-primary btn-crudp">Gestion de Productos</a>
 
 
-                            <a href="{% url 'facturas' %}" class="btn-cambios btn btn-primary btn-crudf">Editar Facturas</a>
+                            <a href="{% url 'facturas' %}" class="btn-cambios btn btn-primary btn-crudf">Facturas</a>
+
+
+                            <a href="{% url 'metodo_pago' %}" class="btn-cambios btn btn-primary btn-crudf">Gestion de metodos de pago</a>
+
+
+                            <a href="{% url 'reservas_admin' %}" class="btn-cambios btn btn-primary btn-crudf">Gestion de Reservas</a>
                         </div>
 
         </div>

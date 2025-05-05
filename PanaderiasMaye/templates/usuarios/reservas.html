@@ -144,8 +144,11 @@
     
             <!-- Botón de pago -->
             <div class="text-center mt-4">
-                <button type="submit" id="btnPagar" class="btn btn-primary">Pagar</button>
-            
+                {% if total_general >= 10000 %}
+                    <button type="submit" id="btnPagar" class="btn btn-primary">Pagar</button>
+                {% else %}
+                    <button type="submit" id="btnPagar" class="btn btn-primary" disabled>Pagar</button>
+                {% endif %}
                 <!-- Spinner -->
             </div>
         </form>
