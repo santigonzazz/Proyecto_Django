@@ -1,7 +1,9 @@
 #Urls de la app spa
 from django.urls import path
 from . import views
-
+from django.conf import settings
+from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 urlpatterns = [
     path("", views.index, name="index"),
     path("contactanos/", views.contactanos, name="contactanos"),
@@ -37,11 +39,11 @@ urlpatterns = [
 
     path('metodo_pago/', views.metodo_pago, name="metodo_pago"),
     path('crear_metodo_pago/', views.crear_metodo_pago, name='crear_metodo_pago'),
-    path('eliminar_metodo_pago/<int:id_metodo_pago>', views.eliminar_metodo_pago, name='eliminar_metodo_pago'),
-    path('editar_metodo_pago/<int:id_metodo_pago>', views.editar_metodo_pago, name='editar_metodo_pago'),
+    path('eliminar_metodo_pago/<int:id_metodo_pago>/', views.eliminar_metodo_pago, name='eliminar_metodo_pago'),
+    path('editar_metodo_pago/<int:id_metodo_pago>/', views.editar_metodo_pago, name='editar_metodo_pago'),
 
     path('reservas_admin/', views.reservas_admin, name="reservas_admin"),
-    path('reserva_pagada/<int:id_carrito>', views.reserva_pagada, name="reserva_pagada"),
+    path('reserva_pagada/<int:id_carrito>/', views.reserva_pagada, name="reserva_pagada"),
 
     #carrito
     path("carrito/<int:producto_id>/", views.agregar_carrito, name="agregar_carrito"),
@@ -78,4 +80,6 @@ urlpatterns = [
     path("recuperar/", views.solicitar_recuperacion, name="solicitar_recuperacion"),
     path("verificar-codigo-recuperacion/", views.verificar_token_recuperacion, name="verificar_token_recuperacion"),
     path("nueva-password/", views.establecer_nueva_password, name="establecer_nueva_password"),
-]
+] 
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL,document_root = settings.MEDIA_ROOT)

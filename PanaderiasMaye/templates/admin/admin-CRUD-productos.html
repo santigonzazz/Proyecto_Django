@@ -95,11 +95,11 @@
 
     <!-- Mensajes de éxito o error -->
     {% if messages %}
-        <div class="alert alert-success">
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        </div>
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                            <p>{{ message }}</p>
+                            </div>
+                        {% endfor %}
     {% endif %}
 
     <!-- Tabla de productos con DataTables -->
