@@ -779,105 +779,83 @@ def agregar_producto(request):
 #usuarios
 
 def crear_usuario(request):
-    verificar = request.session.get("auth", False)
-
-    if verificar:
-        if verificar["rol"] == 1:        
-            if request.method == 'POST':
-                nombre = request.POST.get("nombre", "").strip()
-                apellido = request.POST.get("apellido", "").strip()
-                celular = request.POST.get("celular", "").strip()
-                email = request.POST.get('email', "").strip()
-                password = request.POST.get('password')
-                confirmar_password = request.POST.get('confirmar_password')
-                direccion = request.POST.get('direccion', "").strip()  
-
-                errores = []
-                
-                if not nombre:
-                    errores.append("El parametro Nombre debe tener un valor!! ")
-                else:
-                    if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
-                        errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
-
-                if not apellido:
-                    errores.append("El parametro Apellido debe tener un valor!!")
-                else:
-                    if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", apellido):
-                        errores.append("Apellido Invalido. Solo se permiten letras y espacios... ")
-
-                if not celular:
-                    errores.append("El parametro Celular debe tener un valor ")
-                else:
-                    if len(celular) < 10 or len(celular) > 10:
-                        errores.append("El celular solo es de 10 digitos... ")
-                    elif not re.fullmatch(r"\d{10}", celular):
-                        errores.append("Número de Celular invalido. Solo numeros!! ")
-
-                if not email:
-                    errores.append("El parametro Correo debe tener un valor!! ")
-                else:
-                        
-                    try:
-                        validate_email(email)
-                        print(f"Correo  {email} ")
-
-                    except ValidationError:
-                        errores.append("Correo electrónico inválido.")
-
-                if not password:
-                    errores.append("El parametro Contraseña debe tener un valor!! ")
-                else:
-                    if len(password) < 6:
-                        errores.append("La contraseña debe tener al menos 6 caracteres.")
-
-                if not confirmar_password:
-                    errores.append("El parametro Confirmar Contraseña debe tener un valor!! ")
-                else:
-                    if password != confirmar_password:
-                        errores.append("Las contraseñas no coinciden.")
-
-
-                if errores:
-                    for error in errores:
-                        messages.error(request, error)
-                    return redirect("register")
-
-
-                if password == confirmar_password:
-                    try:
-                        token = str(uuid.uuid4()).split('-')[0]
-                        q = User(
-                            nombre=nombre,
-                            apellido=apellido,
-                            celular=celular,
-                            email=email,
-                            password=hash_password(password),  
-                            direccion=direccion,
-                            rol=2,
-                            token = token,
-                            verificado = False  
-                        )
-                        q.save()  
-
-                        enviar_token(email, token)
-                        request.session['correo_verificacion'] = email
-                        messages.success(request, "Token enviado correctamente!")
-                        return redirect("verificar_codigo")  
-                    except Exception as e:
-                        messages.error(request, f"Error: {e}")
-                        return redirect("register")
-                else:
-                    messages.error(request, "Las contraseñas no coinciden.")
-                    return redirect("register")
-            else:
-                return render(request, "register.html")
+    
+    if request.method == 'POST':
+        nombre = request.POST.get("nombre", "").strip()
+        apellido = request.POST.get("apellido", "").strip()
+        celular = request.POST.get("celular", "").strip()
+        email = request.POST.get('email', "").strip()
+        password = request.POST.get('password')
+        confirmar_password = request.POST.get('confirmar_password')
+        direccion = request.POST.get('direccion', "").strip()  
+        errores = []
+        if not nombre:
+            errores.append("El parametro Nombre debe tener un valor!! ")
         else:
-                    messages.info(request, "Usted no tiene permisos para éste módulo...")
-                    return redirect("index")
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", nombre):
+                errores.append("Nombre Invalido. Solo se permiten letras y espacios... ")
+        if not apellido:
+            errores.append("El parametro Apellido debe tener un valor!!")
+        else:
+            if not re.fullmatch(r"[A-Za-zÁÉÍÓÚáéíóúÑñ ]+", apellido):
+                errores.append("Apellido Invalido. Solo se permiten letras y espacios... ")
+        if not celular:
+            errores.append("El parametro Celular debe tener un valor ")
+        else:
+            if len(celular) < 10 or len(celular) > 10:
+                errores.append("El celular solo es de 10 digitos... ")
+            elif not re.fullmatch(r"\d{10}", celular):
+                errores.append("Número de Celular invalido. Solo numeros!! ")
+        if not email:
+            errores.append("El parametro Correo debe tener un valor!! ")
+        else:
+            try:
+                validate_email(email)
+                print(f"Correo  {email} ")
+            except ValidationError:
+                errores.append("Correo electrónico inválido.")
+        if not password:
+            errores.append("El parametro Contraseña debe tener un valor!! ")
+        else:
+            if len(password) < 6:
+                errores.append("La contraseña debe tener al menos 6 caracteres.")
+        if not confirmar_password:
+            errores.append("El parametro Confirmar Contraseña debe tener un valor!! ")
+        else:
+            if password != confirmar_password:
+                errores.append("Las contraseñas no coinciden.")
+                
+        if errores:
+            for error in errores:
+                messages.error(request, error)
+            return redirect("register")
+        if password == confirmar_password:
+            try:
+                token = str(uuid.uuid4()).split('-')[0]
+                q = User(
+                    nombre=nombre,
+                    apellido=apellido,
+                    celular=celular,
+                    email=email,
+                    password=hash_password(password),  
+                    direccion=direccion,
+                    rol=2,
+                    token = token,
+                    verificado = False  
+                )
+                q.save()  
+                enviar_token(email, token)
+                request.session['correo_verificacion'] = email
+                messages.success(request, "Token enviado correctamente!")
+                return redirect("verificar_codigo")  
+            except Exception as e:
+                messages.error(request, f"Error: {e}")
+                return redirect("register")
+        else:
+            messages.error(request, "Las contraseñas no coinciden.")
+            return redirect("register")
     else:
-        messages.info(request, "Debe loguearse primero...")
-        return redirect("login")
+        return render(request, "register.html")
 
 def CrudUsuarios(request):
     verificar = request.session.get("auth", False)
