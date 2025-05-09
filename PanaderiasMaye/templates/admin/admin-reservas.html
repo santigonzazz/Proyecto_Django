@@ -26,6 +26,7 @@
                     <th>Total</th>
                     <th>Fecha reservada</th>
                     <th>Estado</th>
+                    <th>Metodo de pago</th>
                     <td>Acción</td>
                 </tr>kffd
             </thead>
@@ -44,6 +45,7 @@
                     {% else %}
                         <td>Por pagar</td>
                     {% endif %}
+                    <td>{{ res.carrito.metodo_pago.nombre }}</td>
                     <td>
                         <a href="{% url 'reserva_pagada' res.carrito.id %}" class="btn btn-info">Marcar como finalizada</a>
                     </td>
