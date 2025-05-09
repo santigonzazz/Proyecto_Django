@@ -4,12 +4,13 @@
 {% block titulo-body %} Bienvenido a Panaderia's Maye!!! {% endblock %}
 {% block body %}
 
-{% if messages %}
-<div class="alert alert-danger">
-    {% for message in messages %}
-    <p>{{ message }}</p>
-    {% endfor %}
-</div>
+
+ {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                            <p>{{ message }}</p>
+                            </div>
+                        {% endfor %}
 {% endif %}
 
 <style>

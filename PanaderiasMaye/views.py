@@ -27,8 +27,8 @@ from django.db.models import ProtectedError
 # Create your views here.
 
 #principales-------------------------------------------------------------------------------------------------------------
-def index(request):
-    cat_id = request.GET.get("cat")   
+def index(request): 
+    cat_id = request.GET.get("cat")
     total = 0
     total_general = 0
     carrito_actual = None
@@ -44,49 +44,65 @@ def index(request):
             productos = []
     else:
         categoria = None
-        productos = Producto.objects.all() 
+        productos = Producto.objects.all()
 
-    categorias = Categoria.objects.all() 
+    categorias = Categoria.objects.all()
     
     if producto_filtro:
-        productos = productos.filter(nombre__icontains=producto_filtro) #search bar
+        productos = productos.filter(nombre__icontains=producto_filtro)
 
     sin_resultados = False
-    if producto_filtro and not productos.exists(): # revisa si no hay resultados en la busqueda
+    if producto_filtro and not productos.exists():
         sin_resultados = True
-  
+
     user = request.session.get("auth", {}).get("id")
     disponibilidad_carrito = []
+    
     if user:
         try:
             user_obj = User.objects.get(id=user)
             carrito_actual = Carrito.objects.filter(usuario=user_obj, estado=1).latest('fecha')
             detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
-           
+
+            carrito_mini = []  # Para almacenar los productos visibles
+
             for item in detalles:
-                    if item.producto.disponibilidad == "SI":
-                        item.total = item.cantidad * item.producto.precio
-                        total_general += item.cantidad * item.producto.precio
-                    else:
-                        disponibilidad_carrito.append(f"El producto: {item.producto.nombre} que agregaste no se encuentra disponibile actualmente!! Producto eliminado de tu carrito ")
-                
-                    
+                if item.producto.disponibilidad == "SI":
+                    item.total = item.cantidad * item.producto.precio
+                    total_general += item.total
+
+                    carrito_mini.append({
+                        "nombre": item.producto.nombre,
+                        "cantidad": item.cantidad,
+                        "precio": item.producto.precio,
+                        "total": item.total
+                    })
+                else:
+                    disponibilidad_carrito.append(
+                        f"El producto: {item.producto.nombre} que agregaste no se encuentra disponibile actualmente!! Producto eliminado de tu carrito "
+                    )
+
+            # Actualizamos el carrito mini en sesión
+            request.session["carrito_mini"] = carrito_mini
+            request.session["total_mini"] = total_general
 
         except Carrito.DoesNotExist:
             carrito_actual = None
             detalles = []
             total_general = 0
-            
+            request.session["carrito_mini"] = []
+            request.session["total_mini"] = 0
+
     contexto = {
         "productoInfo": productos,
-        "categorias": categorias,  
+        "categorias": categorias,
         "carrito": detalles,
         "detalles": detalles,
         'total': total,
         "totalg": total_general,
         "producto_filtro": producto_filtro,
         "sin_resultados": sin_resultados,
-    }   
+    }
     return render(request, 'index.html', contexto)
 
 
@@ -153,12 +169,48 @@ def logout(request):
     return redirect("index")
     
 def about(request):
-    return render(request, 'about.html')
+    cat = Categoria.objects.all()
+    carrito_mini = request.session.get("carrito_mini", [])
+    total_mini = request.session.get("total_mini", 0)
+
+    user = request.session.get("auth", {}).get("id")
+    detalles = []
+    total_general = 0
+
+    if user:
+        try:
+            user_obj = User.objects.get(id=user)
+            carrito_actual = Carrito.objects.filter(usuario=user_obj, estado=1).latest('fecha')
+            detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
+
+            for item in detalles:
+                if item.producto.disponibilidad == "SI":
+                    item.total = item.cantidad * item.producto.precio
+                    total_general += item.total
+
+        except Carrito.DoesNotExist:
+            detalles = []
+            total_general = 0
+
+    return render(request, 'about.html', {
+        'carrito': detalles,
+        'detalles': detalles,
+        'totalg': total_general,
+        'carrito_items': carrito_mini,
+        'total_general': total_mini,
+        'categorias': cat,
+    })
+
+
 
 def contactanos(request):
     
     tipo_opciones = Pqrs.TIPOS
-
+    carrito_mini = request.session.get("carrito_mini", [])
+    total_mini = request.session.get("total_mini", 0)
+    detalles = []
+    total_general = 0
+    
     if request.method == 'POST':
         user_id = request.session.get("auth", {}).get("id")
         if not user_id:
@@ -220,7 +272,27 @@ def contactanos(request):
         return redirect("contactanos")
     else:
         user_id = request.session.get("auth", {}).get("id")
-        return render(request, 'contactanos.html', {"tipo_opciones": tipo_opciones})
+        if user_id:
+            try:
+                user_obj = User.objects.get(id=user_id)
+                carrito_actual = Carrito.objects.filter(usuario=user_obj, estado=1).latest('fecha')
+                detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
+
+                for item in detalles:
+                    if item.producto.disponibilidad == "SI":
+                        item.total = item.cantidad * item.producto.precio
+                        total_general += item.total
+
+            except Carrito.DoesNotExist:
+                detalles = []
+                total_general = 0
+        return render(request, 'contactanos.html', {"tipo_opciones": tipo_opciones,
+                                                    'carrito': detalles,
+                                                    'detalles': detalles,
+                                                    'totalg': total_general,
+                                                    'carrito_items': carrito_mini,
+                                                    'total_general': total_mini})
+
 
 #facturas--------------------------------------------------------------------------------------
 
@@ -255,8 +327,11 @@ def facturas(request):
         return redirect("login")
 
 #funciones de usuario-------------------------------------------------------------------------
-
 def editar_perfil(request):
+    carrito_mini = request.session.get("carrito_mini", [])
+    total_mini = request.session.get("total_mini", 0)
+    detalles = []
+    total_general = 0
     if request.method == 'POST':
     
         user_id = request.session.get("auth", {}).get("id")
@@ -330,13 +405,33 @@ def editar_perfil(request):
             messages.error(request, "Debes iniciar sesión para editar tu perfil.")
             return redirect("login")
         
-        return render(request, "usuarios/user-Crud.html")
+        if user_id:
+            try:
+                user_obj = User.objects.get(id=user_id)
+                carrito_actual = Carrito.objects.filter(usuario=user_obj, estado=1).latest('fecha')
+                detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
+
+                for item in detalles:
+                    if item.producto.disponibilidad == "SI":
+                        item.total = item.cantidad * item.producto.precio
+                        total_general += item.total
+
+            except Carrito.DoesNotExist:
+                detalles = []
+                total_general = 0
+        
+        return render(request, "usuarios/user-Crud.html", {'carrito': detalles,
+                                                    'detalles': detalles,
+                                                    'totalg': total_general,
+                                                    'carrito_items': carrito_mini,
+                                                    'total_general': total_mini})
 
 #funciones del administrador-----------------------------------------------------------------------------------
 
 def dashboardAdmin(request):
      
     verificar = request.session.get("auth", False)
+    
 
     if verificar:
         if verificar["rol"] == 1:
@@ -367,6 +462,7 @@ def dashboardAdmin(request):
     else:
         messages.info(request, "Debe loguearse primero...")
         return redirect("login")
+
 
 #CRUD categorias-----------------------------------------------------------------------------------
 
@@ -1446,16 +1542,15 @@ def actualizar_cantidad(request, producto_id):
         
         usuario = get_object_or_404(User, id=logueado["id"])
         nueva_cantidad = request.POST.get("cantidad")
-
         if not nueva_cantidad:
-            messages.error(request, "No puedes dejar este campo vacio")
+            messages.error(request, "No puedes dejar este campo vacío")
             return redirect("ver_carrito_completo")
         
 
-        if not re.fullmatch(r"\d{10}", nueva_cantidad):
-                messages.error(request, "Solo se perimten números!! ")
-                return redirect("ver_carrito_completo")
-
+        if not re.fullmatch(r"\d+", nueva_cantidad):
+            messages.error(request, "Solo se permiten números positivos!! ")
+            return redirect("ver_carrito_completo")
+        nueva_cantidad = int(nueva_cantidad)  
         try:
             carrito = Carrito.objects.filter(usuario=usuario, estado=1).latest()
         except Carrito.DoesNotExist:
@@ -1463,20 +1558,17 @@ def actualizar_cantidad(request, producto_id):
             return redirect("ver_carrito_completo")
         
         detalle = get_object_or_404(Detalle_carrito, carrito=carrito, producto_id=producto_id)
-
         if nueva_cantidad < 1:
-            messages.error(request,"La cantidad debe ser al menos 1 ")
+            messages.error(request, "La cantidad debe ser al menos 1 ")
         elif nueva_cantidad > detalle.producto.cantidad:
             messages.error(request, "No hay suficiente stock disponible!!  ")
-
         else:
             detalle.cantidad = nueva_cantidad
             detalle.total = nueva_cantidad * detalle.producto.precio
             detalle.save()
             carrito.cantidad = sum(dc.cantidad for dc in carrito.detalles.all())
             carrito.save()
-            messages.success(request, "Cantidad actualizada con exito!! ")
-
+            messages.success(request, "Cantidad actualizada con éxito!! ")
     return redirect("ver_carrito_completo")
 
 def eliminar_producto_carrito(request, producto_id):
@@ -1681,7 +1773,10 @@ def confirmar_pago(request, carrito_id):
 
 def facturas_usuario(request):
     logueado = request.session.get("auth")
-    
+    carrito_mini = request.session.get("carrito_mini", [])
+    total_mini = request.session.get("total_mini", 0)
+    detalles = []
+    total_general = 0
     if not logueado:
         messages.error(request, "Debes iniciar sesión para ver tus facturas.")
         return redirect("login")
@@ -1707,9 +1802,28 @@ def facturas_usuario(request):
             "total": total
         })
 
+    if usuario_id:
+            try:
+                user_obj = User.objects.get(id=usuario_id)
+                carrito_actual = Carrito.objects.filter(usuario=user_obj, estado=1).latest('fecha')
+                detalles = Detalle_carrito.objects.filter(carrito=carrito_actual)
+
+                for item in detalles:
+                    if item.producto.disponibilidad == "SI":
+                        item.total = item.cantidad * item.producto.precio
+                        total_general += item.total
+
+            except Carrito.DoesNotExist:
+                detalles = []
+                total_general = 0
     contexto = {
         "facturas_con_totales": facturas_con_totales,
-        "fecha_filtro": fecha_filtro
+        "fecha_filtro": fecha_filtro,
+        'carrito': detalles,
+        'detalles': detalles,
+        'totalg': total_general,
+        'carrito_items': carrito_mini,
+        'total_general': total_mini
     }
 
     return render(request, "usuarios/facturas.html", contexto)
