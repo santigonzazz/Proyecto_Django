@@ -9,7 +9,7 @@ import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 import traceback
-from datetime import timedelta
+
 
 from xhtml2pdf import pisa
 from django.template.loader import get_template
@@ -22,7 +22,7 @@ from django.conf import settings
 from .utils import *
 from django.contrib.auth.hashers import make_password
 import uuid
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required
 from django.db.models import ProtectedError 
 # Create your views here.
 
