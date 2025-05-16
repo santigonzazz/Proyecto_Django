@@ -52,6 +52,7 @@
                             <thead style="background-color: #fdf6e3; color: #212529;">
                                 <tr class="text-center">
                                     <th>Producto</th>
+                                    <th>Imagen</th>
                                     <th>Precio Unitario</th>
                                     <th>Cantidad</th>
                                     <th>Total</th>
@@ -61,6 +62,7 @@
                                 {% for detalle in factura.detalles.all %}
                                 <tr>
                                     <td>{{ detalle.producto.nombre }}</td>
+                                    <td><img src="{{ detalle.producto.foto.url }} " alt="Foto" width="100px" height="100px"> </td>
                                     <td>${{ detalle.producto.precio }}</td>
                                     <td>{{ detalle.cantidad }}</td>
                                     <td>${{ detalle.total }}</td>
