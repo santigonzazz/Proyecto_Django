@@ -1,0 +1,600 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+
+body {
+    background-color: rgb(238, 212, 174);
+    display: grid;
+    height: 100dvh;
+    grid-template-rows: auto 1fr auto;
+}
+
+nav {
+    background-color: rgb(250, 193, 87);
+    padding: 10px;
+}
+
+.nav-link {
+    color: black;
+}
+
+.nav-link:hover {
+    color: white;
+}
+
+.nav-item {
+    display: flex;
+}
+
+.nav-item>a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenedor-principal-img {
+    width: 95%;
+    display: flex;
+    justify-content: start;
+    float: left;
+    margin-left: 5%;
+}
+
+.img-title {
+    float: left;
+}
+
+.logo {
+    width: 90%;
+    margin-top: 2%;
+}
+
+.cont_img {
+    width: 13%;
+    height: 100%;
+    margin-left: 5%;
+    margin-right: 5%;
+}
+
+.img-login {
+    width: 40px;
+    height: 50px;
+    margin-left: 10px;
+    border-radius: 100%;
+    border: solid 1px;
+}
+
+.title {
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5px;
+    padding: 10px;
+}
+
+.search-bar {
+    max-width: 500px;
+    margin: auto auto;
+}
+
+.search-bar .input-group {
+    border-radius: 30px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.search-bar .form-control {
+    border: none;
+    padding-left: 20px;
+}
+
+.search-bar .btn {
+    border: none;
+    padding: 10px 20px;
+    background-color: black;
+}
+
+.search-bar .btn:hover {
+    background-color: rgb(94, 94, 94);
+}
+
+.btn {
+    background-color: rgb(250, 193, 87);
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+}
+
+.row {
+    justify-content: center;
+    margin: 0;
+}
+
+.col {
+    max-width: 300px;
+
+}
+
+.btn-danger {
+    background-color: rgb(255, 0, 0);
+    color: rgb(255, 255, 255);
+}
+
+.card>img {
+    height: 200px;
+}
+
+.card-title {
+    display: flex;
+    justify-content: center;
+
+}
+
+.cart-a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    background-color: rgb(250, 193, 87);
+    color: black;
+    padding: 10px;
+}
+
+.cart-a:hover {
+    color: beige;
+}
+
+.precio {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.card-body {
+    margin: 5px;
+    border-radius: 8px;
+}
+
+.card {
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.form-user {
+    background-color: white;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.btn-create {
+    display: flex;
+    background-color: rgb(250, 193, 87);
+    border: none;
+    color: black;
+}
+
+.btn-create:hover {
+    background-color: rgb(238, 212, 174);
+}
+
+.btn-volver {
+    text-decoration: none;
+    color: black;
+}
+
+.btn-volver:hover {
+    color: black;
+}
+
+.form-center {
+    display: contents;
+}
+
+
+
+/* PARTE DEL FOOTER */
+footer {
+    background-color: #343a40;
+    color: #fff;
+    padding: 1rem 0; /* Reducido de 2rem a 1rem */
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.3px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+footer h5 {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #f9e8d9;
+    margin-bottom: 0.8rem;
+    border-bottom: 1px solid #555;
+    padding-bottom: 0.3rem;
+    text-align: center;
+    width: 100%;
+}
+footer p {
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    margin-bottom: 0.4rem;
+}
+footer ul {
+    padding-left: 0;
+    list-style: none;
+    margin-bottom: 0.4rem;
+}
+footer ul li {
+    margin-bottom: 0.3rem;
+}
+footer a {
+    color: #ffffff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+footer a:hover {
+    color: #deb887;
+    text-decoration: underline;
+}
+footer .social-icons a {
+    font-size: 1.2rem;
+    margin-right: 0.7rem;
+    color: #ffffff;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+footer .social-icons a:hover {
+    transform: scale(1.1);
+    color: #deb887;
+}
+footer hr {
+    border-top: 1px solid #777;
+    opacity: 0.5;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+footer .text-center p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+.social-container {
+    text-align: center;
+}
+.social-icons {
+    padding-left: 0;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.social-icons li {
+    display: inline-block;
+    margin: 0 0.4rem;
+}
+.social-icons a {
+    font-size: 1.4rem;
+    color: #ffffff;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+.social-icons a:hover {
+    transform: scale(1.1);
+    color: #deb887;
+}
+.social-icons a {
+    font-size: 1.25rem;
+}
+.footer-links {
+    text-align: center;
+}
+.footer-links ul {
+    padding-left: 0;
+    margin: 0;
+}
+.footer-links li {
+    margin-bottom: 0.4rem;
+}
+.footer-links a {
+    display: inline-block;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+.footer-links a:hover {
+    color: #deb887; /* tono cálido dorado */
+    text-decoration: underline;
+}
+
+
+
+.btn-outline-secondary {
+    background-color: black;
+    background-color: rgb(250, 193, 87);
+    border: none;
+}
+.offcanvas-header {
+    background-color: rgb(250, 193, 87);
+}
+.spaces {
+    display: flex;
+    justify-content: space-between;
+}
+.mb-3 {
+    width: 98%;
+    margin-left: 10px;
+}
+.fa-search {
+    color: white;
+}
+.image-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.col-md-6 {
+    flex: 0 0 auto;
+    margin: auto;
+}
+
+.row-dashboard {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+.chart {
+    max-width: 100%;
+    min-width: 90%;
+}
+
+.about {
+    background-color: beige;
+}
+
+.menu-container {
+    position: relative;
+}
+
+.menu-button {
+    cursor: pointer;
+    height: 100%;
+}
+
+.menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: rgb(58, 58, 58);
+    border-radius: 5px;
+    min-width: 200px;
+    z-index: 1000;
+}
+
+.menu a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: white;
+}
+
+.button-nav {
+    background-color: rgb(250, 193, 87);
+    border: none;
+    padding: 10px;
+}
+
+.fa-circle-user {
+    margin-left: 4px;
+}
+
+.img-user-crud {
+    max-width: 300px;
+    max-height: 300px;
+    min-width: 300px;
+    min-height: 300px;
+    border-radius: 100%;
+    border: solid 3px;
+}
+
+.btn-ed {
+    border: none;
+    border-radius: 5px;
+    background-color: rgb(250, 193, 87);
+    width: auto;
+    height: 35px;
+    margin: 20px 20px 20px 20px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .img-user-crud {
+        max-width: 200px;
+        max-height: 200px;
+        min-width: 200px;
+        min-height: 200px;
+    }
+}
+
+.pagination-next-previous {
+    background-color: rgb(250, 193, 87);
+    color: rgb(0, 0, 0);
+
+}
+
+.pagination-next-previous:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.btn-container-crud-user {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-ed:hover {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.Cabezal_Tabla {
+    background-color: rgb(250, 193, 87);
+}
+
+.table {
+    border-radius: 15px;
+    border: solid 1px;
+}
+
+/* politicas de privacidad */
+.politica-privacidad {
+    background: rgb(58, 58, 58);
+    padding: 3rem 1rem;
+    border-radius: 12px;
+    animation: fadeIn 1s ease-in-out;
+    font-family: 'Georgia', serif;
+}
+
+.card-politica {
+    background-color: #f8f4ef;
+    color: #3b3b3b;
+    border-left: 10px solid #c7a17a;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-politica:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-politica h2,
+.card-politica h4 {
+    color: #7a5c42;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.card-politica h4 {
+    font-size: 1.2rem;
+    margin-top: 1.5rem;
+    border-bottom: 1px dashed #c7a17a;
+    padding-bottom: 0.5rem;
+}
+
+.card-politica p,
+.card-politica li {
+    font-size: 1rem;
+    line-height: 1.8;
+    color: #3b3b3b;
+    text-align: justify;
+}
+
+.card-politica ul {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.card-politica a {
+    color: #a67c52;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.card-politica a:hover {
+    text-decoration: underline;
+    color: #8b5e3c;
+}
+
+.fecha {
+    color: #9c9c9c;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    display: block;
+}
+
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.btn-success{
+    background-color: #198754;
+    color: white;
+}
+.btn-crudu{
+    background-color: rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-crudp{
+    background-color:rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-crudc{
+    background-color:rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-crudf{
+    background-color:rgb(250, 193, 87);
+    border-radius: 20px;
+    color: white;
+    border: solid 2px;
+    width: 180px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.crud-buttoons{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+#btn-conta{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+td{
+    text-align: center;
+}
+th{
+    text-align: center;
+}

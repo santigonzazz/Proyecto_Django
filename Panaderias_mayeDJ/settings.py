@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '90mu7s($zj7bykpfl%h9f%#==bn9vc_85m4f(@37$jb$#z4!w1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -119,7 +119,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATIC_ROOT = "static_files_server/"
 
 # Configuración de email
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
