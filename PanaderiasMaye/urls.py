@@ -80,6 +80,8 @@ urlpatterns = [
     path("recuperar/", views.solicitar_recuperacion, name="solicitar_recuperacion"),
     path("verificar-codigo-recuperacion/", views.verificar_token_recuperacion, name="verificar_token_recuperacion"),
     path("nueva-password/", views.establecer_nueva_password, name="establecer_nueva_password"),
+
+    path("backup/", views.backup, name="backup"),
 ] 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,document_root = settings.MEDIA_ROOT)
